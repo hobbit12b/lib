@@ -6,14 +6,14 @@
 <title>Voorbeeldtoets Groep 3: Oefenomgeving</title>
 <style>
   :root{
-    --bg:#f2f2f2; --panel:#fff; --blue:#0077b3; --blue-dark:#005a87; --line:#e6e6e6;
+    --bg:#efefee; --panel:#fff; --blue:#008ec0; --blue-dark:#006e95; --line:#e6e6e6;
     --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f;
   }
-  html,body{height:100%;margin:0;padding:0;font-family:"Arial","Helvetica",sans-serif;font-size:16px;color:var(--text);background:var(--bg)}
-  .sky{height:70px;background:var(--blue);border-bottom:2px solid var(--line);}
+  html,body{height:100%;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:var(--text);background:var(--bg)}
+  .sky{height:70px;background:#0a6fa5;border-bottom:2px solid #0a6fa5}
 
   .stage{display:flex;justify-content:center;align-items:flex-start;padding:40px 16px 100px}
-  .card{background:var(--panel);width:860px;min-height:480px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:28px 32px;position:relative;overflow:hidden}
+  .card{background:#e7e2db;width:1100px;min-height:560px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:20px 24px;position:relative}
 
   h1{font-size:20px;font-weight:bold;margin:0 0 14px;line-height:1.4}
   p{font-size:16px;line-height:1.5;margin:0 0 10px}
@@ -27,11 +27,11 @@
   .ok{color:var(--ok)}
   .wrong{color:var(--wrong)}
 
-  .progress{position:absolute;top:20px;right:24px;font-size:13px;color:#555;display:flex;gap:8px;align-items:center}
-
-  .audioBtn{border:none;background:#eee;width:40px;height:40px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-  .audioBtn svg{width:18px;height:18px;fill:var(--blue)}
-  .check{margin-right:6px}
+  /* Rechterboven UI die we kunnen verbergen op de scene */
+  .progress{position:absolute;top:16px;right:18px;font-size:13px;color:#555;display:flex;gap:8px;align-items:center}
+  .pauseTTS{border:0;background:#eee;border-radius:18px;padding:6px 10px;display:none;align-items:center;gap:6px;cursor:pointer}
+  .pauseTTS svg{width:12px;height:12px;fill:#333}
+  .pauseTTS.show{display:inline-flex}
 
   .navTray{position:fixed;right:0;bottom:0;width:100%;background:#fff;box-shadow:0 -2px 4px rgba(0,0,0,.05);display:flex;justify-content:flex-end;padding:10px 20px}
   .next{border:0;padding:12px 28px;border-radius:6px 0 0 6px;font-weight:bold;font-size:15px;cursor:not-allowed;color:#fff;background:#bbb;clip-path:polygon(0 0,90% 0,100% 50%,90% 100%,0 100%)}
@@ -41,23 +41,22 @@
   .task{display:none}
   .task.active{display:block}
 
-  /* Pauzeknop rechtsboven voor TTS */
-  .pauseTTS{border:0;background:#eee;border-radius:18px;padding:6px 10px;display:none;align-items:center;gap:6px;cursor:pointer}
-  .pauseTTS svg{width:12px;height:12px;fill:#333}
-  .pauseTTS.show{display:inline-flex}
+  /* WIT PANEEL zoals in het filmpje */
+  .inner-panel{background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px #eee;margin:10px auto 0;width:820px;height:360px;position:relative;overflow:hidden}
 
-  /* Scene layout, posities afgestemd op video tussen 00:14 en 00:43 */
-  .scene-wrap{position:relative;height:320px;margin-top:6px}
-  /* Meisje links onder */
-  .scene-girl{position:absolute;left:36px;bottom:0;max-height:260px;width:auto}
-  /* Jongetje rechts onder */
-  .scene-boy{position:absolute;right:36px;bottom:0;max-height:260px;width:auto}
-  /* Controlekolom in het midden */
-  .scene-controls{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;display:flex;flex-direction:column;align-items:center;gap:12px}
-  .scene-btn{border:0;background:transparent;cursor:pointer;padding:0;line-height:0}
-  .scene-btn img{width:84px;height:84px;display:block}
-  .scene-caption{position:absolute;left:50%;transform:translateX(-50%);bottom:120px;font-size:14px;color:var(--muted);text-align:center;width:360px}
-  .hidden{display:none}
+  /* SCENE POSITIONERING, afgestemd op jouw still */
+  .scene-play{position:absolute;left:50%;top:36px;transform:translateX(-50%);width:58px;height:58px;border:0;background:transparent;padding:0;cursor:pointer}
+  .scene-play img{width:100%;height:100%;display:block}
+
+  .scene-pause{position:absolute;left:50%;top:36px;transform:translateX(-50%);width:58px;height:58px;border:0;background:transparent;padding:0;cursor:pointer}
+  .scene-pause img{width:100%;height:100%;display:block}
+
+  .scene-boy{position:absolute;left:50%;top:120px;transform:translateX(-50%);height:170px;width:auto}
+  .scene-girl{position:absolute;right:34px;bottom:22px;height:190px;width:auto}
+
+  /* Verberg progress en pauze rechtsboven op de scene */
+  .hide-ui .progress{display:none}
+  .hide-ui .pauseTTS{display:none}
 </style>
 </head>
 <body>
@@ -75,38 +74,36 @@
       <!-- 1. Geluidstest -->
       <section class="task active" data-kind="intro" data-tts="Controle van het geluid, klik op de knop om het geluid te horen, vink daarna het vakje aan als je het hoort">
         <h1>Controle van het geluid</h1>
-        <p><button id="audioPlay" class="audioBtn" aria-label="Speel geluid">
-          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button></p>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center">
+          <button id="audioPlay" class="audioBtn" aria-label="Speel geluid" style="transform:scale(1.2)">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
         <p class="q"><label><input type="checkbox" class="check" id="soundOk"> Het geluid werkt</label></p>
         <p class="q">Werkt het niet? Meld dit aan je docent.</p>
       </section>
 
-      <!-- 2. Scene met meisje, jongetje en bediening -->
+      <!-- 2. SCENE: exact nagedaan -->
       <section class="task" data-kind="scene" data-tts="">
         <h1>Luisteren naar de uitleg</h1>
+        <div class="inner-panel" aria-label="Uitlegscherm">
+          <img src="jongetje.jpg" alt="Jongen" class="scene-boy">
+          <img src="meisje.jpg" alt="Meisje" class="scene-girl">
 
-        <div class="scene-wrap" aria-label="Uitlegscherm">
-          <img src="meisje.jpg" alt="Meisje" class="scene-girl" />
-          <img src="jongetje.jpg" alt="Jongetje" class="scene-boy" />
-
-          <p class="scene-caption">Klik op afspelen voor de uitleg, gebruik pauze om te stoppen.</p>
-
-          <div class="scene-controls" aria-label="Bediening">
-            <!-- We wisselen tussen deze twee knoppen -->
-            <button class="scene-btn" id="scenePlay" aria-label="Afspelen" title="Afspelen">
-              <img src="speel.jpg" alt="Afspelen" />
-            </button>
-            <button class="scene-btn hidden" id="scenePause" aria-label="Pauzeer" title="Pauzeer">
-              <img src="pauze.jpg" alt="Pauze" />
-            </button>
-          </div>
+          <!-- knoppen wisselen, op dezelfde plek -->
+          <button id="scenePlay" class="scene-play" aria-label="Afspelen" title="Afspelen">
+            <img src="speel.jpg" alt="Afspelen">
+          </button>
+          <button id="scenePause" class="scene-pause" aria-label="Pauzeer" title="Pauzeer" style="display:none">
+            <img src="pauze.jpg" alt="Pauze">
+          </button>
         </div>
       </section>
 
       <!-- 3. Opgaven -->
       <section class="task" data-kind="task" data-answer="7" data-tts="Opgave 1, splits dertien in twee delen, het eerste deel is zes, wat is het tweede deel">
         <h1>Opgave 1</h1>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center"></div>
         <p class="q">Splits 13 in twee delen. Het eerste deel is 6. Wat is het tweede deel?</p>
         <input class="input" id="a1" inputmode="numeric" />
         <div class="feedback" id="f1"></div>
@@ -114,21 +111,24 @@
 
       <section class="task" data-kind="task" data-answer="11" data-tts="Opgave 2, reken uit, zeven plus zes min twee is hoeveel">
         <h1>Opgave 2</h1>
-        <p class="q">Reken uit: 7 + 6, 2 eraf is hoeveel</p>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center"></div>
+        <p class="q">Reken uit: 7 + 6 − 2 = ?</p>
         <input class="input" id="a2" inputmode="numeric" />
         <div class="feedback" id="f2"></div>
       </section>
 
       <section class="task" data-kind="task" data-answer="half 4" data-tts="Opgave 3, de grote wijzer staat op zes, de kleine wijzer staat tussen drie en vier, hoe laat is het">
         <h1>Opgave 3</h1>
-        <p class="q">De grote wijzer staat op 6, de kleine wijzer staat tussen 3 en 4. Hoe laat is het</p>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center"></div>
+        <p class="q">De grote wijzer staat op 6, de kleine wijzer staat tussen 3 en 4. Hoe laat is het?</p>
         <input class="input" id="a3" />
         <div class="feedback" id="f3"></div>
       </section>
 
       <section class="task" data-kind="task" data-answer="b" data-tts="Opgave 4, lees, de poes slaapt op de mat, waar ligt de poes">
         <h1>Opgave 4</h1>
-        <p class="q">Lees, De poes slaapt op de <strong>mat</strong>. Waar ligt de poes</p>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center"></div>
+        <p class="q">Lees: De poes slaapt op de <strong>mat</strong>. Waar ligt de poes?</p>
         <div class="choices">
           <label class="choice"><input type="radio" name="q4" value="a"> op de kast</label>
           <label class="choice"><input type="radio" name="q4" value="b"> op de mat</label>
@@ -139,14 +139,15 @@
 
       <section class="task" data-kind="task" data-answer="85" data-tts="Opgave 5, een appel kost vijfendertig cent, een banaan kost vijftig cent, hoeveel cent samen">
         <h1>Opgave 5</h1>
-        <p class="q">Een appel kost 35 cent, een banaan kost 50 cent. Hoeveel cent samen</p>
+        <div class="inner-panel" style="display:flex;align-items:center;justify-content:center"></div>
+        <p class="q">Een appel kost 35 cent, een banaan kost 50 cent. Hoeveel cent samen?</p>
         <input class="input" id="a5" inputmode="numeric" />
         <div class="feedback" id="f5"></div>
       </section>
 
-      <!-- 4. Eindscherm -->
       <section class="task" data-kind="end" data-tts="Klaar, goed gedaan, je hebt alle vijf de opgaven gemaakt">
         <h1>Klaar</h1>
+        <div class="inner-panel"></div>
         <p>Goed gedaan. Je hebt alle vijf de opgaven gemaakt.</p>
         <p class="q">Jouw score: <span id="score">0</span> / 5</p>
       </section>
@@ -158,12 +159,12 @@
 (function(){
   const tasks=[...document.querySelectorAll('.task')];
   const next=document.getElementById('next');
-  const progress=document.getElementById('progress');
+  const progress=document.getElementById('progressWrap');
   const ttsPause=document.getElementById('ttsPause');
   let i=0,score=0;
 
-  /* Tekst van het 35 seconden scherm, exact zoals aangeleverd */
-  const sceneLines = [
+  // Tekst van de scene, exact zoals opgegeven
+  const sceneLines=[
     "Dit is de toets rekenen",
     "Ik ga eerst wat uitleggen",
     "Als je de som wilt horen klik je op de driehoek",
@@ -183,66 +184,28 @@
 
   function show(k){
     tasks.forEach((t,ix)=>t.classList.toggle('active',ix===k));
-    progress.textContent=`${Math.min(k+1,tasks.length)} / ${tasks.length}`;
     const active=tasks[k];
+
+    // Verberg teller en pauze rechtsboven op scene, toon elders
+    const body=document.body;
+    if(active && active.dataset.kind==='scene'){ body.classList.add('hide-ui'); }
+    else { body.classList.remove('hide-ui'); }
 
     if(active){
       if(active.dataset.kind==='scene'){
-        // Scene start, direct afspelen, next uit, pauze zichtbaar
         playSceneFromStart();
       }else if(active.dataset.tts){
         speak(active.dataset.tts);
+        setNextEnabled(true);
       }
     }
-    updateNextState();
+    updateProgress(k);
   }
 
-  function speak(text){
-    if(!synth||!text) return;
-    try{ if(synth.speaking) synth.cancel(); }catch(e){}
-    const u=new SpeechSynthesisUtterance(text);
-    if(voices[chosenVoiceIndex]){ u.voice=voices[chosenVoiceIndex]; u.lang=voices[chosenVoiceIndex].lang; } else { u.lang='nl-NL'; }
-    u.rate=0.95; u.pitch=1.0;
-    u.onstart=()=>{ ttsPause.classList.add('show'); };
-    u.onend=()=>{ ttsPause.classList.remove('show'); currentUtter=null; };
-    currentUtter=u; synth.speak(u);
-  }
-
-  /* Spreek de scene zinnen na elkaar, beheer knoppen en next */
-  const playBtn=()=>document.getElementById('scenePlay');
-  const pauseBtn=()=>document.getElementById('scenePause');
-
-  function swapToPause(){
-    if(playBtn()) playBtn().classList.add('hidden');
-    if(pauseBtn()) pauseBtn().classList.remove('hidden');
-  }
-  function swapToPlay(){
-    if(pauseBtn()) pauseBtn().classList.add('hidden');
-    if(playBtn()) playBtn().classList.remove('hidden');
-  }
-
-  function speakScene(lines=sceneLines, onDone){
-    if(!synth||!lines||!lines.length){ if(onDone) onDone(); return; }
-    const queue=lines.slice();
-    const sayNext=()=>{
-      const text=queue.shift();
-      if(!text){ if(onDone) onDone(); return; }
-      try{ if(synth.speaking) synth.cancel(); }catch(e){}
-      const u=new SpeechSynthesisUtterance(text);
-      if(voices[chosenVoiceIndex]){ u.voice=voices[chosenVoiceIndex]; u.lang=voices[chosenVoiceIndex].lang; } else { u.lang='nl-NL'; }
-      u.rate=0.95; u.pitch=1.0;
-      u.onstart=()=>{ ttsPause.classList.add('show'); };
-      u.onend=()=>{ 
-        if(queue.length){ setTimeout(sayNext, 350); }
-        else{ 
-          ttsPause.classList.remove('show'); 
-          currentUtter=null; 
-          if(onDone) onDone(); 
-        }
-      };
-      currentUtter=u; synth.speak(u);
-    };
-    sayNext();
+  function updateProgress(k){
+    const total=tasks.length;
+    const p=progress?.querySelector('span');
+    if(p){ p.textContent=`${Math.min(k+1,total)} / ${total}`; }
   }
 
   function stopSpeaking(){
@@ -250,19 +213,45 @@
     ttsPause.classList.remove('show');
   }
 
+  function speakScene(lines=sceneLines, onDone){
+    if(!synth||!lines?.length){ onDone&&onDone(); return; }
+    const queue=lines.slice();
+    const sayNext=()=>{
+      const text=queue.shift();
+      if(!text){ onDone&&onDone(); return; }
+      try{ if(synth.speaking) synth.cancel(); }catch(e){}
+      const u=new SpeechSynthesisUtterance(text);
+      if(voices[chosenVoiceIndex]){ u.voice=voices[chosenVoiceIndex]; u.lang=voices[chosenVoiceIndex].lang; } else { u.lang='nl-NL'; }
+      u.rate=0.95; u.pitch=1.0;
+      u.onend=()=>{ queue.length? setTimeout(sayNext, 350): onDone&&onDone(); };
+      currentUtter=u; synth.speak(u);
+    };
+    sayNext();
+  }
+
   function playSceneFromStart(){
-    // Scene start, forceer staat
+    // UI op de scene: geen teller, geen RBen pauze, alleen middenknop wisselt
+    const play=document.getElementById('scenePlay');
+    const pause=document.getElementById('scenePause');
     setNextEnabled(false);
-    swapToPause();
+    if(play){ play.style.display='none'; }
+    if(pause){ pause.style.display='block'; }
+
     stopSpeaking();
-    speakScene(sceneLines, ()=>{ 
-      // Klaar, next aan en knop wordt play
+    speakScene(sceneLines, ()=>{
+      if(pause){ pause.style.display='none'; }
+      if(play){ play.style.display='block'; }
       setNextEnabled(true);
-      swapToPlay();
     });
   }
 
-  /* Controle, opgaven */
+  // Scene knoppen
+  const playBtn=document.getElementById('scenePlay');
+  const pauseBtn=document.getElementById('scenePause');
+  if(playBtn){ playBtn.addEventListener('click', ()=> playSceneFromStart() ); }
+  if(pauseBtn){ pauseBtn.addEventListener('click', ()=>{ stopSpeaking(); setNextEnabled(false); pauseBtn.style.display='none'; playBtn.style.display='block'; }); }
+
+  // Overige logica
   function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');} 
 
   function check(){
@@ -289,9 +278,7 @@
     if(i===0&&!document.getElementById('soundOk').checked){
       alert('Vink aan dat het geluid werkt');return;
     }
-    // Als we nog in de scene zitten en next is niet enabled, niet doorgaan
-    if(tasks[i].dataset.kind==='scene' && next.disabled) return;
-
+    if(tasks[i].dataset.kind==='scene' && next.disabled) return; // blokkeren tot audio klaar is
     if(tasks[i].dataset.kind==='task'&&!check())return;
     i=Math.min(i+1,tasks.length-1);
     if(i===tasks.length-1)document.getElementById('score').textContent=score;
@@ -299,50 +286,29 @@
   });
 
   const soundOk=document.getElementById('soundOk');
-  function updateNextState(){
-    if(i===0){
-      setNextEnabled(soundOk.checked);
-    }else if(tasks[i].dataset.kind==='scene'){
-      // in scene wordt next door TTS bestuurd
-      // niets doen, toestand wordt in playSceneFromStart gezet
-    }else{
-      setNextEnabled(true);
-    }
-  }
-  soundOk.addEventListener('change',updateNextState);
+  function updateNextStateIntro(){ setNextEnabled(soundOk.checked); }
+  if(soundOk){ soundOk.addEventListener('change',updateNextStateIntro); }
 
-  // Geluidstest, funky drum
+  // Geluidstest
   const audioBtn=document.getElementById('audioPlay');
   const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
   function ensureCtx(){if(!ctx&&AudioCtx){ctx=new AudioCtx();}}
   function playDrum(time,freq=150,dur=0.2,type='sine'){
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.type=type;o.frequency.setValueAtTime(freq,time);
-    g.gain.setValueAtTime(1,time);
-    g.gain.exponentialRampToValueAtTime(0.001,time+dur);
-    o.start(time);
-    o.stop(time+dur);
+    const o=ctx.createOscillator(); const g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type=type; o.frequency.setValueAtTime(freq,time);
+    g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+    o.start(time); o.stop(time+dur);
   }
   function playDrumPattern(){
-    ensureCtx();if(!ctx)return;const start=ctx.currentTime;
-    const pattern=[{offset:0.0,freq:120,type:'sine'},{offset:0.4,freq:300,type:'square'},{offset:0.6,freq:800,type:'triangle'},{offset:0.8,freq:120,type:'sine'},{offset:1.2,freq:300,type:'square'},{offset:1.4,freq:800,type:'triangle'},{offset:1.6,freq:120,type:'sine'},{offset:2.0,freq:300,type:'square'},{offset:2.2,freq:800,type:'triangle'},{offset:2.4,freq:120,type:'sine'}];
-    pattern.forEach(p=>{playDrum(start+p.offset,p.freq,0.15,p.type);});
+    ensureCtx(); if(!ctx) return; const start=ctx.currentTime;
+    const pattern=[0,0.4,0.6,0.8,1.2,1.4,1.6,2.0,2.2,2.4];
+    pattern.forEach((off,ix)=>{ const freq=[120,300,800][ix%3]; const type=['sine','square','triangle'][ix%3]; playDrum(start+off,freq,0.15,type); });
   }
-  if(audioBtn){audioBtn.addEventListener('click',()=>{playDrumPattern();});}
+  if(audioBtn){ audioBtn.addEventListener('click',playDrumPattern); }
 
-  /* Scene knoppen */
-  const scenePlay=document.getElementById('scenePlay');
-  const scenePause=document.getElementById('scenePause');
-
-  if(scenePlay){ scenePlay.addEventListener('click',()=>{ playSceneFromStart(); }); }
-  if(scenePause){ scenePause.addEventListener('click',()=>{ stopSpeaking(); swapToPlay(); setNextEnabled(false); }); }
-
-  /* Pauze rechtsboven stopt ook de TTS maar laat de scene knoppen leidend */
-  ttsPause.addEventListener('click',()=>{ stopSpeaking(); swapToPlay(); setNextEnabled(false); });
-
-  // Start bij eerste scherm
+  // Start
+  setNextEnabled(false); // op start nog uit, tot intro vinkje
   show(0);
 })();
 </script>
