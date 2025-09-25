@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Voorbeeldtoets Groep 3 – Oefenomgeving</title>
+<title>Voorbeeldtoets Groep 3: Oefenomgeving</title>
 <style>
   :root{
     --bg:#f2f2f2; --panel:#fff; --blue:#0077b3; --blue-dark:#005a87; --line:#e6e6e6;
@@ -43,10 +43,19 @@
   .task{display:none}
   .task.active{display:block}
 
-  /* Pauzeknop voor voorlezen */
+  /* Pauzeknop voor voorlezen rechtsboven */
   .pauseTTS{border:0;background:#eee;border-radius:18px;padding:6px 10px;display:none;align-items:center;gap:6px;cursor:pointer}
   .pauseTTS svg{width:12px;height:12px;fill:#333}
   .pauseTTS.show{display:inline-flex}
+
+  /* Layout voor het jongen meisje scherm */
+  .scene-wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:24px;margin-top:8px}
+  .scene-col{display:flex;justify-content:center}
+  .scene-col img.character{max-height:220px;width:auto}
+  .scene-controls{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .scene-btn{border:0;background:transparent;cursor:pointer;padding:0}
+  .scene-btn img{width:72px;height:72px;display:block}
+  .scene-caption{font-size:14px;color:var(--muted);text-align:center;max-width:280px}
 </style>
 </head>
 <body>
@@ -54,14 +63,14 @@
   <div class="stage">
     <main class="card">
       <div class="progress" id="progressWrap">
-        <span id="progress">1 / 7</span>
+        <span id="progress">1 / 8</span>
         <button id="ttsPause" class="pauseTTS" aria-label="Pauzeer voorlezen" title="Pauzeer voorlezen">
           <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
           Pauze
         </button>
       </div>
 
-      <!-- Geluidstest -->
+      <!-- 1. Geluidstest -->
       <section class="task active" data-kind="intro" data-tts="Controle van het geluid, klik op de knop om het geluid te horen, vink daarna het vakje aan als je het hoort">
         <h1>Controle van het geluid</h1>
         <p><button id="audioPlay" class="audioBtn" aria-label="Speel geluid">
@@ -71,7 +80,31 @@
         <p class="q">Werkt het niet? Meld dit aan je docent.</p>
       </section>
 
-      <!-- Opgaven -->
+      <!-- 2. Jongen en meisje, met speel en pauze knop -->
+      <section class="task" data-kind="scene" data-tts="">
+        <h1>Luisteren naar de uitleg</h1>
+        <div class="scene-wrap">
+          <div class="scene-col">
+            <img src="meisje.jpg" alt="Meisje dat wijst" class="character" />
+          </div>
+
+          <div class="scene-controls">
+            <button class="scene-btn" id="scenePlay" aria-label="Afspelen">
+              <img src="speel.jpg" alt="Afspelen" />
+            </button>
+            <button class="scene-btn" id="scenePause" aria-label="Pauzeer">
+              <img src="pauze.jpg" alt="Pauze" />
+            </button>
+            <p class="scene-caption">Klik op afspelen voor de gesproken uitleg, gebruik pauze om te stoppen.</p>
+          </div>
+
+          <div class="scene-col">
+            <img src="jongetje.jpg" alt="Jongetje dat wijst" class="character" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Opgaven -->
       <section class="task" data-kind="task" data-answer="7" data-tts="Opgave 1, splits dertien in twee delen, het eerste deel is zes, wat is het tweede deel">
         <h1>Opgave 1</h1>
         <p class="q">Splits 13 in twee delen. Het eerste deel is 6. Wat is het tweede deel?</p>
@@ -111,7 +144,7 @@
         <div class="feedback" id="f5"></div>
       </section>
 
-      <!-- Eindscherm -->
+      <!-- 4. Eindscherm -->
       <section class="task" data-kind="end" data-tts="Klaar, goed gedaan, je hebt alle vijf de opgaven gemaakt">
         <h1>Klaar</h1>
         <p>Goed gedaan. Je hebt alle vijf de opgaven gemaakt.</p>
@@ -129,6 +162,15 @@
   const ttsPause=document.getElementById('ttsPause');
   let i=0,score=0;
 
+  // Tekst van het 35-seconden scherm, elke zin apart
+  const sceneLines = [
+    "Dit is de toets rekenen",
+    "Ik ga eerst wat uitleggen",
+    "Als je de som wilt horen klik je op de driehoek",
+    "Als je verder wil gaan klik je onderin het scherm",
+    "Klik nu op de pijl om naar het voorbeeld te gaan."
+  ];
+
   // TTS setup
   const synth=window.speechSynthesis; let voices=[]; let currentUtter=null; let chosenVoiceIndex=76;
   function loadVoices(){ voices=synth? synth.getVoices():[]; }
@@ -138,17 +180,48 @@
     try{ if(synth.speaking) synth.cancel(); }catch(e){}
     const u=new SpeechSynthesisUtterance(text);
     if(voices[chosenVoiceIndex]){ u.voice=voices[chosenVoiceIndex]; u.lang=voices[chosenVoiceIndex].lang; } else { u.lang='nl-NL'; }
+    u.rate = 0.95;   // iets rustiger
+    u.pitch = 1.0;
     u.onstart=()=>{ ttsPause.classList.add('show'); };
     u.onend=()=>{ ttsPause.classList.remove('show'); currentUtter=null; };
     currentUtter=u; synth.speak(u);
   }
+  // Spreek de zinnen na elkaar met pauzes
+  function speakScene(lines = sceneLines){
+    if(!synth || !lines || !lines.length) return;
+    const queue = lines.slice();
+    const sayNext = ()=>{
+      const text = queue.shift();
+      if(!text) return;
+      try{ if(synth.speaking) synth.cancel(); }catch(e){}
+      const u = new SpeechSynthesisUtterance(text);
+      if(voices[chosenVoiceIndex]){ u.voice=voices[chosenVoiceIndex]; u.lang=voices[chosenVoiceIndex].lang; } else { u.lang='nl-NL'; }
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      u.onstart = ()=>{ ttsPause.classList.add('show'); };
+      u.onend = ()=>{ 
+        if(queue.length){ setTimeout(sayNext, 350); }
+        else{ ttsPause.classList.remove('show'); }
+      };
+      synth.speak(u);
+    };
+    sayNext();
+  }
+
   ttsPause.addEventListener('click',()=>{ try{ if(synth && synth.speaking) synth.cancel(); }catch(e){} ttsPause.classList.remove('show'); });
 
   function show(k){
     tasks.forEach((t,ix)=>t.classList.toggle('active',ix===k));
     progress.textContent=`${Math.min(k+1,tasks.length)} / ${tasks.length}`;
     const active=tasks[k];
-    if(active && active.dataset.tts){ speak(active.dataset.tts); }
+    if(active){
+      if(active.dataset.kind === 'scene'){ 
+        speakScene();   // speelt jouw zinnen automatisch af
+      } else if(active.dataset.tts){
+        speak(active.dataset.tts);
+      }
+    }
+    updateNextState(); // her evalueren bij elk scherm
   }
 
   function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');} 
@@ -188,6 +261,8 @@
     if(i===0){
       if(soundOk.checked){next.classList.add('enabled');next.disabled=false;}
       else{next.classList.remove('enabled');next.disabled=true;}
+    }else{
+      next.classList.add('enabled');next.disabled=false;
     }
   }
   soundOk.addEventListener('change',updateNextState);updateNextState();
@@ -212,6 +287,18 @@
     pattern.forEach(p=>{playDrum(start+p.offset,p.freq,0.15,p.type);});
   }
   if(audioBtn){audioBtn.addEventListener('click',()=>{playDrumPattern();});}
+
+  // Scene knoppen: speel en pauze
+  const scenePlay = ()=> speakScene(); // opnieuw afspelen
+  const scenePauseBtnHandler = ()=>{ try{ if(synth && synth.speaking) synth.cancel(); }catch(e){} ttsPause.classList.remove('show'); };
+
+  function wireSceneButtons(){
+    const p=document.getElementById('scenePlay');
+    const s=document.getElementById('scenePause');
+    if(p){ p.addEventListener('click',scenePlay); }
+    if(s){ s.addEventListener('click',scenePauseBtnHandler); }
+  }
+  wireSceneButtons();
 
   // Start bij eerste scherm met TTS
   show(0);
