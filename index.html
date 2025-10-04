@@ -35,9 +35,9 @@
   .task{display:none}
   .task.active{display:block}
 
-  .pauseTTS{border:0;background:#eee;border-radius:18px;padding:6px 10px;display:none;align-items:center;gap:6px;cursor:pointer}
-  .pauseTTS svg{width:12px;height:12px;fill:#333}
-  .pauseTTS.show{display:inline-flex}
+  .pauseTTS,.playTTS{border:0;background:#eee;border-radius:18px;padding:6px 10px;display:none;align-items:center;gap:6px;cursor:pointer}
+  .pauseTTS svg,.playTTS svg{width:12px;height:12px;fill:#333}
+  .pauseTTS.show,.playTTS.show{display:inline-flex}
 
   .inner-panel{background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px #eee;margin:10px auto 0;width:820px;height:360px;position:relative;overflow:hidden}
 
@@ -115,6 +115,11 @@
     <main class="card">
       <div class="progress" id="progressWrap">
         <span id="progress">1 / 8</span>
+        <!-- Nieuwe play knop voor TTS bij opgaven -->
+        <button id="ttsPlay" class="playTTS" aria-label="Speel uitleg" title="Speel uitleg">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Afspelen
+        </button>
         <button id="ttsPause" class="pauseTTS" aria-label="Pauzeer voorlezen" title="Pauzeer voorlezen">
           <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
           Pauze
@@ -229,21 +234,12 @@
   const tasks=[...document.querySelectorAll('.task')];
   const progress=document.getElementById('progress');
   const ttsPause=document.getElementById('ttsPause');
+  const ttsPlay=document.getElementById('ttsPlay');
   const toolbar=document.getElementById('toolbar');
   const prevBtn=document.getElementById('prevBtn');
   const nextBtn=document.getElementById('nextBtn');
   const flagBtn=document.getElementById('flagBtn');
   const pager=document.getElementById('pager');
-
-  // dynamische TTS play-knop (driehoek) naast pauze
-  const progressWrap=document.getElementById('progressWrap');
-  const ttsPlay=document.createElement('button');
-  ttsPlay.id='ttsPlay';
-  ttsPlay.className='pauseTTS';
-  ttsPlay.setAttribute('aria-label','Speel voorlezen');
-  ttsPlay.title='Speel voorlezen';
-  ttsPlay.innerHTML='<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Speel';
-  progressWrap.appendChild(ttsPlay);
 
   // indices
   const taskIndexes = tasks.map((t,ix)=>({ix, kind:t.dataset.kind}));
@@ -264,120 +260,67 @@
   let voices = [], chosenVoiceIndex = 76;
   function loadVoices(){ voices = synth ? synth.getVoices() : []; }
   if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
-  function stopAllTTS(){ try{ if(synth){ synth.cancel(); } }catch(e){} hideTTSPause(); } }catch(e){} ttsPause.classList.remove('show'); }
-  function speakOnce(text){
+  function isSpeaking(){ return synth && synth.speaking && !synth.paused; }
+  function stopAllTTS(){ try{ if(synth){ synth.cancel(); } }catch(e){} ttsPause.classList.remove('show'); ttsPlay.classList.remove('show'); }
+  function speakOnce(text, onend){
     if(!synth || !text) return;
-    stopAllTTS();
+    try{ synth.cancel(); }catch(e){}
     const u = new SpeechSynthesisUtterance(text);
     const v = voices[chosenVoiceIndex];
     if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
     u.rate = 0.95; u.pitch = 1.0;
-    u.onstart = ()=> { showTTSPause(); };
-    u.onend = ()=> { const active = tasks[i]; if(active?.dataset.kind==='task'){ showTTSPlay(); } else { hideTTSControls(); } };
+    u.onstart = ()=>{ ttsPause.classList.add('show'); ttsPlay.classList.remove('show'); };
+    u.onend = ()=>{ ttsPause.classList.remove('show'); ttsPlay.classList.add('show'); if(typeof onend==='function'){ onend(); } };
     synth.speak(u);
   }
 
-  // Scene queue, met wissel van play naar pauze en terug
-  // Scene: uitleg van het geluid
-  const sceneIntroText = "Als je de uitleg wil horen klik je op de driehoek.";
-  const sceneNextHint = "klik rechtsonder op de knop volgende om verder te gaan";
-  const sceneState = { autoPlayed:false, hintPlayed:false, playing:false, paused:false, done:false };
-
+  // Scene logica volgens wens
   const scenePlay = document.getElementById('scenePlay');
   const scenePause = document.getElementById('scenePause');
-
   function showPauseIcon(){ scenePlay.classList.add('hidden'); scenePause.classList.remove('hidden'); }
   function showPlayIcon(){ scenePause.classList.add('hidden'); scenePlay.classList.remove('hidden'); }
 
-  function makeU(text,onend){
-    const u = new SpeechSynthesisUtterance(text);
-    const v = voices[chosenVoiceIndex];
-    if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
-    u.rate=0.95; u.pitch=1.0; u.onstart=()=>ttsPause.classList.add('show'); u.onend=onend; return u;
-  }
-  function startSceneFromBeginning(){
-    stopAllTTS();
-    sceneState.autoPlayed=false; sceneState.hintPlayed=false;
-    sceneState.playing=true; sceneState.paused=false; sceneState.done=false;
-    setNextEnabled(false);
-    // start automatisch: introzin
-    showPauseIcon();
-    const u = makeU(sceneIntroText, ()=>{
-      sceneState.autoPlayed=true; sceneState.playing=false; sceneState.paused=false;
-      ttsPause.classList.remove('show');
-      showPlayIcon();
-      // Na de intro is de play-knop zichtbaar, Next blijft uit tot hint is afgespeeld
-    });
-    synth.speak(u);
-  }
-  function speakNextInScene(){ /* niet meer gebruikt, vervangen door tweefasenlogica */ }
-    const text=sceneState.queue[sceneState.index];
-    const u=makeU(text,()=>{
-      sceneState.index+=1;
-      if(sceneState.playing && !sceneState.paused){ setTimeout(speakNextInScene,350); }
-    });
-    synth.speak(u);
-  }
-  function pauseScene(){
-    if(!sceneState.playing||sceneState.paused) return;
-    try{ synth.pause(); }catch(e){}
-    sceneState.paused=true;
-    setNextEnabled(false);
+  // Bij binnenkomst van scene, 1 zin automatisch, daarna driehoek tonen en stil
+  function enterSceneIntro(){
     showPlayIcon();
-    ttsPause.classList.remove('show');
+    const line1 = 'Als je de uitleg wil horen klik je op de driehoek.';
+    // Spreek direct af, daarna driehoek zichtbaar, pauzeknop uit
+    const u = new SpeechSynthesisUtterance(line1);
+    const v = voices[chosenVoiceIndex];
+    if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='nl-NL'; }
+    u.rate=0.95; u.pitch=1.0;
+    u.onstart = ()=>{ /* geen pauze of play wissel in de scene header */ };
+    u.onend = ()=>{ showPlayIcon(); };
+    try{ synth.cancel(); }catch(e){}
+    synth.speak(u);
   }
-  function resumeScene(){
-    // Als we gepauzeerd zijn, hervatten
-    if(sceneState.paused && sceneState.playing){
-      sceneState.paused=false;
-      try{ synth.resume(); }catch(e){}
-      setNextEnabled(false);
-      showPauseIcon();
-      return;
-    }
-    // Als de auto-intro klaar is maar de hint nog niet is gespeeld: speel de hint
-    if(sceneState.autoPlayed && !sceneState.hintPlayed){
-      stopAllTTS();
-      sceneState.playing=true; sceneState.paused=false;
-      showPauseIcon();
-      const u = makeU(sceneNextHint, ()=>{
-        sceneState.hintPlayed=true; sceneState.playing=false; sceneState.done=true;
-        ttsPause.classList.remove('show');
-        setNextEnabled(true);
-        showPlayIcon();
-      });
-      synth.speak(u);
-      return;
-    }
-    // Anders: alles opnieuw vanaf het begin
-    startSceneFromBeginning();
-  }catch(e){}
-      setNextEnabled(false);
-      showPauseIcon();
-      return;
-    }
-    startSceneFromBeginning();
+
+  function handleScenePlay(){
+    // Spreek tweede zin, tijdens afspelen pauze-icoon tonen in de scene, klaar daarna play tonen en Next aan
+    const line2 = 'klik rechtsonder op de knop volgende om verder te gaan';
+    const u = new SpeechSynthesisUtterance(line2);
+    const v = voices[chosenVoiceIndex];
+    if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='nl-NL'; }
+    u.rate=0.95; u.pitch=1.0;
+    u.onstart=()=>{ showPauseIcon(); ttsPause.classList.add('show'); };
+    u.onend=()=>{ showPlayIcon(); ttsPause.classList.remove('show'); setNextEnabled(true); };
+    try{ synth.cancel(); }catch(e){}
+    setNextEnabled(false);
+    synth.speak(u);
   }
-  if(scenePlay){ scenePlay.addEventListener('click', resumeScene); }
+
+  function pauseScene(){ try{ synth.pause(); }catch(e){} showPlayIcon(); ttsPause.classList.remove('show'); }
+  function resumeScene(){ try{ synth.resume(); }catch(e){} showPauseIcon(); ttsPause.classList.add('show'); }
+  if(scenePlay){ scenePlay.addEventListener('click', handleScenePlay); }
   if(scenePause){ scenePause.addEventListener('click', pauseScene); }
-  ttsPause.addEventListener('click', ()=>{ const kind = tasks[i]?.dataset.kind; if(kind==='scene'){ pauseScene(); } else { try{ synth.pause(); }catch(e){} showTTSPlay(); }});
-  ttsPlay.addEventListener('click', ()=>{
-    const active = tasks[i];
-    if(active?.dataset.kind==='task' && active.dataset.tts){ setNextEnabled(true); speakOnce(active.dataset.tts); }
-    if(active?.dataset.kind==='scene'){ resumeScene(); }
-  });
+  ttsPause.addEventListener('click', ()=>{ if(isSpeaking()){ try{ synth.pause(); }catch(e){} ttsPause.classList.remove('show'); ttsPlay.classList.add('show'); } });
+  if(ttsPlay){ ttsPlay.addEventListener('click', ()=>{ const active=tasks[i]; if(active && active.dataset.kind==='task' && active.dataset.tts){ speakOnce(active.dataset.tts); }}); }
 
-  function showTTSPause(){ ttsPause.classList.add('show'); ttsPlay.classList.remove('show'); }
-  function hideTTSPause(){ ttsPause.classList.remove('show'); }
-  function showTTSPlay(){ ttsPlay.classList.add('show'); hideTTSPause(); }
-  function hideTTSControls(){ ttsPlay.classList.remove('show'); hideTTSPause(); }
-
-  // Toolbar modi
+  // Toolbar modi, toolbar alleen tonen bij taken
   function setToolbarMode(mode){
-    const hideFlag = (mode !== 'task');
+    const hideFlag = (mode!=='task');
     flagBtn.classList.toggle('hidden', hideFlag);
-    // Toolbar alleen zichtbaar bij opgaven
-    toolbar.classList.toggle('show', mode === 'task');
+    toolbar.classList.toggle('show', mode==='task');
   }
 
   function setNextEnabled(on){
@@ -407,7 +350,7 @@
     fb.textContent='';
     fb.className='feedback';
 
-    if(value!==null && value!==""){
+    if(value!==null && value!==''){
       state[ix].answered=true;
       state[ix].correct=ok;
       state[ix].value=value;
@@ -429,16 +372,21 @@
     const active = tasks[k];
     const kind = active?.dataset.kind;
 
+    // Zorg dat review-paneel altijd verdwijnt zodra je niet op eindscherm zit
+    const endSection = tasks.find(t=>t.dataset.kind==='end');
+    if(endSection){
+      if(kind==='end'){ endSection.classList.add('show'); }
+      else { endSection.classList.remove('show'); }
+    }
+
     if(kind==='scene'){ document.body.classList.add('hide-ui'); }
     else { document.body.classList.remove('hide-ui'); }
 
-    if(kind!=='scene'){
-      sceneState.playing=false; sceneState.paused=false; sceneState.done=false; stopAllTTS();
-      showPlayIcon();
-      // Review altijd verbergen zodra je niet in het eindscherm bent
-      const endSectionHide = tasks.find(t=>t.dataset.kind==='end');
-      if(endSectionHide){ endSectionHide.classList.remove('show'); }
-    }
+    // stop TTS van scenes of taken bij wisselen
+    try{ synth.cancel(); }catch(e){}
+    ttsPause.classList.remove('show');
+    ttsPlay.classList.remove('show');
+    showPlayIcon();
 
     // stop geluidstest herhaling zodra je het intro verlaat
     if(kind!=='intro'){ stopSoundLoop(); }
@@ -447,26 +395,24 @@
       setToolbarMode('task');
       const firstInput = active.querySelector('input,textarea,select');
       if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
-      if(active.dataset.tts){ showTTSPlay(); } else { hideTTSControls(); }
-      if(active.dataset.tts){ speakOnce(active.dataset.tts); }
+      // Toon playknop als er TTS-tekst is
+      if(active.dataset.tts){ ttsPlay.classList.add('show'); }
       prevBtn.disabled = (itemIx.indexOf(k)===0);
       setNextEnabled(true);
       renderPager();
 
     }else if(kind==='intro'){
       setToolbarMode('intro');
-      hideTTSControls();
       if(active.dataset.tts){ speakOnce(active.dataset.tts); }
       setNextEnabled(!!document.getElementById('soundOk')?.checked);
       renderPager(true);
 
     }else if(kind==='scene'){
       setToolbarMode('scene');
-      hideTTSControls();
       setNextEnabled(false);
-      // start de scène automatisch
-      startSceneFromBeginning();
       renderPager(true);
+      // start automatische scene-intro zoals gevraagd
+      enterSceneIntro();
 
     }else if(kind==='end'){
       setToolbarMode('end');
@@ -524,8 +470,6 @@
     const totalEl=document.getElementById('total');
     const scoreEl=document.getElementById('score');
     const grid=document.getElementById('reviewGrid');
-    const endSection = tasks.find(t=>t.dataset.kind==='end');
-    if(endSection){ endSection.classList.add('show'); }
     const total = itemIx.length;
     totalEl.textContent = total;
     scoreEl.textContent = score;
@@ -575,7 +519,7 @@
     }
 
     if(kind==='scene'){
-      if(!sceneState.done){ return; } // blijft grijs tot klaar
+      // Next pas toegestaan na scene-actie
       i = firstTask>=0 ? firstTask : i;
       show(i);
       return;
@@ -610,6 +554,7 @@
       if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
       if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
       if(e.key.toLowerCase()==='m'){ e.preventDefault(); flagBtn.click(); }
+      if(e.key.toLowerCase()==='p'){ e.preventDefault(); if(ttsPlay.classList.contains('show')) ttsPlay.click(); }
     }
     if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
   });
