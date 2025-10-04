@@ -344,7 +344,7 @@
     nextBtn.disabled = !on;
   }
 
-  function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');}
+  function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');}    
 
   function check(ix){
     const t=tasks[ix];
@@ -396,6 +396,9 @@
       sceneState.playing=false; sceneState.paused=false; sceneState.done=false; stopAllTTS();
       showPlayIcon();
     }
+
+    // stop geluidstest herhaling zodra je het intro verlaat
+    if(kind!=='intro'){ stopSoundLoop(); }
 
     if(kind==='task'){
       setToolbarMode('task');
@@ -570,19 +573,20 @@
     node.addEventListener('change', ()=>{ check(ix); });
   });
 
-  // geluidstest
+  // geluidstest, met herhaling
   const soundOk=document.getElementById('soundOk');
-  function updateIntro(){
-    if(tasks[i]?.dataset.kind==='intro'){
-      setNextEnabled(!!soundOk.checked);
-    }
-  }
-  soundOk.addEventListener('change', updateIntro);
-
-  // simpele audiotest
   const audioBtn=document.getElementById('audioPlay');
   const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
   function ensureCtx(){ if(!ctx&&AudioCtx){ ctx=new AudioCtx(); } }
+
+  // patroon en helpers
+  const DRUM_PATTERN=[
+    {offset:0.0,freq:120,type:'sine'},
+    {offset:0.4,freq:300,type:'square'},
+    {offset:0.6,freq:800,type:'triangle'},
+    {offset:0.8,freq:120,type:'sine'}
+  ];
+
   function playDrum(time,freq=150,dur=0.2,type='sine'){
     const o=ctx.createOscillator(); const g=ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
@@ -590,12 +594,39 @@
     g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
     o.start(time); o.stop(time+dur);
   }
-  function playDrumPattern(){
-    ensureCtx(); if(!ctx) return; const start=ctx.currentTime;
-    const pattern=[{offset:0.0,freq:120,type:'sine'},{offset:0.4,freq:300,type:'square'},{offset:0.6,freq:800,type:'triangle'},{offset:0.8,freq:120,type:'sine'}];
-    pattern.forEach(p=> playDrum(start+p.offset,p.freq,0.15,p.type));
+
+  function playDrumPatternAt(now){
+    DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type));
   }
-  if(audioBtn){ audioBtn.addEventListener('click', playDrumPattern); }
+
+  let soundLoopTimeouts=[];
+  function stopSoundLoop(){
+    soundLoopTimeouts.forEach(id=> clearTimeout(id));
+    soundLoopTimeouts=[];
+  }
+
+  function playDrumPatternRepeated(times=3, gapMs=900){
+    ensureCtx(); if(!ctx) return;
+    stopSoundLoop();
+    const firstStart = ctx.currentTime + 0.01;
+    for(let r=0;r<times;r++){
+      const tId = setTimeout(()=>{
+        const now = ctx.currentTime;
+        playDrumPatternAt(now);
+      }, r*gapMs);
+      soundLoopTimeouts.push(tId);
+    }
+  }
+
+  function updateIntro(){
+    if(tasks[i]?.dataset.kind==='intro'){
+      setNextEnabled(!!soundOk.checked);
+      if(soundOk.checked){ stopSoundLoop(); }
+    }
+  }
+
+  soundOk.addEventListener('change', updateIntro);
+  if(audioBtn){ audioBtn.addEventListener('click', ()=> playDrumPatternRepeated(4, 1000)); }
 
   // start
   function init(){
