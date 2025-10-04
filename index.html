@@ -27,6 +27,8 @@ p{font-size:16px;line-height:1.5;margin:0 0 10px}
 .ttsImgBtn img{width:36px;height:36px;display:block}
 .audioBtn{border:0;background:#eee;width:40px;height:40px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .audioBtn svg{width:18px;height:18px;fill:var(--blue)}
+/* Fix, zorg dat pauzeplaatje even groot is als het play icoon */
+.audioBtn img{width:18px;height:18px;display:block;object-fit:contain}
 .task{display:none}
 .task.active{display:block}
 .inner-panel{background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px #eee;margin:10px auto 0;width:820px;height:360px;position:relative;overflow:hidden}
@@ -96,7 +98,6 @@ p{font-size:16px;line-height:1.5;margin:0 0 10px}
 <section class="task" data-kind="task" data-answer="7" data-tts="Opgave 1, splits dertien in twee delen, het eerste deel is zes, wat is het tweede deel">
 <h1>Opgave 1</h1>
 <p class="q">Splits 13 in twee delen. Het eerste deel is 6. Wat is het tweede deel
-<!-- speelknop direct achter de zin -->
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <input class="input" inputmode="numeric" />
@@ -188,7 +189,7 @@ function hardResetTTS(){
    // forceer elke pauze toestand te verlaten en de queue te legen
    synth.cancel();
    if(synth.paused){ synth.resume(); }
-   // Safari fix: leeg bericht om audio context te initialiseren
+   // Safari fix, leeg bericht om audio context te initialiseren
    const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
  }catch(e){}
 }
@@ -221,18 +222,18 @@ function enterSceneIntro(){ showPlayIcon(); const line1 = 'Als je de uitleg wil 
  speakOnce(line1,{onend:()=>{ showPlayIcon(); }});
 }
 function handleScenePlay(){
- if(scenePlaying){ // is sprekend -> pauze
+ if(scenePlaying){ // is sprekend, pauze
    try{ synth.pause(); }catch(e){}
    scenePlaying=false; showPlayIcon(); return;
  }
- // start spreken en toon direct pauze-icoon
+ // start spreken en toon direct pauze icoon
  scenePlaying=true; showPauseIcon();
- // Leg klemtoon op het woord 'volgende' door het als aparte utterance met andere pitch, rate te spreken
+ // Leg klemtoon op het woord volgende door het als aparte utterance met andere pitch, rate te spreken
  const main = 'Klik rechtsonder op de knop';
  const emphas = 'volgende';
  // spreek hoofdzin
  speakOnce(main,{onend:()=>{
-   // spreek 'volgende' met hogere pitch en langzamer tempo
+   // spreek volgende met hogere pitch en langzamer tempo
    speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{
      scenePlaying=false; showPlayIcon(); setNextEnabled(true);
    }});
@@ -257,7 +258,7 @@ function ensureTaskTTSControls(section){ if(section.dataset.kind!=='task') retur
    btn.addEventListener('click', ()=>{
      const playing = btn.dataset.playing==='true'; if(playing){ // pauze
        try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
-     // start spreken: immediate icon change
+     // start spreken, immediate icon change
      onStart(); const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
      speakOnce(tts,{onend:()=>{ onEnd(); }});
    });
@@ -265,10 +266,32 @@ function ensureTaskTTSControls(section){ if(section.dataset.kind!=='task') retur
  }
 }
 
-function show(k){ tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k)); const active = tasks[k]; const kind = active?.dataset.kind; const endSection = tasks.find(t=>t.dataset.kind==='end'); if(endSection){ if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); } else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); } } if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
+function show(k){
+ tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
+ const active = tasks[k];
+ const kind = active?.dataset.kind;
+
+ // Nieuw, verberg Vorige alleen in het geluidscontrolescherm, toon in andere schermen
+ if (kind === 'intro') {
+   prevBtn.style.visibility = 'hidden';
+ } else {
+   prevBtn.style.visibility = 'visible';
+ }
+
+ const endSection = tasks.find(t=>t.dataset.kind==='end');
+ if(endSection){
+   if(kind==='end'){
+     endSection.classList.add('show'); document.body.classList.add('end-view');
+   } else {
+     endSection.classList.remove('show'); document.body.classList.remove('end-view');
+   }
+ }
+ if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
+
  // stop TTS bij wisselen en zorg dat de engine niet in pauze blijft hangen
  stopAllTTS(); showPlayIcon(); // stop geluidstest herhaling zodra je het intro verlaat
  if(kind!=='intro'){ stopSoundLoop(); }
+
  if(kind==='task'){
    ensureTaskTTSControls(active);
    const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
@@ -276,7 +299,6 @@ function show(k){ tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k)); c
    setNextEnabled(true);
    renderPager();
  }else if(kind==='intro'){
-   // Spreek automatisch de instructie zodra dit scherm start
    const introText = active.dataset.tts || 'Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.';
    speakOnce(introText);
    setNextEnabled(!!document.getElementById('soundOk')?.checked);
@@ -292,28 +314,87 @@ function show(k){ tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k)); c
  }
 }
 
-// Paginering: toon alle cijfers als rondjes, geen ellips
-function renderPager(hideAll){ pager.innerHTML=''; if(hideAll){ return; } const total = itemIx.length; if(total===0) return; const currentIdx = itemIx.indexOf(i);
+// Paginering, toon alle cijfers als rondjes, geen ellips
+function renderPager(hideAll){
+ pager.innerHTML='';
+ if(hideAll){ return; }
+ const total = itemIx.length; if(total===0) return;
+ const currentIdx = itemIx.indexOf(i);
  for(let k=0;k<total;k++){
-  const ixTask = itemIx[k]; const b=document.createElement('button'); const isCurrent = (currentIdx===k);
-  b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':''); b.type='button'; b.textContent=String(k+1);
+  const ixTask = itemIx[k];
+  const b=document.createElement('button');
+  const isCurrent = (currentIdx===k);
+  b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
+  b.type='button'; b.textContent=String(k+1);
   if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
   pager.appendChild(b);
  }
 }
 
-// Eindscherm, klikbare rondjes: standaard grijs, beantwoord = wit
-function fillEndCircles(){ const wrap=document.getElementById('endCircles'); wrap.innerHTML=''; itemIx.forEach((ix,idx)=>{ const btn=document.createElement('button'); btn.type='button'; btn.className='circleBtn'+(state[ix].answered ? ' done' : ''); btn.textContent=String(idx+1); btn.addEventListener('click', ()=>{ i=ix; show(i); }); wrap.appendChild(btn); }); }
+// Eindscherm, klikbare rondjes, standaard grijs, beantwoord = wit
+function fillEndCircles(){
+ const wrap=document.getElementById('endCircles');
+ wrap.innerHTML='';
+ itemIx.forEach((ix,idx)=>{
+   const btn=document.createElement('button');
+   btn.type='button';
+   btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
+   btn.textContent=String(idx+1);
+   btn.addEventListener('click', ()=>{ i=ix; show(i); });
+   wrap.appendChild(btn);
+ });
+}
 
 // Onderbalk knoppen
-prevBtn.addEventListener('click', ()=>{ const kind = tasks[i]?.dataset.kind; if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; } if(kind==='intro'){ return; } const idx=itemIx.indexOf(i); const prev = itemIx[idx-1]; if(prev!==undefined){ i=prev; show(i); } });
-nextBtn.addEventListener('click', ()=>{ const kind = tasks[i].dataset.kind; if(kind==='intro'){ if(!document.getElementById('soundOk').checked) return; i = sceneIx>=0 ? sceneIx : i; show(i); return; } if(kind==='scene'){ i = firstTask>=0 ? firstTask : i; show(i); return; } if(kind==='task'){ check(i); const idx=itemIx.indexOf(i); const next = itemIx[idx+1]; if(next!==undefined){ i=next; show(i); } else { i = tasks.findIndex(t=>t.dataset.kind==='end'); if(i<0) i=tasks.length-1; show(i); } return; } });
+prevBtn.addEventListener('click', ()=>{
+ const kind = tasks[i]?.dataset.kind;
+ if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
+ if(kind==='intro'){ return; }
+ const idx=itemIx.indexOf(i);
+ const prev = itemIx[idx-1];
+ if(prev!==undefined){ i=prev; show(i); }
+});
+nextBtn.addEventListener('click', ()=>{
+ const kind = tasks[i].dataset.kind;
+ if(kind==='intro'){
+   if(!document.getElementById('soundOk').checked) return;
+   i = sceneIx>=0 ? sceneIx : i; show(i); return;
+ }
+ if(kind==='scene'){
+   i = firstTask>=0 ? firstTask : i; show(i); return;
+ }
+ if(kind==='task'){
+   check(i);
+   const idx=itemIx.indexOf(i);
+   const next = itemIx[idx+1];
+   if(next!==undefined){
+     i=next; show(i);
+   } else {
+     i = tasks.findIndex(t=>t.dataset.kind==='end');
+     if(i<0) i=tasks.length-1;
+     show(i);
+   }
+   return;
+ }
+});
 
 // keyboard
-window.addEventListener('keydown', (e)=>{ const kind = tasks[i]?.dataset.kind; if(kind==='task'){ if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); } if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); } if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } } } if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); } });
+window.addEventListener('keydown', (e)=>{
+ const kind = tasks[i]?.dataset.kind;
+ if(kind==='task'){
+   if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+   if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+   if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+ }
+ if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+});
 
 // inputs, direct check zonder tekstfeedback
-itemIx.forEach(ix=>{ const node = tasks[ix]; node.addEventListener('input', ()=>{ check(ix); }); node.addEventListener('change', ()=>{ check(ix); }); });
+itemIx.forEach(ix=>{
+ const node = tasks[ix];
+ node.addEventListener('input', ()=>{ check(ix); });
+ node.addEventListener('change', ()=>{ check(ix); });
+});
 
 // geluidstest
 const soundOk=document.getElementById('soundOk');
@@ -321,25 +402,55 @@ const audioBtn=document.getElementById('audioPlay');
 const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
 function ensureCtx(){ if(!ctx&&AudioCtx){ ctx=new AudioCtx(); } }
 const DRUM_PATTERN=[ {offset:0.0,freq:120,type:'sine'}, {offset:0.4,freq:300,type:'square'}, {offset:0.6,freq:800,type:'triangle'}, {offset:0.8,freq:120,type:'sine'} ];
-function playDrum(time,freq=150,dur=0.2,type='sine'){ const o=ctx.createOscillator(); const g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.type=type; o.frequency.setValueAtTime(freq,time); g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur); o.start(time); o.stop(time+dur); }
+function playDrum(time,freq=150,dur=0.2,type='sine'){
+ const o=ctx.createOscillator(); const g=ctx.createGain();
+ o.connect(g); g.connect(ctx.destination);
+ o.type=type; o.frequency.setValueAtTime(freq,time);
+ g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+ o.start(time); o.stop(time+dur);
+}
 function playDrumPatternAt(now){ DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type)); }
-let soundLoopTimeouts=[]; function stopSoundLoop(){ soundLoopTimeouts.forEach(id=> clearTimeout(id)); soundLoopTimeouts=[]; // herstel icoon op de introknop
+let soundLoopTimeouts=[];
+function stopSoundLoop(){
+ soundLoopTimeouts.forEach(id=> clearTimeout(id));
+ soundLoopTimeouts=[];
+ // herstel icoon op de introknop
  if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
 }
-function playDrumPatternRepeated(times=3, gapMs=900){ ensureCtx(); if(!ctx) return; stopSoundLoop(); for(let r=0;r<times;r++){ const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs); soundLoopTimeouts.push(tId); } }
-function updateIntro(){ if(tasks[i]?.dataset.kind==='intro'){ setNextEnabled(!!soundOk.checked); if(soundOk.checked){ stopSoundLoop(); } } }
+function playDrumPatternRepeated(times=3, gapMs=900){
+ ensureCtx(); if(!ctx) return;
+ stopSoundLoop();
+ for(let r=0;r<times;r++){
+   const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
+   soundLoopTimeouts.push(tId);
+ }
+}
+function updateIntro(){
+ if(tasks[i]?.dataset.kind==='intro'){
+   setNextEnabled(!!soundOk.checked);
+   if(soundOk.checked){ stopSoundLoop(); }
+ }
+}
 soundOk.addEventListener('change', updateIntro);
-// Introknop: wissel driehoek naar pauze.jpg bij klikken, herstel na afloop van het patroon
+// Introknop, wissel driehoek naar pauze.jpg bij klikken, herstel na afloop van het patroon
 const originalAudioBtnHTML = audioBtn ? audioBtn.innerHTML : '';
-if(audioBtn){ audioBtn.addEventListener('click', ()=>{ const loops=4, gap=1000; playDrumPatternRepeated(loops, gap); audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">'; // herstel na de totale duur
- const totalMs = loops*gap + 200; setTimeout(()=>{ // alleen herstellen als we nog op het intro zijn
-   if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
- }, totalMs);
- }); }
+if(audioBtn){
+ audioBtn.addEventListener('click', ()=>{
+   const loops=4, gap=1000;
+   playDrumPatternRepeated(loops, gap);
+   audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
+   const totalMs = loops*gap + 200;
+   setTimeout(()=>{
+     if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
+   }, totalMs);
+ });
+}
 
 // start
-function init(){ // ensure all ttsImgBtn handlers exist
- document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec)); i = 0; show(i); }
+function init(){
+ document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+ i = 0; show(i);
+}
 init();
 })();
 </script>
