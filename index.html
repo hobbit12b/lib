@@ -43,6 +43,7 @@
 
   .scene-play,.scene-pause{position:absolute;left:50%;top:36px;transform:translateX(-50%);width:58px;height:58px;border:0;background:transparent;padding:0;cursor:pointer}
   .scene-play img,.scene-pause img{width:100%;height:100%;display:block}
+  .scene-pause.hidden,.scene-play.hidden{display:none}
 
   .scene-boy{position:absolute;left:50%;top:120px;transform:translateX(-50%);height:170px;width:auto}
   .scene-girl{position:absolute;right:34px;bottom:22px;height:190px;width:auto}
@@ -52,14 +53,11 @@
   .hide-ui .progress{display:none}
   .hide-ui .pauseTTS{display:none}
 
-  /* Bovenste toolbalk gebruikt voor Markeer, niet meer voor Vorige en Volgende */
+  /* Bovenste balk alleen voor Markeer */
   .toolbar{display:none;justify-content:space-between;align-items:center;margin:10px 0 2px}
   .toolbar.show{display:flex}
-  .toolbar .left{display:flex;gap:8px;align-items:center}
   .btn{border:1px solid #d0d0d0;background:#fff;border-radius:8px;padding:10px 14px;font-weight:bold;cursor:pointer}
   .btn:hover{background:#f4f6ff}
-  .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
-  .btn.primary:hover{background:var(--blue-dark)}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
 
   .flag{display:inline-flex;gap:8px;align-items:center;border:1px solid #e8e0c7;background:#fff8e1;color:#6a4e00;border-radius:8px;padding:8px 10px;cursor:pointer}
@@ -83,7 +81,7 @@
   .sw-wrong{background:#f1c4c4}
   .sw-open{background:#d6dcff}
 
-  /* Nieuwe onderbalk, precies zoals je screenshot */
+  /* Onderbalk zoals Cito */
   .bottomNav{
     position:absolute;left:18px;right:18px;bottom:18px;
     display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -93,16 +91,20 @@
     border:0;background:var(--blue);color:#fff;border-radius:10px;padding:10px 18px;
     font-weight:bold;cursor:pointer
   }
-  .navBtn[disabled]{opacity:.55;cursor:not-allowed}
+  /* Grijs bij uitgeschakeld, duidelijk zichtbaar */
+  .navBtn[disabled]{
+    background:#e0e0e0;color:#666;border:1px solid #d0d0d0;cursor:not-allowed;opacity:1;
+  }
   .pager{display:flex;align-items:center;gap:8px;justify-content:center;flex:1}
   .pageBtn{
-    min-width:40px;height:40px;border-radius:20px;border:1px solid #d7d7d7;background:#fff;
+    width:44px;height:44px;border-radius:22px;border:1px solid #d7d7d7;background:#fff;
     display:inline-flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;
-    padding:0 12px;
+    padding:0;line-height:1;
   }
+  /* Grotere huidige cirkel, zoals Cito */
   .pageBtn.current{
+    width:56px;height:56px;border-radius:28px;font-size:18px;
     background:var(--blue);color:#fff;border-color:var(--blue);
-    transform:scale(1.1)
   }
   .ellipsis{padding:0 6px;color:#777;user-select:none}
 </style>
@@ -119,9 +121,9 @@
         </button>
       </div>
 
-      <!-- Toolbalk, alleen voor Markeer -->
+      <!-- Bovenste toolbar, alleen Markeer -->
       <div id="toolbar" class="toolbar" aria-label="Bediening">
-        <div class="left"></div>
+        <div></div>
         <button id="flagBtn" class="flag" aria-pressed="false" aria-label="Markeer deze opgave">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 3h10l-1 3h4l-1 3h-7l-1 3H6v9H4V3z"/></svg>
           Markeer
@@ -212,7 +214,7 @@
         </div>
       </section>
 
-      <!-- Nieuwe onderbalk -->
+      <!-- Onderbalk -->
       <div class="bottomNav" aria-label="Navigatie onder">
         <button id="prevBtn" class="navBtn" aria-label="Vorige">Vorige</button>
         <div id="pager" class="pager" aria-label="Opgaven"></div>
@@ -237,6 +239,8 @@
   const taskIndexes = tasks.map((t,ix)=>({ix, kind:t.dataset.kind}));
   const itemIx = taskIndexes.filter(x=>x.kind==='task').map(x=>x.ix);
   const firstTask = itemIx[0];
+  const introIx = tasks.findIndex(t=>t.dataset.kind==='intro');
+  const sceneIx = tasks.findIndex(t=>t.dataset.kind==='scene');
 
   // administratie
   let i=0, score=0;
@@ -245,7 +249,7 @@
     return acc;
   },{});
 
-  // TTS
+  // TTS basis
   const synth = window.speechSynthesis;
   let voices = [], chosenVoiceIndex = 76;
   function loadVoices(){ voices = synth ? synth.getVoices() : []; }
@@ -263,7 +267,7 @@
     synth.speak(u);
   }
 
-  // Scene queue
+  // Scene queue, met wissel van play naar pauze en terug
   const sceneLines = [
     "Dit is de toets rekenen",
     "Ik ga eerst wat uitleggen",
@@ -272,6 +276,13 @@
     "Klik nu op de pijl om naar het voorbeeld te gaan."
   ];
   const sceneState = { queue:[], index:0, playing:false, paused:false, done:false };
+
+  const scenePlay = document.getElementById('scenePlay');
+  const scenePause = document.getElementById('scenePause');
+
+  function showPauseIcon(){ scenePlay.classList.add('hidden'); scenePause.classList.remove('hidden'); }
+  function showPlayIcon(){ scenePause.classList.add('hidden'); scenePlay.classList.remove('hidden'); }
+
   function makeU(text,onend){
     const u = new SpeechSynthesisUtterance(text);
     const v = voices[chosenVoiceIndex];
@@ -281,35 +292,46 @@
   function startSceneFromBeginning(){
     stopAllTTS(); sceneState.queue=sceneLines.slice(); sceneState.index=0;
     sceneState.playing=true; sceneState.paused=false; sceneState.done=false;
-    setNextEnabled(false); speakNextInScene();
+    setNextEnabled(false);
+    showPauseIcon();
+    speakNextInScene();
   }
   function speakNextInScene(){
     if(sceneState.index>=sceneState.queue.length){
       sceneState.playing=false; sceneState.paused=false; sceneState.done=true;
       ttsPause.classList.remove('show');
       setNextEnabled(true);
+      showPlayIcon(); // klaar, terug naar play
       return;
     }
     const text=sceneState.queue[sceneState.index];
     const u=makeU(text,()=>{
       sceneState.index+=1;
       if(sceneState.playing && !sceneState.paused){ setTimeout(speakNextInScene,350); }
-    }); synth.speak(u);
+    });
+    synth.speak(u);
   }
-  function pauseScene(){ if(!sceneState.playing||sceneState.paused) return;
-    try{ synth.pause(); }catch(e){} sceneState.paused=true; setNextEnabled(false); ttsPause.classList.remove('show');
+  function pauseScene(){
+    if(!sceneState.playing||sceneState.paused) return;
+    try{ synth.pause(); }catch(e){}
+    sceneState.paused=true;
+    setNextEnabled(false);
+    showPlayIcon();
+    ttsPause.classList.remove('show');
   }
   function resumeScene(){
     if(sceneState.paused && sceneState.playing){
-      sceneState.paused=false; try{ synth.resume(); }catch(e){} setNextEnabled(false); return;
+      sceneState.paused=false;
+      try{ synth.resume(); }catch(e){}
+      setNextEnabled(false);
+      showPauseIcon();
+      return;
     }
     startSceneFromBeginning();
   }
-  const scenePlay = document.getElementById('scenePlay');
-  const scenePause = document.getElementById('scenePause');
-  if(scenePlay){ scenePlay.addEventListener('click', ()=>{ resumeScene(); }); }
-  if(scenePause){ scenePause.addEventListener('click', ()=>{ pauseScene(); }); }
-  ttsPause.addEventListener('click', ()=>{ pauseScene(); });
+  if(scenePlay){ scenePlay.addEventListener('click', resumeScene); }
+  if(scenePause){ scenePause.addEventListener('click', pauseScene); }
+  ttsPause.addEventListener('click', pauseScene);
 
   // Toolbar modi
   function setToolbarMode(mode){
@@ -331,6 +353,7 @@
     const input=t.querySelector('input.input');
     const fb=t.querySelector('div.feedback');
     let ok=false, value=null;
+
     if(input){
       value=input.value.trim();
       ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
@@ -339,20 +362,23 @@
       value=r ? r.value : null;
       ok= value && value===ans;
     }
+
+    // geen tekst terugkoppeling onder de vraag
+    fb.textContent='';
+    fb.className='feedback';
+
     if(value!==null && value!==""){
       state[ix].answered=true;
       state[ix].correct=ok;
       state[ix].value=value;
-      fb.textContent=ok ? 'Goed!' : 'Nog een keer proberen';
-      fb.className='feedback '+(ok?'ok':'wrong');
       if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
+      if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
     }else{
-      fb.textContent='';
-      fb.className='feedback';
       state[ix].answered=false;
       state[ix].correct=null;
       if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
     }
+
     renderPager();
     return state[ix].answered ? ok : false;
   }
@@ -368,6 +394,7 @@
 
     if(kind!=='scene'){
       sceneState.playing=false; sceneState.paused=false; sceneState.done=false; stopAllTTS();
+      showPlayIcon();
     }
 
     if(kind==='task'){
@@ -383,11 +410,12 @@
       setToolbarMode('intro');
       if(active.dataset.tts){ speakOnce(active.dataset.tts); }
       setNextEnabled(!!document.getElementById('soundOk')?.checked);
-      renderPager(true); // leeg
+      renderPager(true);
 
     }else if(kind==='scene'){
       setToolbarMode('scene');
       setNextEnabled(false);
+      renderPager(true);
 
     }else if(kind==='end'){
       setToolbarMode('end');
@@ -397,16 +425,17 @@
     }
   }
 
-  // PAGER met nummers en ellipsen
+  // Paginering met altijd laatste nummer in beeld
   function renderPager(hideAll){
     pager.innerHTML='';
     if(hideAll){ return; }
 
-    // alleen de taken tellen
     const total = itemIx.length;
     if(total===0) return;
 
-    const currentIdx = itemIx.indexOf(i); // 0-based binnen taken
+    const currentIdx = itemIx.indexOf(i); // index binnen taken
+    const shown = new Set();
+
     const makeBtn = (label, targetIx, current=false)=>{
       const b=document.createElement('button');
       b.className='pageBtn'+(current?' current':'');
@@ -415,35 +444,27 @@
       if(!current){
         b.addEventListener('click', ()=>{ i=itemIx[targetIx]; show(i); });
       }
-      return b;
+      pager.appendChild(b);
+      shown.add(targetIx);
     };
     const addEllipsis = ()=>{ const s=document.createElement('span'); s.className='ellipsis'; s.textContent='…'; pager.appendChild(s); };
 
-    // venster: eerste, vorige twee, huidige, volgende vijf, laatste
     const first=0, last=total-1;
 
-    // altijd nummer 1 tonen
-    pager.appendChild(makeBtn('1', first, currentIdx===first));
+    makeBtn('1', first, currentIdx===first);
 
-    // ellipsis links als nodig
     if(currentIdx>3){ addEllipsis(); }
 
-    // middenkluster
     const start=Math.max(1, currentIdx-2);
     const end=Math.min(last-1, currentIdx+4);
     for(let k=start; k<=end; k++){
-      pager.appendChild(makeBtn(String(k+1), k, k===currentIdx));
+      makeBtn(String(k+1), k, k===currentIdx);
     }
 
-    // ellipsis rechts als nodig
     if(currentIdx<last-4){ addEllipsis(); }
 
-    // laatste tonen, behalve als hij al getoond is
-    if(last>0){
-      const alreadyShown = (end>=last-1);
-      if(!alreadyShown){
-        pager.appendChild(makeBtn(String(last+1), last, currentIdx===last));
-      }
+    if(!shown.has(last)){
+      makeBtn(String(last+1), last, currentIdx===last);
     }
   }
 
@@ -482,6 +503,11 @@
 
   // Onderbalk knoppen
   prevBtn.addEventListener('click', ()=>{
+    const kind = tasks[i]?.dataset.kind;
+
+    if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
+    if(kind==='intro'){ return; }
+
     const idx=itemIx.indexOf(i);
     const prev = itemIx[idx-1];
     if(prev!==undefined){ i=prev; show(i); }
@@ -492,16 +518,14 @@
 
     if(kind==='intro'){
       if(!document.getElementById('soundOk').checked) return;
-      const sceneIx = tasks.findIndex(t=>t.dataset.kind==='scene');
       i = sceneIx>=0 ? sceneIx : i;
       show(i);
       return;
     }
 
     if(kind==='scene'){
-      if(!sceneState.done){ return; }
-      const firstTaskIx = firstTask;
-      i = firstTaskIx>=0 ? firstTaskIx : i;
+      if(!sceneState.done){ return; } // blijft grijs tot klaar
+      i = firstTask>=0 ? firstTask : i;
       show(i);
       return;
     }
@@ -539,7 +563,7 @@
     if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
   });
 
-  // inputs, direct check
+  // inputs, direct check zonder tekstfeedback
   itemIx.forEach(ix=>{
     const node = tasks[ix];
     node.addEventListener('input', ()=>{ check(ix); });
