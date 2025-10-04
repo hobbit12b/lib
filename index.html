@@ -3,65 +3,199 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Voorbeeldtoets Groep 3, Oefenomgeving — aangepast</title>
+<title>Voorbeeldtoets Groep 3, Oefenomgeving, fullscreen responsive</title>
 <style>
-:root{ --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6; --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00; }
-html,body{height:100%;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:var(--text);background:var(--bg)}
-.sky{height:70px;background:var(--blue);border-bottom:2px solid var(--line)}
-.stage{display:flex;justify-content:center;align-items:flex-start;padding:40px 16px 120px}
-.card{background:var(--panel);width:960px;min-height:620px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:24px 28px;position:relative;overflow:hidden}
-h1{font-size:20px;font-weight:bold;margin:0 0 14px;line-height:1.4}
-p{font-size:16px;line-height:1.5;margin:0 0 10px}
-.q{font-size:17px;font-weight:bold;margin:14px 0 8px}
-.input{font-size:16px;padding:8px 10px;border-radius:6px;border:1px solid #bbb;width:220px}
-.choices{margin-top:6px}
-.choice{display:block;margin-bottom:6px}
-.feedback{margin-top:8px;font-weight:bold}
+:root{
+  --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6; --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
+  --pad:clamp(12px, 2.2vw, 24px);
+  --radius:16px;
+  --navH:76px;
+}
+
+/* Basis, echte fullscreen met mobiele address-bar fixes */
+html, body{height:100%; margin:0; padding:0}
+body{
+  min-height:100svh;
+  font-family:Arial, Helvetica, sans-serif;
+  font-size:clamp(15px, 1.1vw + .4rem, 17px);
+  line-height:1.5;
+  color:var(--text);
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+}
+
+/* Headerbalk */
+.sky{
+  height:clamp(56px, 8svh, 80px);
+  background:var(--blue);
+  border-bottom:2px solid var(--line);
+  flex:0 0 auto;
+}
+
+/* Hoofdpodium vult het resterende scherm */
+.stage{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  padding:clamp(8px, 1.5vw, 16px);
+}
+
+/* De “card” wordt het canvas dat het scherm vult */
+.card{
+  background:var(--panel);
+  width:100%;
+  height:calc(100% - 0px);
+  min-height:0;
+  border-radius:0;
+  box-shadow:none;
+  padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) calc(var(--pad) + var(--navH) + 16px);
+  position:relative;
+  overflow:auto;
+}
+
+/* Op grotere schermen net wat zachter */
+@media (min-width:900px){
+  .card{
+    max-width:1200px;
+    margin:0 auto;
+    border-radius:var(--radius);
+    box-shadow:0 1px 12px rgba(0,0,0,.08);
+    padding-bottom:calc(var(--pad) + var(--navH) + 20px);
+  }
+}
+
+/* Typografie */
+h1{font-size:clamp(18px, 1.2vw + .8rem, 24px); font-weight:bold; margin:0 0 12px}
+p{margin:0 0 10px}
+.q{font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold; margin:14px 0 8px}
+
+/* Inputs en keuzes, grotere touch-targets */
+.input{
+  font-size:clamp(16px, 1vw + .6rem, 18px);
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #bbb;
+  width:min(320px, 100%);
+}
+.choices{margin-top:8px}
+.choice{display:block; margin-bottom:8px}
+.choice input{width:20px; height:20px}
+
+/* Feedbackkleuren */
+.feedback{margin-top:8px; font-weight:bold}
 .ok{color:var(--ok)}
 .wrong{color:var(--wrong)}
-/* 1, voortgang rechtsboven weg */
+
+/* Verberg voortgang rechtsboven, zoals gewenst */
 .progress{display:none}
-/* Audio knoppen bij opdrachten, direct boven de vraag */
-.ttsRow{display:inline-flex;align-items:center;gap:10px;margin-left:8px}
-.ttsImgBtn{border:0;background:transparent;padding:0;margin-left:8px;cursor:pointer;display:inline-flex;align-items:center}
-.ttsImgBtn img{width:36px;height:36px;display:block}
-.audioBtn{border:0;background:#eee;width:40px;height:40px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-.audioBtn svg{width:18px;height:18px;fill:var(--blue)}
-/* Fix, zorg dat pauzeplaatje even groot is als het play icoon */
-.audioBtn img{width:18px;height:18px;display:block;object-fit:contain}
+
+/* TTS knoppen compact, maar vinger-vriendelijk */
+.ttsRow{display:inline-flex; align-items:center; gap:10px; margin-left:8px}
+.ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
+.ttsImgBtn img{width:40px; height:40px; display:block}
+.audioBtn{
+  border:0; background:#eee;
+  width:48px; height:48px; border-radius:24px;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center
+}
+.audioBtn svg{width:22px; height:22px; fill:var(--blue)}
+.audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
+
+/* Sections */
 .task{display:none}
 .task.active{display:block}
-.inner-panel{background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px #eee;margin:10px auto 0;width:820px;height:360px;position:relative;overflow:hidden}
-.scene-play,.scene-pause{position:absolute;left:50%;top:36px;transform:translateX(-50%);width:58px;height:58px;border:0;background:transparent;padding:0;cursor:pointer}
-.scene-play img,.scene-pause img{width:100%;height:100%;display:block}
-.scene-pause.hidden,.scene-play.hidden{display:none}
-.scene-boy{position:absolute;left:50%;top:120px;transform:translateX(-50%);height:170px;width:auto}
-.scene-girl{position:absolute;right:34px;bottom:22px;height:190px;width:auto}
+
+/* Scènepaneel is responsive met aspect-ratio */
+.inner-panel{
+  background:#fff;
+  border-radius:clamp(10px, 1vw, 16px);
+  box-shadow:inset 0 0 0 1px #eee;
+  width:100%;
+  max-width:1100px;
+  margin:10px auto 0;
+  aspect-ratio:16 / 9;
+  position:relative;
+  overflow:hidden;
+}
+.scene-play, .scene-pause{
+  position:absolute; left:50%; top:clamp(20px, 5vh, 36px);
+  transform:translateX(-50%);
+  width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px);
+  border:0; background:transparent; padding:0; cursor:pointer
+}
+.scene-play img, .scene-pause img{width:100%; height:100%; display:block}
+.scene-pause.hidden, .scene-play.hidden{display:none}
+
+/* Afbeeldingen binnen de scène schalen proportioneel en blijven zichtbaar */
+.scene-boy{
+  position:absolute; left:50%; top:45%;
+  transform:translate(-50%, -50%);
+  height:min(48%, 42vh); width:auto; max-width:48%;
+}
+.scene-girl{
+  position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px);
+  height:min(52%, 46vh); width:auto; max-width:50%;
+}
+
 .hidden{display:none}
 .hide-ui .progress{display:none}
-/* toolbar verwijderd */
-.btn{border:1px solid #d0d0d0;background:#fff;border-radius:8px;padding:10px 14px;font-weight:bold;cursor:pointer}
+
+/* Buttons algemeen */
+.btn{border:1px solid #d0d0d0; background:#fff; border-radius:10px; padding:12px 16px; font-weight:bold; cursor:pointer}
 .btn:hover{background:#f4f6ff}
-.btn[disabled]{opacity:.5;cursor:not-allowed}
-/* Eindscherm, minimalistisch overzicht met aanklikbare rondjes */
+.btn[disabled]{opacity:.5; cursor:not-allowed}
+
+/* Eindscherm, overzicht met tikbare rondjes */
 .review{display:none}
 .review.show{display:block}
-.circles{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
-.circleBtn{ width:44px;height:44px;border-radius:22px;border:1px solid #d7d7d7;background:#eee; display:inline-flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;line-height:1 }
+.circles{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0}
+.circleBtn{
+  width:48px; height:48px; border-radius:24px; border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; line-height:1
+}
 .circleBtn.done{background:#fff}
-.endTitle{font-weight:bold;margin-top:4px}
-/* Onderbalk zoals Cito */
-.bottomNav{ position:absolute;left:18px;right:18px;bottom:18px; display:flex;align-items:center;justify-content:space-between;gap:12px; background:#fafafa;border:1px solid #ececec;border-radius:12px;padding:10px 12px; }
-.navBtn{ border:0;background:var(--blue);color:#fff;border-radius:10px;padding:10px 18px; font-weight:bold;cursor:pointer }
-.navBtn[disabled]{ background:#e0e0e0;color:#666;border:1px solid #d0d0d0;cursor:not-allowed;opacity:1; }
-.pager{display:flex;align-items:center;gap:8px;justify-content:center;flex:1}
-.pageBtn{ width:44px;height:44px;border-radius:22px;border:1px solid #d7d7d7;background:#eee; display:inline-flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer; padding:0;line-height:1; }
-.pageBtn.current{ width:56px;height:56px;border-radius:28px;font-size:18px; background:var(--blue);color:#fff;border-color:var(--blue); }
-/* default is grijs, beantwoord = wit, current = blauw */
+.endTitle{font-weight:bold; margin-top:6px}
+
+/* Onderbalk blijft bruikbaar en past zich aan */
+.bottomNav{
+  position:sticky; bottom:0;
+  left:0; right:0;
+  margin-top:20px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:#fafafa; border:1px solid #ececec; border-radius:12px;
+  padding:10px 12px; min-height:var(--navH);
+}
+.navBtn{
+  border:0; background:var(--blue); color:#fff; border-radius:12px;
+  padding:12px 18px; font-weight:bold; cursor:pointer; flex:0 0 auto
+}
+.navBtn[disabled]{background:#e0e0e0; color:#666; border:1px solid #d0d0d0; cursor:not-allowed; opacity:1}
+
+/* Pager kan scrollen en wrappen op klein scherm */
+.pager{
+  display:flex; align-items:center; gap:8px; justify-content:center;
+  flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
+  scrollbar-width:thin;
+}
+.pageBtn{
+  width:46px; height:46px; border-radius:23px; border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
+  flex:0 0 auto;
+}
+.pageBtn.current{
+  width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff; border-color:var(--blue)
+}
+/* Reeds beantwoord, wit, huidige, blauw */
 .pageBtn.answered:not(.current){background:#fff}
-.ellipsis{padding:0 6px;color:#777;user-select:none}
-/* 5, onderbalk in eindscherm weg */
+
+/* In eindscherm geen onderbalk tonen, zoals bij je vorige versie */
 .end-view .bottomNav{display:none}
+
+/* Respecteer reduced motion voorkeuren */
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto}
+}
 </style>
 </head>
 <body>
@@ -73,13 +207,13 @@ p{font-size:16px;line-height:1.5;margin:0 0 10px}
 <section class="task active" data-kind="intro" data-tts="Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.">
 <h1>Controle van het geluid</h1>
 <p><button id="audioPlay" class="audioBtn" aria-label="Speel geluid">
-<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
 </button></p>
 <p class="q"><label><input type="checkbox" class="check" id="soundOk"> Het geluid werkt</label></p>
 <p class="q">Werkt het niet, meld dit aan je docent.</p>
 </section>
 
-<!-- 2. Scene -->
+<!-- 2. Uitlegscene -->
 <section class="task" data-kind="scene" data-tts="Uitlegscreen">
 <h1>Luisteren naar de uitleg</h1>
 <div class="inner-panel" aria-label="Uitlegscherm">
@@ -144,7 +278,7 @@ p{font-size:16px;line-height:1.5;margin:0 0 10px}
 <div class="feedback"></div>
 </section>
 
-<!-- 4. Eindscherm, sobere versie -->
+<!-- 4. Eindscherm -->
 <section class="task review" data-kind="end" data-tts="Klaar, je bent nu bij het eindscherm, controleer of je alle opgaven hebt gemaakt">
 <h1>Klaar</h1>
 <p class="endTitle">Je bent nu bij het eindscherm. Controleer of je alle opdrachten hebt gemaakt.</p>
@@ -166,37 +300,36 @@ const tasks=[...document.querySelectorAll('.task')];
 const prevBtn=document.getElementById('prevBtn');
 const nextBtn=document.getElementById('nextBtn');
 const pager=document.getElementById('pager');
+
 // indices
 const taskIndexes = tasks.map((t,ix)=>({ix, kind:t.dataset.kind}));
 const itemIx = taskIndexes.filter(x=>x.kind==='task').map(x=>x.ix);
 const firstTask = itemIx[0];
 const introIx = tasks.findIndex(t=>t.dataset.kind==='intro');
 const sceneIx = tasks.findIndex(t=>t.dataset.kind==='scene');
+
 // administratie
 let i=0, score=0;
 const state = itemIx.reduce((acc,ix)=>{ acc[ix] = { answered:false, correct:null, value:null }; return acc; },{});
+
 // TTS basis
 const synth = window.speechSynthesis;
 let voices = [], chosenVoiceIndex = 0;
-function loadVoices(){ voices = synth ? synth.getVoices() : []; if(voices.length>0){ // kies eerste nederlandse als beschikbaar
+function loadVoices(){ voices = synth ? synth.getVoices() : []; if(voices.length>0){
  const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
  if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
- }}
+}}
 if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
 function hardResetTTS(){
  try{
    if(!synth) return;
-   // forceer elke pauze toestand te verlaten en de queue te legen
    synth.cancel();
    if(synth.paused){ synth.resume(); }
-   // Safari fix, leeg bericht om audio context te initialiseren
    const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
  }catch(e){}
 }
 function stopAllTTS(){ try{ if(synth){ hardResetTTS(); } }catch(e){}
- // zet alle tts-knoppen terug
  document.querySelectorAll('.ttsImgBtn').forEach(btn=>{ const img = btn.querySelector('img'); if(img) img.src='speel.jpg'; btn.dataset.playing='false'; });
- // scene icon
  showPlayIcon();
 }
 function speakOnce(text, opts={onstart:null,onend:null,pauseable:true,section:null}){
@@ -211,29 +344,23 @@ function speakOnce(text, opts={onstart:null,onend:null,pauseable:true,section:nu
  if(typeof opts.onend==='function') u.onend = opts.onend;
  synth.speak(u);
 }
+
 // Scene logica
 const scenePlay = document.getElementById('scenePlay');
 const scenePause = document.getElementById('scenePause');
 let scenePlaying = false;
 function showPauseIcon(){ if(scenePlay) scenePlay.classList.add('hidden'); if(scenePause) scenePause.classList.remove('hidden'); }
 function showPlayIcon(){ if(scenePause) scenePause.classList.add('hidden'); if(scenePlay) scenePlay.classList.remove('hidden'); }
-function enterSceneIntro(){ showPlayIcon(); const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.';
- // spreek kort, geen extra nadruk hier
- speakOnce(line1,{onend:()=>{ showPlayIcon(); }});
-}
+function enterSceneIntro(){ showPlayIcon(); const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.'; speakOnce(line1,{onend:()=>{ showPlayIcon(); }}); }
 function handleScenePlay(){
- if(scenePlaying){ // is sprekend, pauze
+ if(scenePlaying){
    try{ synth.pause(); }catch(e){}
    scenePlaying=false; showPlayIcon(); return;
  }
- // start spreken en toon direct pauze icoon
  scenePlaying=true; showPauseIcon();
- // Leg klemtoon op het woord volgende door het als aparte utterance met andere pitch, rate te spreken
  const main = 'Klik rechtsonder op de knop';
  const emphas = 'volgende';
- // spreek hoofdzin
  speakOnce(main,{onend:()=>{
-   // spreek volgende met hogere pitch en langzamer tempo
    speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{
      scenePlaying=false; showPlayIcon(); setNextEnabled(true);
    }});
@@ -241,25 +368,55 @@ function handleScenePlay(){
  setNextEnabled(false);
 }
 function pauseScene(){ try{ synth.pause(); }catch(e){} scenePlaying=false; showPlayIcon(); }
-function resumeScene(){ try{ synth.resume(); }catch(e){} scenePlaying=true; showPauseIcon(); }
 if(scenePlay){ scenePlay.addEventListener('click', handleScenePlay); }
 if(scenePause){ scenePause.addEventListener('click', pauseScene); }
 
 function setNextEnabled(on){ nextBtn.disabled = !on; }
 function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');} 
-function check(ix){ const t=tasks[ix]; if(!t||t.dataset.kind!=='task') return true; const ans=t.dataset.answer; const input=t.querySelector('input.input'); const fb=t.querySelector('div.feedback'); let ok=false, value=null; if(input){ value=input.value.trim(); ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value); }else{ const r=t.querySelector('input[type=radio]:checked'); value=r ? r.value : null; ok= value && value===ans; } fb.textContent=''; fb.className='feedback'; if(value!==null && value!==''){ state[ix].answered=true; state[ix].correct=ok; state[ix].value=value; if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; } if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; } }else{ state[ix].answered=false; state[ix].correct=null; if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; } } renderPager(); return state[ix].answered ? ok : false; }
+function check(ix){
+ const t=tasks[ix];
+ if(!t||t.dataset.kind!=='task') return true;
+ const ans=t.dataset.answer;
+ const input=t.querySelector('input.input');
+ const fb=t.querySelector('div.feedback');
+ let ok=false, value=null;
+ if(input){
+   value=input.value.trim();
+   ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
+ }else{
+   const r=t.querySelector('input[type=radio]:checked');
+   value=r ? r.value : null;
+   ok= value && value===ans;
+ }
+ fb.textContent='';
+ fb.className='feedback';
+ if(value!==null && value!==''){
+   state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
+   if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
+   if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+ }else{
+   state[ix].answered=false; state[ix].correct=null;
+   if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+ }
+ renderPager();
+ return state[ix].answered ? ok : false;
+}
 
-// Inject TTS image buttons for tasks en wire gedrag
-function ensureTaskTTSControls(section){ if(section.dataset.kind!=='task') return; if(!section.dataset.tts) return; // find existing button
- const btn = section.querySelector('.ttsImgBtn'); if(!btn) return; const img = btn.querySelector('img'); if(!img) return; btn.dataset.playing='false';
+// Inject TTS image buttons voor tasks
+function ensureTaskTTSControls(section){
+ if(section.dataset.kind!=='task') return;
+ if(!section.dataset.tts) return;
+ const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
+ const img = btn.querySelector('img'); if(!img) return;
+ btn.dataset.playing='false';
  function onStart(){ btn.dataset.playing='true'; img.src='pauze.jpg'; }
  function onEnd(){ btn.dataset.playing='false'; img.src='speel.jpg'; }
  if(!btn._bound){
    btn.addEventListener('click', ()=>{
-     const playing = btn.dataset.playing==='true'; if(playing){ // pauze
-       try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
-     // start spreken, immediate icon change
-     onStart(); const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
+     const playing = btn.dataset.playing==='true';
+     if(playing){ try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
+     onStart();
+     const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
      speakOnce(tts,{onend:()=>{ onEnd(); }});
    });
    btn._bound = true;
@@ -271,25 +428,18 @@ function show(k){
  const active = tasks[k];
  const kind = active?.dataset.kind;
 
- // Nieuw, verberg Vorige alleen in het geluidscontrolescherm, toon in andere schermen
- if (kind === 'intro') {
-   prevBtn.style.visibility = 'hidden';
- } else {
-   prevBtn.style.visibility = 'visible';
- }
+ // Vorige alleen verbergen op het geluidscontrole-scherm
+ if (kind === 'intro') { prevBtn.style.visibility = 'hidden'; } else { prevBtn.style.visibility = 'visible'; }
 
  const endSection = tasks.find(t=>t.dataset.kind==='end');
  if(endSection){
-   if(kind==='end'){
-     endSection.classList.add('show'); document.body.classList.add('end-view');
-   } else {
-     endSection.classList.remove('show'); document.body.classList.remove('end-view');
-   }
+   if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
+   else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
  }
  if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
 
- // stop TTS bij wisselen en zorg dat de engine niet in pauze blijft hangen
- stopAllTTS(); showPlayIcon(); // stop geluidstest herhaling zodra je het intro verlaat
+ stopAllTTS();
+ showPlayIcon();
  if(kind!=='intro'){ stopSoundLoop(); }
 
  if(kind==='task'){
@@ -314,7 +464,7 @@ function show(k){
  }
 }
 
-// Paginering, toon alle cijfers als rondjes, geen ellips
+// Paginering
 function renderPager(hideAll){
  pager.innerHTML='';
  if(hideAll){ return; }
@@ -331,7 +481,7 @@ function renderPager(hideAll){
  }
 }
 
-// Eindscherm, klikbare rondjes, standaard grijs, beantwoord = wit
+// Eindscherm
 function fillEndCircles(){
  const wrap=document.getElementById('endCircles');
  wrap.innerHTML='';
@@ -378,7 +528,7 @@ nextBtn.addEventListener('click', ()=>{
  }
 });
 
-// keyboard
+// Keyboard
 window.addEventListener('keydown', (e)=>{
  const kind = tasks[i]?.dataset.kind;
  if(kind==='task'){
@@ -389,14 +539,14 @@ window.addEventListener('keydown', (e)=>{
  if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
 });
 
-// inputs, direct check zonder tekstfeedback
+// Inputs, direct check
 itemIx.forEach(ix=>{
  const node = tasks[ix];
  node.addEventListener('input', ()=>{ check(ix); });
  node.addEventListener('change', ()=>{ check(ix); });
 });
 
-// geluidstest
+// Geluidstest
 const soundOk=document.getElementById('soundOk');
 const audioBtn=document.getElementById('audioPlay');
 const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
@@ -414,7 +564,6 @@ let soundLoopTimeouts=[];
 function stopSoundLoop(){
  soundLoopTimeouts.forEach(id=> clearTimeout(id));
  soundLoopTimeouts=[];
- // herstel icoon op de introknop
  if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
 }
 function playDrumPatternRepeated(times=3, gapMs=900){
@@ -432,7 +581,6 @@ function updateIntro(){
  }
 }
 soundOk.addEventListener('change', updateIntro);
-// Introknop, wissel driehoek naar pauze.jpg bij klikken, herstel na afloop van het patroon
 const originalAudioBtnHTML = audioBtn ? audioBtn.innerHTML : '';
 if(audioBtn){
  audioBtn.addEventListener('click', ()=>{
@@ -446,7 +594,7 @@ if(audioBtn){
  });
 }
 
-// start
+// Start
 function init(){
  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
  i = 0; show(i);
