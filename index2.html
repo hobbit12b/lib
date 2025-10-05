@@ -6,84 +6,102 @@
 <title>Voorbeeldtoets Groep 3, Oefenomgeving, fullscreen responsive</title>
 <style>
 :root{
-  --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6; --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
-  --pad:clamp(12px, 2.2vw, 24px);
-  --radius:16px;
-  --navH:76px;
+  --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6; --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
+  --pad:clamp(12px, 2.2vw, 24px);
+  --radius:16px;
+  --navH:76px; /* Hoogte van de Header EN de Footer wordt door deze variabele bepaald */
 }
 
 /* Basis, echte fullscreen met mobiele address-bar fixes */
 html, body{height:100%; margin:0; padding:0}
 body{
-  min-height:100svh;
-  font-family:Arial, Helvetica, sans-serif;
-  font-size:clamp(15px, 1.1vw + .4rem, 17px);
-  line-height:1.5;
-  color:var(--text);
-  background:var(--bg);
-  display:flex;
-  flex-direction:column;
+  min-height:100svh;
+  font-family:Arial, Helvetica, sans-serif;
+  font-size:clamp(15px, 1.1vw + .4rem, 17px);
+  line-height:1.5;
+  color:var(--text);
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  /* BELANGRIJKE WIJZIGING: Voeg padding toe aan de bovenkant om ruimte te maken voor de vaste header */
+  padding-top: var(--navH);
+  /* BELANGRIJKE WIJZIGING: Voeg padding toe aan de onderkant om ruimte te maken voor de vaste footer */
+  padding-bottom: var(--navH);
 }
 
-/* Headerbalk */
+/* Headerbalk - VASTGEZET bovenaan */
 .sky{
-  height:clamp(56px, 8svh, 80px);
-  background:var(--blue);
-  border-bottom:2px solid var(--line);
-  flex:0 0 auto;
+  height:clamp(56px, 8svh, 80px);
+  background:var(--blue);
+  border-bottom:2px solid var(--line);
+  flex:0 0 auto;
+  /* BELANGRIJKE WIJZIGING: Vaste positie bovenaan */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Zorgt ervoor dat de balk boven de rest van de inhoud ligt */
 }
 
 /* Hoofdpodium vult het resterende scherm */
 .stage{
-  flex:1 1 auto;
-  min-height:0;
-  display:flex;
-  padding:clamp(8px, 1.5vw, 16px);
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  padding:clamp(8px, 1.5vw, 16px);
 }
 
 /* De “card” wordt het canvas dat het scherm vult */
 .card{
-  background:var(--panel);
-  width:100%;
-  height:calc(100% - 0px);
-  min-height:0;
-  border-radius:0;
-  box-shadow:none;
-  padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) calc(var(--pad) + var(--navH) + 16px);
-  position:relative;
-  overflow:auto;
+  background:var(--panel);
+  width:100%;
+  height:calc(100% - 0px);
+  min-height:0;
+  border-radius:0;
+  box-shadow:none;
+  /* OUDE PADDING: padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) calc(var(--pad) + var(--navH) + 16px); */
+  /* NIEUWE PADDING: Nu alleen de nodige padding. De ruimte voor de footer wordt door de body padding-bottom verzorgd */
+  padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) var(--pad);
+  position:relative;
+  overflow:auto;
 }
 
 /* Op grotere schermen net wat zachter */
 @media (min-width:900px){
-  .card{
-    max-width:1200px;
-    margin:0 auto;
-    border-radius:var(--radius);
-    box-shadow:0 1px 12px rgba(0,0,0,.08);
-    padding-bottom:calc(var(--pad) + var(--navH) + 20px);
-  }
+  .card{
+    max-width:1200px;
+    margin:0 auto;
+    border-radius:var(--radius);
+    box-shadow:0 1px 12px rgba(0,0,0,.08);
+    /* OUDE PADDING: padding-bottom:calc(var(--pad) + var(--navH) + 20px); */
+    /* NIEUWE PADDING: Nu alleen de nodige padding. */
+    padding-bottom:var(--pad);
+  }
 }
 
 /* Typografie */
 h1{font-size:clamp(18px, 1.2vw + .8rem, 24px); font-weight:bold; margin:0 0 12px}
 p{margin:0 0 10px}
-.q{font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold; margin:14px 0 8px}
+.q{
+  font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold; margin:14px 0 8px;
+  /* BELANGRIJKE WIJZIGING: Centreer de vraagtekst */
+  text-align: center;
+}
 
 /* Inputs en keuzes, grotere touch-targets */
 .input{
-  font-size:clamp(16px, 1vw + .6rem, 18px);
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid #bbb;
-  width:min(320px, 100%);
+  font-size:clamp(16px, 1vw + .6rem, 18px);
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #bbb;
+  width:min(320px, 100%);
 }
 .choices{margin-top:8px}
 .choice{display:block; margin-bottom:8px}
 .choice input{width:20px; height:20px}
 
 /* Feedbackkleuren */
-.feedback{margin-top:8px; font-weight:bold}
+.feedback{margin-top:8px; font-weight:bold; text-align: center;} /* Centreren van feedback */
 .ok{color:var(--ok)}
 .wrong{color:var(--wrong)}
 
@@ -95,47 +113,47 @@ p{margin:0 0 10px}
 .ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
 .ttsImgBtn img{width:40px; height:40px; display:block}
 .audioBtn{
-  border:0; background:#eee;
-  width:48px; height:48px; border-radius:24px;
-  cursor:pointer; display:inline-flex; align-items:center; justify-content:center
+  border:0; background:#eee;
+  width:48px; height:48px; border-radius:24px;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center
 }
 .audioBtn svg{width:22px; height:22px; fill:var(--blue)}
 .audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
 
 /* Sections */
-.task{display:none}
+.task{display:none; text-align: center;} /* Centreren van de hele sectie voor Intro, Klaar */
 .task.active{display:block}
 
 /* Scènepaneel is responsive met aspect-ratio */
 .inner-panel{
-  background:#fff;
-  border-radius:clamp(10px, 1vw, 16px);
-  box-shadow:inset 0 0 0 1px #eee;
-  width:100%;
-  max-width:1100px;
-  margin:10px auto 0;
-  aspect-ratio:16 / 9;
-  position:relative;
-  overflow:hidden;
+  background:#fff;
+  border-radius:clamp(10px, 1vw, 16px);
+  box-shadow:inset 0 0 0 1px #eee;
+  width:100%;
+  max-width:1100px;
+  margin:10px auto 0;
+  aspect-ratio:16 / 9;
+  position:relative;
+  overflow:hidden;
 }
 .scene-play, .scene-pause{
-  position:absolute; left:50%; top:clamp(20px, 5vh, 36px);
-  transform:translateX(-50%);
-  width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px);
-  border:0; background:transparent; padding:0; cursor:pointer
+  position:absolute; left:50%; top:clamp(20px, 5vh, 36px);
+  transform:translateX(-50%);
+  width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px);
+  border:0; background:transparent; padding:0; cursor:pointer
 }
 .scene-play img, .scene-pause img{width:100%; height:100%; display:block}
 .scene-pause.hidden, .scene-play.hidden{display:none}
 
 /* Afbeeldingen binnen de scène schalen proportioneel en blijven zichtbaar */
 .scene-boy{
-  position:absolute; left:50%; top:45%;
-  transform:translate(-50%, -50%);
-  height:min(48%, 42vh); width:auto; max-width:48%;
+  position:absolute; left:50%; top:45%;
+  transform:translate(-50%, -50%);
+  height:min(48%, 42vh); width:auto; max-width:48%;
 }
 .scene-girl{
-  position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px);
-  height:min(52%, 46vh); width:auto; max-width:50%;
+  position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px);
+  height:min(52%, 46vh); width:auto; max-width:50%;
 }
 
 .hidden{display:none}
@@ -149,52 +167,66 @@ p{margin:0 0 10px}
 /* Eindscherm, overzicht met tikbare rondjes */
 .review{display:none}
 .review.show{display:block}
-.circles{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0}
+.circles{
+  display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;
+  /* BELANGRIJKE WIJZIGING: Centreren van de rondjes */
+  justify-content: center;
+}
 .circleBtn{
-  width:48px; height:48px; border-radius:24px; border:1px solid #d7d7d7; background:#eee;
-  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; line-height:1
+  width:48px; height:48px; border-radius:24px; border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; line-height:1
 }
 .circleBtn.done{background:#fff}
 .endTitle{font-weight:bold; margin-top:6px}
 
-/* Onderbalk blijft bruikbaar en past zich aan */
+/* Onderbalk (Footer) - VASTGEZET onderaan */
 .bottomNav{
-  position:sticky; bottom:0;
-  left:0; right:0;
-  margin-top:20px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-  background:#fafafa; border:1px solid #ececec; border-radius:12px;
-  padding:10px 12px; min-height:var(--navH);
+  /* OUDE STICKY: position:sticky; bottom:0; */
+  /* BELANGRIJKE WIJZIGING: Vaste positie onderaan */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* OUDE MARGIN: margin-top:20px; */
+  /* NIEUWE Z-INDEX: Zorgt ervoor dat deze boven de hoofdinhoud ligt */
+  z-index: 999;
+  
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:#fafafa; border:1px solid #ececec; border-radius:0; /* Verwijder radius zodat deze de hele breedte pakt */
+  border-top: 1px solid #ececec; border-bottom: none; border-left: none; border-right: none;
+  padding:10px 12px; min-height:var(--navH);
 }
 .navBtn{
-  border:0; background:var(--blue); color:#fff; border-radius:12px;
-  padding:12px 18px; font-weight:bold; cursor:pointer; flex:0 0 auto
+  border:0; background:var(--blue); color:#fff; border-radius:12px;
+  padding:12px 18px; font-weight:bold; cursor:pointer; flex:0 0 auto
 }
 .navBtn[disabled]{background:#e0e0e0; color:#666; border:1px solid #d0d0d0; cursor:not-allowed; opacity:1}
 
 /* Pager kan scrollen en wrappen op klein scherm */
 .pager{
-  display:flex; align-items:center; gap:8px; justify-content:center;
-  flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
-  scrollbar-width:thin;
+  display:flex; align-items:center; gap:8px; justify-content:center;
+  flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
+  scrollbar-width:thin;
 }
 .pageBtn{
-  width:46px; height:46px; border-radius:23px; border:1px solid #d7d7d7; background:#eee;
-  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
-  flex:0 0 auto;
+  width:46px; height:46px; border-radius:23px; border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
+  flex:0 0 auto;
 }
 .pageBtn.current{
-  width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff; border-color:var(--blue)
+  width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff; border-color:var(--blue)
 }
 /* Reeds beantwoord, wit, huidige, blauw */
 .pageBtn.answered:not(.current){background:#fff}
 
 /* In eindscherm geen onderbalk tonen, zoals bij je vorige versie */
 .end-view .bottomNav{display:none}
+/* BELANGRIJKE WIJZIGING: Verwijder de padding-bottom van de body als de footer verborgen is */
+.end-view body{padding-bottom: 0;}
 
 /* Respecteer reduced motion voorkeuren */
 @media (prefers-reduced-motion:reduce){
-  *{scroll-behavior:auto}
+  *{scroll-behavior:auto}
 }
 
 /* Nieuwe CSS voor centreren van de nieuwe taakafbeeldingen */
@@ -254,8 +286,8 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="image-wrapper">
-    <img src="01 geld.jpg" alt="Briefje van 10 euro, twee munten van 2 euro en één munt van 1 euro.">
-    <input class="input" inputmode="numeric" placeholder="Antwoord in euro's" />
+      <img src="01 geld.jpg" alt="Briefje van 10 euro, twee munten van 2 euro en één munt van 1 euro.">
+      <input class="input" inputmode="numeric" placeholder="Antwoord in euro's" />
 </div>
 <div class="feedback"></div>
 </section>
@@ -266,8 +298,8 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="image-wrapper">
-    <img src="02 tom blokkentoren.jpg" alt="Blokken in drie kleuren die opgestapeld worden.">
-    <input class="input" inputmode="numeric" placeholder="Antwoord in blokken" />
+      <img src="02 tom blokkentoren.jpg" alt="Blokken in drie kleuren die opgestapeld worden.">
+      <input class="input" inputmode="numeric" placeholder="Antwoord in blokken" />
 </div>
 <div class="feedback"></div>
 </section>
@@ -278,8 +310,8 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="image-wrapper">
-    <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
-    <input class="input" placeholder="Antwoord in uur" />
+      <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
+      <input class="input" placeholder="Antwoord in uur" />
 </div>
 <div class="feedback"></div>
 </section>
@@ -290,8 +322,8 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="image-wrapper">
-    <img src="04 dobbelen.jpg" alt="Een dobbelsteen met vier ogen.">
-    <input class="input" inputmode="numeric" placeholder="Antwoord in ogen" />
+      <img src="04 dobbelen.jpg" alt="Een dobbelsteen met vier ogen.">
+      <input class="input" inputmode="numeric" placeholder="Antwoord in ogen" />
 </div>
 <div class="feedback"></div>
 </section>
@@ -302,8 +334,8 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="image-wrapper">
-    <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
-    <input class="input" inputmode="numeric" placeholder="Antwoord in snoepjes" />
+      <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
+      <input class="input" inputmode="numeric" placeholder="Antwoord in snoepjes" />
 </div>
 <div class="feedback"></div>
 </section>
@@ -411,9 +443,9 @@ function check(ix){
  if(input){
    value=input.value.trim();
    ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
-    // Custom check voor "5 uur" of "5"
-    if(ans === '5 uur' && (value.toLowerCase() === '5 uur' || value === '5')) { ok = true; } else if (ans !== '5 uur') { ok = String(ans) === value; }
-    
+    // Custom check voor "5 uur" of "5"
+    if(ans === '5 uur' && (value.toLowerCase() === '5 uur' || value === '5')) { ok = true; } else if (ans !== '5 uur') { ok = String(ans) === value; }
+    
  }else{
    const r=t.querySelector('input[type=radio]:checked');
    value=r ? r.value : null;
