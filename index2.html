@@ -10,11 +10,13 @@
   --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
   --pad:clamp(12px, 2.2vw, 24px);
   --radius:16px;
-  --navH:76px; /* Hoogte van de Header EN de Footer wordt door deze variabele bepaald */
+  --navH:76px;
+/* Hoogte van de Header EN de Footer wordt door deze variabele bepaald */
 }
 
 /* Basis, echte fullscreen met mobiele address-bar fixes */
-html, body{height:100%; margin:0; padding:0}
+html, body{height:100%;
+margin:0; padding:0}
 body{
   min-height:100svh;
   font-family:Arial, Helvetica, sans-serif;
@@ -24,9 +26,9 @@ body{
   background:var(--bg);
   display:flex;
   flex-direction:column;
-  /* BELANGRIJKE WIJZIGING: Voeg padding toe aan de bovenkant om ruimte te maken voor de vaste header */
+/* BELANGRIJKE WIJZIGING: Voeg padding toe aan de bovenkant om ruimte te maken voor de vaste header */
   padding-top: var(--navH);
-  /* BELANGRIJKE WIJZIGING: Voeg padding toe aan de onderkant om ruimte te maken voor de vaste footer */
+/* BELANGRIJKE WIJZIGING: Voeg padding toe aan de onderkant om ruimte te maken voor de vaste footer */
   padding-bottom: var(--navH);
 }
 
@@ -36,19 +38,19 @@ body{
   background:var(--blue);
   border-bottom:2px solid var(--line);
   flex:0 0 auto;
-  /* BELANGRIJKE WIJZIGING: Vaste positie bovenaan */
+/* BELANGRIJKE WIJZIGING: Vaste positie bovenaan */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  /* Zorgt ervoor dat de balk boven de rest van de inhoud ligt */
+/* Zorgt ervoor dat de balk boven de rest van de inhoud ligt */
 }
 
 /* Hoofdpodium vult het resterende scherm */
 .stage{
   flex:1 1 auto;
-  min-height:0;
+min-height:0;
   display:flex;
   padding:clamp(8px, 1.5vw, 16px);
 }
@@ -57,17 +59,17 @@ body{
 .card{
   background:var(--panel);
   width:100%;
-  height:calc(100% - 0px);
+height:calc(100% - 0px);
   min-height:0;
   border-radius:0;
   box-shadow:none;
   /* NIEUWE PADDING: Nu alleen de nodige padding.
-  De ruimte voor de footer wordt door de body padding-bottom verzorgd */
+De ruimte voor de footer wordt door de body padding-bottom verzorgd */
   padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) var(--pad);
-  position:relative;
+position:relative;
   /* BELANGRIJKE WIJZIGING: Verwijder de algemene overflow, we laten de inhoud binnen de taaksecties de hoogte bepalen */
   overflow:hidden;
-  display: flex;
+display: flex;
   flex-direction: column;
 }
 
@@ -75,7 +77,7 @@ body{
 @media (min-width:900px){
   .card{
     max-width:1200px;
-    margin:0 auto;
+margin:0 auto;
     border-radius:var(--radius);
     box-shadow:0 1px 12px rgba(0,0,0,.08);
     /* NIEUWE PADDING: Nu alleen de nodige padding. */
@@ -88,7 +90,7 @@ h1{font-size:clamp(18px, 1.2vw + .8rem, 24px); font-weight:bold; margin:0 0 12px
 p{margin:0 0 10px}
 .q{
   font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold;
-  margin:14px 0 8px;
+margin:14px 0 8px;
   /* BELANGRIJKE WIJZIGING: Centreer de vraagtekst */
   text-align: center;
 }
@@ -99,7 +101,7 @@ p{margin:0 0 10px}
   padding:10px 12px;
   border-radius:8px;
   border:1px solid #bbb;
-  width:min(320px, 100%);
+width:min(320px, 100%);
   /* Zorgt ervoor dat het inputveld niet de hele breedte pakt in de flex-container */
   flex-shrink: 0;
 }
@@ -117,14 +119,14 @@ p{margin:0 0 10px}
 
 /* TTS knoppen compact, maar vinger-vriendelijk */
 .ttsRow{display:inline-flex;
-  align-items:center; gap:10px; margin-left:8px}
+align-items:center; gap:10px; margin-left:8px}
 .ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
 .ttsImgBtn img{width:40px; height:40px; display:block}
 .audioBtn{
   border:0; background:#eee;
   width:48px; height:48px; border-radius:24px;
   cursor:pointer; display:inline-flex;
-  align-items:center; justify-content:center
+align-items:center; justify-content:center
 }
 .audioBtn svg{width:22px; height:22px; fill:var(--blue)}
 .audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
@@ -133,12 +135,12 @@ p{margin:0 0 10px}
 .task{
   display:none; 
   text-align: center;
-  /* NIEUW: Zorgt ervoor dat task de resterende ruimte inneemt */
+/* NIEUW: Zorgt ervoor dat task de resterende ruimte inneemt */
   flex-grow: 1;
-  /* NIEUW: Maak de task-sectie zelf een flex-container om de inhoud te beheren */
+/* NIEUW: Maak de task-sectie zelf een flex-container om de inhoud te beheren */
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centreert de inhoud horizontaal */
+align-items: center; /* Centreert de inhoud horizontaal */
   /* Tijdelijk overschrijven voor niet-actieve state, zal overschreven worden door .active */
   display:none !important;
 }
@@ -155,7 +157,7 @@ p{margin:0 0 10px}
   box-shadow:inset 0 0 0 1px #eee;
   width:100%;
   max-width:1100px;
-  margin:10px auto 0;
+margin:10px auto 0;
   aspect-ratio:16 / 9;
   position:relative;
   overflow:hidden;
@@ -163,13 +165,13 @@ p{margin:0 0 10px}
 }
 .scene-play, .scene-pause{
   position:absolute;
-  left:50%; top:clamp(20px, 5vh, 36px);
+left:50%; top:clamp(20px, 5vh, 36px);
   transform:translateX(-50%);
   width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px);
   border:0; background:transparent; padding:0; cursor:pointer
 }
 .scene-play img, .scene-pause img{width:100%; height:100%;
-  display:block}
+display:block}
 .scene-pause.hidden, .scene-play.hidden{display:none}
 
 /* Afbeeldingen binnen de scène schalen proportioneel en blijven zichtbaar */
@@ -177,7 +179,7 @@ p{margin:0 0 10px}
   position:absolute; left:50%; top:45%;
   transform:translate(-50%, -50%);
   height:min(48%, 42vh);
-  width:auto; max-width:48%;
+width:auto; max-width:48%;
 }
 .scene-girl{
   position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px);
@@ -191,65 +193,65 @@ p{margin:0 0 10px}
 .btn{border:1px solid #d0d0d0; background:#fff; border-radius:10px; padding:12px 16px; font-weight:bold; cursor:pointer}
 .btn:hover{background:#f4f6ff}
 .btn[disabled]{opacity:.5;
-  cursor:not-allowed}
+cursor:not-allowed}
 
 /* Eindscherm, overzicht met tikbare rondjes */
 .review{display:none}
 .review.show{display:block}
 .circles{
   display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;
-  /* BELANGRIJKE WIJZIGING: Centreren van de rondjes */
+/* BELANGRIJKE WIJZIGING: Centreren van de rondjes */
   justify-content: center;
   flex-shrink: 0;
 }
 .circleBtn{
   width:48px; height:48px; border-radius:24px;
-  border:1px solid #d7d7d7; background:#eee;
+border:1px solid #d7d7d7; background:#eee;
   display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; line-height:1
 }
 .circleBtn.done{background:#fff}
 .endTitle{font-weight:bold;
-  margin-top:6px}
+margin-top:6px}
 
 /* Onderbalk (Footer) - VASTGEZET onderaan */
 .bottomNav{
   /* BELANGRIJKE WIJZIGING: Vaste positie onderaan */
   position: fixed;
   bottom: 0;
-  left: 0;
+left: 0;
   right: 0;
   /* NIEUWE Z-INDEX: Zorgt ervoor dat deze boven de hoofdinhoud ligt */
   z-index: 999;
     
   display:flex;
-  align-items:center; justify-content:space-between; gap:10px;
+align-items:center; justify-content:space-between; gap:10px;
   background:#fafafa; border:1px solid #ececec; border-radius:0; /* Verwijder radius zodat deze de hele breedte pakt */
   border-top: 1px solid #ececec;
-  border-bottom: none; border-left: none; border-right: none;
+border-bottom: none; border-left: none; border-right: none;
   padding:10px 12px; min-height:var(--navH);
 }
 .navBtn{
   border:0; background:var(--blue); color:#fff; border-radius:12px;
   padding:12px 18px; font-weight:bold; cursor:pointer;
-  flex:0 0 auto
+flex:0 0 auto
 }
 .navBtn[disabled]{background:#e0e0e0; color:#666; border:1px solid #d0d0d0; cursor:not-allowed; opacity:1}
 
 /* Pager kan scrollen en wrappen op klein scherm */
 .pager{
   display:flex;
-  align-items:center; gap:8px; justify-content:center;
+align-items:center; gap:8px; justify-content:center;
   flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
   scrollbar-width:thin;
 }
 .pageBtn{
   width:46px; height:46px; border-radius:23px; border:1px solid #d7d7d7; background:#eee;
-  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
+display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
   flex:0 0 auto;
 }
 .pageBtn.current{
   width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff;
-  border-color:var(--blue)
+border-color:var(--blue)
 }
 /* Reeds beantwoord, wit, huidige, blauw */
 .pageBtn.answered:not(.current){background:#fff}
@@ -267,12 +269,12 @@ p{margin:0 0 10px}
 /* Nieuwe CSS voor centreren van de nieuwe taakafbeeldingen */
 .task img{
   display: block;
-  /* Zorgt ervoor dat margin: auto werkt voor centreren */
+/* Zorgt ervoor dat margin: auto werkt voor centreren */
   max-width: 100%;
-  /* Zorgt ervoor dat de afbeelding schaalt binnen de container */
+/* Zorgt ervoor dat de afbeelding schaalt binnen de container */
   height: auto;
   margin: 10px auto 16px;
-  /* Centreert de afbeelding en geeft wat ruimte onder */
+/* Centreert de afbeelding en geeft wat ruimte onder */
   border-radius: var(--radius);
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
@@ -281,19 +283,19 @@ p{margin:0 0 10px}
 .task-content-wrapper {
   display: flex;
   flex-direction: column;
-  /* Standaard boven elkaar */
+/* Standaard boven elkaar */
   align-items: center;
   gap: 15px; /* Ruimte tussen elementen */
   flex-grow: 1;
-  /* Neemt de beschikbare ruimte in beslag */
+/* Neemt de beschikbare ruimte in beslag */
   width: 100%;
   max-width: 1000px;
-  /* Maximale breedte van de wrapper */
+/* Maximale breedte van de wrapper */
   margin: 0 auto; /* Centreer de wrapper */
   padding: 0 10px;
-  /* Voorkom dat de inhoud de randen raakt */
+/* Voorkom dat de inhoud de randen raakt */
   min-height: 0;
-  /* Zorgt ervoor dat de flex-items kunnen schalen */
+/* Zorgt ervoor dat de flex-items kunnen schalen */
 }
 
 /* BELANGRIJKE WIJZIGING VOOR LAY-OUT */
@@ -301,22 +303,22 @@ p{margin:0 0 10px}
   /* Op grotere schermen: input en toetsenbord rechts van de afbeelding */
   .task-content-wrapper.with-keyboard {
     flex-direction: row;
-    /* Naast elkaar */
+/* Naast elkaar */
     justify-content: center; /* Centreer de groep horizontaal */
     align-items: flex-start;
-    /* Begin bovenaan uitgelijnd */
+/* Begin bovenaan uitgelijnd */
   }
 }
 
 .image-container {
   /* Nieuwe container voor de afbeelding, zorgt ervoor dat deze de beschikbare ruimte gebruikt en de hoogte van het toetsenbord overneemt */
   display: flex;
-  flex-direction: column;
+flex-direction: column;
   justify-content: center; /* Centreert de afbeelding verticaal */
   align-items: center;
   max-width: 100%;
   max-height: 100%;
-  /* Zorgt dat het binnen de container past */
+/* Zorgt dat het binnen de container past */
   min-height: 0;
   flex-shrink: 1;
 }
@@ -324,14 +326,14 @@ p{margin:0 0 10px}
 .image-container img {
   /* Zorgt ervoor dat de afbeelding binnen de beschikbare ruimte schaalt */
   max-height: 100%;
-  width: auto;
+width: auto;
   object-fit: contain;
   margin: 0; /* Haal de auto margins weg uit de algemene .task img regel */
 }
 
 .input-keyboard-container {
   display: flex;
-  flex-direction: column;
+flex-direction: column;
   align-items: center;
   gap: 10px;
   flex-shrink: 0; /* Voorkom dat de invoer/toetsenbord container krimpt */
@@ -340,37 +342,43 @@ p{margin:0 0 10px}
 /* Visueel Toetsenbord CSS - BIJGEWERKT voor stijl en schaduw */
 .keyboard {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+grid-template-columns: repeat(3, 1fr);
   gap: 10px; /* iets meer ruimte */
   width: 100%;
-  max-width: 320px; /* Iets breder */
+  max-width: 320px;
+/* Iets breder */
   margin-top: 15px;
   padding: 10px;
-  background: var(--bg); /* Achtergrond is lichtgrijs van de body */
+  background: var(--bg);
+/* Achtergrond is lichtgrijs van de body */
   border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Schaduw op het hele toetsenbord */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* Schaduw op het hele toetsenbord */
 }
 
 .key-btn {
   background-color: var(--panel); /* Wit */
-  color: var(--text); /* Zwart */
+  color: var(--text);
+/* Zwart */
   border: 1px solid var(--line); /* Lichte rand */
   border-radius: 12px;
   padding: 0;
-  font-size: clamp(28px, 4.5vw, 42px); /* Grotere cijfers */
+font-size: clamp(28px, 4.5vw, 42px); /* Grotere cijfers */
   font-weight: bold;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+justify-content: center;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Schaduw op de knoppen */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* Schaduw op de knoppen */
 }
 
 .key-btn:hover {
   background-color: #f0f0f0; /* Lichte hover */
-  border-color: var(--blue); /* Blauwe rand op hover */
+  border-color: var(--blue);
+/* Blauwe rand op hover */
 }
 
 .key-btn:active {
@@ -381,13 +389,15 @@ p{margin:0 0 10px}
 /* Aanpassing voor de 0-knop: beslaat 2 kolommen */
 .key-btn.zero {
   grid-column: 1 / span 2;
-  aspect-ratio: auto; /* Overschrijf de 1/1 aspect-ratio */
+  aspect-ratio: auto;
+/* Overschrijf de 1/1 aspect-ratio */
   height: 100%; /* Vul de hoogte van de rij */
 }
 
 /* Backspace-knop stijl - nu met een rode/grijze kleur en icoon */
 .key-btn.backspace {
-  background-color: var(--wrong); /* Rood/Gevaar kleur */
+  background-color: var(--wrong);
+/* Rood/Gevaar kleur */
   color: white;
   border: 1px solid var(--wrong);
   font-size: 0;
@@ -403,7 +413,8 @@ p{margin:0 0 10px}
 .backspace-icon {
   width: 60%;
   height: 60%;
-  fill: white; /* Wit icoon op rode knop */
+  fill: white;
+/* Wit icoon op rode knop */
 }
 
 .input-with-label {
@@ -411,8 +422,34 @@ p{margin:0 0 10px}
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    flex-shrink: 0;
+flex-shrink: 0;
 }
+
+/* NIEUWE WIJZIGING: Plaats .input-with-label onder .keyboard */
+.input-keyboard-container {
+    display: flex;
+    flex-direction: column;
+    /* De volgorde van elementen in de HTML/DOM bepaalt de volgorde. 
+       Als je input ONDER keyboard wilt, zet je het keyboard eerst in de HTML */
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    /* BELANGRIJK: Gebruik order om de input onder het toetsenbord te krijgen */
+    
+    /* Zorg ervoor dat de input-container niet krimpt */
+}
+
+/* NIEUWE WIJZIGING: Plaats de input-label container na het toetsenbord */
+.input-keyboard-container > .input-with-label {
+    order: 2;
+}
+
+/* NIEUWE WIJZIGING: Plaats het toetsenbord vóór de input-label container */
+.input-keyboard-container > .keyboard {
+    order: 1;
+    margin-top: 0; /* Verwijder de extra marge, de gap in de container regelt dit */
+}
+
 </style>
 </head>
 <body>
@@ -443,10 +480,9 @@ p{margin:0 0 10px}
 </div>
 </section>
 
-<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 1, Sophie heeft een briefje van tien euro, twee muntjes van twee euro en 
-een muntje van één euro. Hoeveel euro heeft Sophie in totaal?">
+<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 1, Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal?">
 <h1>Opgave 1</h1>
-<p class="q">Sophie heeft 1 briefje van &euro;10, 2 muntjes van &euro;2 en 1 muntje van &euro;1. Hoeveel euro heeft Sophie in totaal?
+<p class="q">Sophie heeft 1 briefje van &euro;10,<br> 2 muntjes van &euro;2 en 1 muntje van &euro;1.<br> Hoeveel euro heeft Sophie in totaal?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -454,20 +490,18 @@ een muntje van één euro. Hoeveel euro heeft Sophie in totaal?">
     <img src="01 geld.jpg" alt="Briefje van 10 euro, twee munten van 2 euro en één munt van 1 euro.">
   </div>
   <div class="input-keyboard-container">
+    <div class="keyboard" data-target-input=".input"></div>
     <div class="input-with-label">
-        <input class="input" type="text" inputmode="text" placeholder="Antwoord in euro's" data-numeric-only="true" />
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
     </div>
-    <div 
-class="keyboard" data-target-input=".input"></div>
   </div>
 </div>
 <div class="feedback"></div>
 </section>
 
-<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 2, Tom heeft drie rode blokken, zes blauwe en vier groene blokken.
-Hij stapelt alle blokken. Hoe hoog wordt zijn toren?">
+<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 2, Tom heeft drie rode blokken, zes blauwe en vier groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?">
 <h1>Opgave 2</h1>
-<p class="q">Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?
+<p class="q">Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken.<br> Hij stapelt alle blokken. Hoe hoog wordt zijn toren?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -475,20 +509,18 @@ Hij stapelt alle blokken. Hoe hoog wordt zijn toren?">
     <img src="02 tom blokkentoren.jpg" alt="Blokken in drie kleuren die opgestapeld worden.">
   </div>
   <div class="input-keyboard-container">
-    <div class="input-with-label">
-        <input class="input" type="text" inputmode="text" placeholder="Antwoord in blokken" data-numeric-only="true" />
-    </div>
     <div class="keyboard" data-target-input=".input"></div>
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+    </div>
   </div>
 </div>
 <div class="feedback"></div>
 </section>
 
-<section class="task" data-kind="task" data-answer="5 uur" data-tts="Opgave 
-3, Het is nu drie uur. Over twee uur moet Lisa naar muziekles.
-Hoe laat is het dan?">
+<section class="task" data-kind="task" data-answer="5 uur" data-tts="Opgave 3, Het is nu drie uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?">
 <h1>Opgave 3</h1>
-<p class="q">Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?
+<p class="q">Het is nu 3 uur. Over twee uur moet Lisa naar muziekles.<br> Hoe laat is het dan?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -496,21 +528,19 @@ Hoe laat is het dan?">
     <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
   </div>
   <div class="input-keyboard-container">
+    <div class="keyboard" data-target-input=".input"></div>
     <div class="input-with-label">
-        <input class="input" type="text" inputmode="text" placeholder="Antwoord in uur" data-numeric-only="false" />
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="false" />
         <small class="text-muted">Typ "uur" of gebruik het fysieke toetsenbord.</small>
     </div>
-    <div class="keyboard" data-target-input=".input"></div>
-  
   </div>
 </div>
 <div class="feedback"></div>
 </section>
 
-<section class="task" data-kind="task" data-answer="6" data-tts="Opgave 4, Jasper gooit in totaal tien.
-Vier ogen dobbelt hij met de ene dobbelsteen, hoeveel ogen moet hij met de tweede dobbelsteen gooien om tien te krijgen?">
+<section class="task" data-kind="task" data-answer="6" data-tts="Opgave 4, Jasper gooit in totaal tien. Vier ogen dobbelt hij met de ene dobbelsteen, hoeveel ogen moet hij met de tweede dobbelsteen gooien om tien te krijgen?">
 <h1>Opgave 4</h1>
-<p class="q">Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen, hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?
+<p class="q">Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen,<br> hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -518,20 +548,18 @@ Vier ogen dobbelt hij met de ene dobbelsteen, hoeveel ogen moet hij met de tweed
     <img src="04 dobbelen.jpg" alt="Een dobbelsteen met vier ogen.">
   </div>
   <div class="input-keyboard-container">
-    <div class="input-with-label">
-        <input class="input" type="text" inputmode="text" placeholder="Antwoord in ogen" data-numeric-only="true" />
-    
-    </div>
     <div class="keyboard" data-target-input=".input"></div>
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+    </div>
   </div>
 </div>
 <div class="feedback"></div>
 </section>
 
-<section class="task" data-kind="task" data-answer="3" data-tts="Opgave 5, Tom en Lisa tellen hun snoepjes.
-Tom heeft zes snoepjes, Lisa negen snoepjes. Hoeveel snoepjes heeft Lisa meer?">
+<section class="task" data-kind="task" data-answer="3" data-tts="Opgave 5, Tom en Lisa tellen hun snoepjes. Tom heeft zes snoepjes, Lisa negen snoepjes. Hoeveel snoepjes heeft Lisa meer?">
 <h1>Opgave 5</h1>
-<p class="q">Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?
+<p class="q">Tom en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes.<br> Hoeveel snoepjes heeft Lisa meer?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -539,10 +567,10 @@ Tom heeft zes snoepjes, Lisa negen snoepjes. Hoeveel snoepjes heeft Lisa meer?">
     <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
   </div>
   <div class="input-keyboard-container">
-    <div class="input-with-label">
-        <input class="input" type="text" inputmode="text" placeholder="Antwoord in snoepjes" data-numeric-only="true" />
-    </div>
     <div class="keyboard" data-target-input=".input"></div>
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+    </div>
   </div>
 </div>
 <div class="feedback"></div>
@@ -585,33 +613,33 @@ const state = itemIx.reduce((acc,ix)=>{ acc[ix] = { answered:false, correct:null
 const synth = window.speechSynthesis;
 let voices = [], chosenVoiceIndex = 0;
 function loadVoices(){ 
-  voices = synth ? synth.getVoices() : []; 
-  if(voices.length > 0){
+  voices = synth ? synth.getVoices() : [];
+if(voices.length > 0){
     let voiceIndex = -1;
-    // --- WIJZIGING 1: Vrouwenstem prioriteren ---
+// --- WIJZIGING 1: Vrouwenstem prioriteren ---
     // Probeer expliciet een Nederlandse vrouwenstem te vinden (met 'Female', 'Vrouw', of een voorkeursnaam)
-    voiceIndex = voices.findIndex(v => v.lang && v.lang.startsWith('nl') && (v.name.includes('Female') || v.name.includes('Vrouw') || v.name.includes('Google Nederlands')));
-    
-    if (voiceIndex === -1) {
+    voiceIndex = voices.findIndex(v => v.lang && v.lang.startsWith('nl') && (v.name.includes('Female') || v.name.includes('Vrouw') || v.name.includes('Google Nederlands') || v.name.includes('Google NL-NL')));
+if (voiceIndex === -1) {
         // Val terug op de eerste gevonden NL-stem
         voiceIndex = voices.findIndex(v => v.lang && v.lang.startsWith('nl'));
-    }
+}
     
     chosenVoiceIndex = voiceIndex >= 0 ? voiceIndex : 0;
   }
 }
-if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
+if(synth){ loadVoices();
+synth.onvoiceschanged = loadVoices; }
 function hardResetTTS(){
   try{
     if(!synth) return;
     synth.cancel();
     if(synth.paused){ synth.resume();
-    }
+}
     const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
   }catch(e){}
 }
 function stopAllTTS(){ try{ if(synth){ hardResetTTS();
-    } }catch(e){}
+} }catch(e){}
   document.querySelectorAll('.ttsImgBtn').forEach(btn=>{ const img = btn.querySelector('img'); if(img) img.src='speel.jpg'; btn.dataset.playing='false'; });
   showPlayIcon();
 }
@@ -619,12 +647,12 @@ function speakOnce(text, opts={onstart:null,onend:null,pauseable:true,section:nu
   if(!synth || !text) return;
   try{ hardResetTTS(); }catch(e){}
   const u = new SpeechSynthesisUtterance(text);
-  const v = voices[chosenVoiceIndex];
+const v = voices[chosenVoiceIndex];
   if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL';
-  }
+}
   u.rate = ('rate' in opts)? opts.rate : 0.95;
   u.pitch = ('pitch' in opts)? opts.pitch : 1.0;
-  if(typeof opts.onstart==='function') u.onstart = opts.onstart;
+if(typeof opts.onstart==='function') u.onstart = opts.onstart;
   if(typeof opts.onend==='function') u.onend = opts.onend;
   synth.speak(u);
 }
@@ -644,9 +672,9 @@ function handleScenePlay(){
     scenePlaying=false; showPlayIcon(); return;
   }
   scenePlaying=true; showPauseIcon();
-  const main = 'Klik rechtsonder op de knop';
+const main = 'Klik rechtsonder op de knop';
   const emphas = 'volgende';
-  speakOnce(main,{onend:()=>{
+speakOnce(main,{onend:()=>{
     speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{
       scenePlaying=false; showPlayIcon(); setNextEnabled(true);
     }});
@@ -666,34 +694,34 @@ function check(ix){
   const ans=t.dataset.answer;
   const input=t.querySelector('input.input');
   const fb=t.querySelector('div.feedback');
-  let ok=false, value=null;
+let ok=false, value=null;
   if(input){
     value=input.value.trim();
     ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
-    // Custom check voor "5 uur" of "5"
+// Custom check voor "5 uur" of "5"
      if(ans === '5 uur' && (value.toLowerCase() === '5 uur' || value === '5')) { ok = true;
-    } else if (ans !== '5 uur') { ok = String(ans) === value;
-    }
+} else if (ans !== '5 uur') { ok = String(ans) === value;
+}
       
   }else{
     const r=t.querySelector('input[type=radio]:checked');
     value=r ? r.value : null;
-    ok= value && value===ans;
+ok= value && value===ans;
   }
   fb.textContent='';
   fb.className='feedback';
   if(value!==null && value!==''){
     state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
-    if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
+if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
     if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted;
-    }
+}
   }else{
     state[ix].answered=false; state[ix].correct=null;
     if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
   }
   renderPager();
   return state[ix].answered ?
-  ok : false;
+ok : false;
 }
 
 // Inject TTS image buttons voor tasks
@@ -701,12 +729,12 @@ function ensureTaskTTSControls(section){
   if(section.dataset.kind!=='task') return;
   if(!section.dataset.tts) return;
   const btn = section.querySelector('.ttsImgBtn');
-  if(!btn) return;
+if(!btn) return;
   const img = btn.querySelector('img'); if(!img) return;
   btn.dataset.playing='false';
   function onStart(){ btn.dataset.playing='true'; img.src='pauze.jpg'; }
   function onEnd(){ btn.dataset.playing='false'; img.src='speel.jpg';
-  }
+}
   if(!btn._bound){
     btn.addEventListener('click', ()=>{
       const playing = btn.dataset.playing==='true';
@@ -715,7 +743,7 @@ function ensureTaskTTSControls(section){
       const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
       speakOnce(tts,{onend:()=>{ onEnd(); }});
     });
-    btn._bound = true;
+btn._bound = true;
   }
 }
 
@@ -723,18 +751,18 @@ function show(k){
   tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
   const active = tasks[k];
   const kind = active?.dataset.kind;
-  // Vorige alleen verbergen op het geluidscontrole-scherm
+// Vorige alleen verbergen op het geluidscontrole-scherm
   if (kind === 'intro') { prevBtn.style.visibility = 'hidden';
-  } else { prevBtn.style.visibility = 'visible'; }
+} else { prevBtn.style.visibility = 'visible'; }
 
   const endSection = tasks.find(t=>t.dataset.kind==='end');
   if(endSection){
     if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view');
-    }
+}
     else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
   }
   if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui');
-  }
+}
 
   stopAllTTS();
   showPlayIcon();
@@ -743,15 +771,15 @@ function show(k){
   if(kind==='task'){
     ensureTaskTTSControls(active);
     const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50);
-    }
+}
     prevBtn.disabled = (itemIx.indexOf(k)===0);
     setNextEnabled(true);
     renderPager();
   }else if(kind==='intro'){
     const introText = active.dataset.tts ||
-    'Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.';
+'Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.';
     speakOnce(introText);
-    setNextEnabled(!!document.getElementById('soundOk')?.checked);
+setNextEnabled(!!document.getElementById('soundOk')?.checked);
     renderPager(true);
   }else if(kind==='scene'){
     setNextEnabled(false);
@@ -761,7 +789,7 @@ function show(k){
     fillEndCircles();
     setNextEnabled(false);
     renderPager(true);
-  }
+}
 }
 
 // Paginering
@@ -770,15 +798,15 @@ function renderPager(hideAll){
   if(hideAll){ return; }
   const total = itemIx.length; if(total===0) return;
   const currentIdx = itemIx.indexOf(i);
-  for(let k=0;k<total;k++){
+for(let k=0;k<total;k++){
    const ixTask = itemIx[k];
    const b=document.createElement('button');
    const isCurrent = (currentIdx===k);
-   b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
+b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
    b.type='button'; b.textContent=String(k+1);
    if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
    pager.appendChild(b);
-  }
+}
 }
 
 // Eindscherm
@@ -816,45 +844,46 @@ function renderKeyboards() {
             if (key === 'del') {
                 btn.classList.add('backspace');
                 // --- WIJZIGING 2: Nieuw backspace-icoon met pijl ---
+      
                 btn.innerHTML = `<svg class="backspace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3h-10c-1.1 0-2 .9-2 2v2h2v-2h10v14h-10v-2h-2v2c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-16c0-1.1-.9-2-2-2zm-12 5l-5 4 5 4v-3h7v-2h-7v-3z"/></svg>`;
    
                 btn.setAttribute('aria-label', 'Wissen');
             } else {
                 btn.textContent = key;
-                btn.setAttribute('aria-label', key);
+btn.setAttribute('aria-label', key);
                 if (key === 0) {
                  
                   btn.classList.add('zero');
-                }
+}
             }
 
             btn.addEventListener('click', (e) => handleKeyClick(e, targetInput, key));
-            kb.appendChild(btn);
+kb.appendChild(btn);
         });
     });
 }
 
 function handleKeyClick(event, inputElement, key) {
     event.preventDefault();
-    // Voorkomt dat de knop focus steelt van de input
+// Voorkomt dat de knop focus steelt van de input
     inputElement.focus();
     const isNumericOnly = inputElement.dataset.numericOnly === 'true';
-    let currentValue = inputElement.value;
+let currentValue = inputElement.value;
 
     if (key === 'del') {
         // Backspace logica
         if (currentValue.length > 0) {
             inputElement.value = currentValue.slice(0, -1);
-        }
+}
     } else {
         // Nummer invoer logica
         const char = String(key);
-        if (isNumericOnly && !/^\d$/.test(char)) {
+if (isNumericOnly && !/^\d$/.test(char)) {
             // Negeer niet-numerieke input als numericOnly=true
             return;
-        }
+}
         inputElement.value += char;
-    }
+}
 
     // Trigger het check-mechanisme na de invoer
     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -892,7 +921,6 @@ nextBtn.addEventListener('click', ()=>{
     return;
   }
 });
-
 // Keyboard
 window.addEventListener('keydown', (e)=>{
   const kind = tasks[i]?.dataset.kind;
@@ -921,7 +949,7 @@ function playDrum(time,freq=150,dur=0.2,type='sine'){
   o.connect(g); g.connect(ctx.destination);
   o.type=type; o.frequency.setValueAtTime(freq,time);
   g.gain.setValueAtTime(1,time);
-  g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+g.gain.exponentialRampToValueAtTime(0.001,time+dur);
   o.start(time); o.stop(time+dur);
 }
 function playDrumPatternAt(now){ DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type)); }
@@ -937,7 +965,7 @@ function playDrumPatternRepeated(times=3, gapMs=900){
   stopSoundLoop();
   for(let r=0;r<times;r++){
     const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
-    soundLoopTimeouts.push(tId);
+soundLoopTimeouts.push(tId);
   }
 }
 function updateIntro(){
