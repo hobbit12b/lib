@@ -335,7 +335,8 @@ width: auto;
   display: flex;
 flex-direction: column;
   align-items: center;
-  gap: 10px;
+  /* WIJZIGING: Verhoogde gap voor meer ruimte tussen toetsenbord en invoervak */
+  gap: 20px;
   flex-shrink: 0; /* Voorkom dat de invoer/toetsenbord container krimpt */
 }
 
@@ -432,8 +433,6 @@ flex-shrink: 0;
     /* De volgorde van elementen in de HTML/DOM bepaalt de volgorde. 
        Als je input ONDER keyboard wilt, zet je het keyboard eerst in de HTML */
     align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
     /* BELANGRIJK: Gebruik order om de input onder het toetsenbord te krijgen */
     
     /* Zorg ervoor dat de input-container niet krimpt */
@@ -499,9 +498,9 @@ flex-shrink: 0;
 <div class="feedback"></div>
 </section>
 
-<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 2, Tom heeft drie rode blokken, zes blauwe en vier groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?">
+<section class="task" data-kind="task" data-answer="13" data-tts="Opgave 2, Tom heeft drie rode blokken, zes groene en vier blauwe blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?">
 <h1>Opgave 2</h1>
-<p class="q">Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken.<br> Hij stapelt alle blokken. Hoe hoog wordt zijn toren?
+<p class="q">Tom heeft 3 rode blokken, 6 groene en 4 blauwe blokken.<br> Hij stapelt alle blokken. Hoe hoog wordt zijn toren?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <div class="task-content-wrapper with-keyboard">
@@ -525,7 +524,7 @@ flex-shrink: 0;
 </p>
 <div class="task-content-wrapper with-keyboard">
   <div class="image-container">
-    <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
+    <img src="03 muziekles.jpg" alt="Illustratie van een klok of tijd.">
   </div>
   <div class="input-keyboard-container">
     <div class="keyboard" data-target-input=".input"></div>
@@ -564,7 +563,7 @@ flex-shrink: 0;
 </p>
 <div class="task-content-wrapper with-keyboard">
   <div class="image-container">
-    <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
+    <img src="05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
   </div>
   <div class="input-keyboard-container">
     <div class="keyboard" data-target-input=".input"></div>
@@ -965,7 +964,7 @@ function playDrumPatternRepeated(times=3, gapMs=900){
   stopSoundLoop();
   for(let r=0;r<times;r++){
     const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
-soundLoopTimeouts.push(tId);
+    soundLoopTimeouts.push(tId);
   }
 }
 function updateIntro(){
