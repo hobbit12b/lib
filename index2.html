@@ -59,11 +59,13 @@ body{
   min-height:0;
   border-radius:0;
   box-shadow:none;
-  /* OUDE PADDING: padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) calc(var(--pad) + var(--navH) + 16px); */
   /* NIEUWE PADDING: Nu alleen de nodige padding. De ruimte voor de footer wordt door de body padding-bottom verzorgd */
   padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) var(--pad);
   position:relative;
-  overflow:auto;
+  /* BELANGRIJKE WIJZIGING: Verwijder de algemene overflow, we laten de inhoud binnen de taaksecties de hoogte bepalen */
+  overflow:hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Op grotere schermen net wat zachter */
@@ -73,7 +75,6 @@ body{
     margin:0 auto;
     border-radius:var(--radius);
     box-shadow:0 1px 12px rgba(0,0,0,.08);
-    /* OUDE PADDING: padding-bottom:calc(var(--pad) + var(--navH) + 20px); */
     /* NIEUWE PADDING: Nu alleen de nodige padding. */
     padding-bottom:var(--pad);
   }
@@ -95,13 +96,15 @@ p{margin:0 0 10px}
   border-radius:8px;
   border:1px solid #bbb;
   width:min(320px, 100%);
+  /* Zorgt ervoor dat het inputveld niet de hele breedte pakt in de flex-container */
+  flex-shrink: 0; 
 }
 .choices{margin-top:8px}
 .choice{display:block; margin-bottom:8px}
 .choice input{width:20px; height:20px}
 
 /* Feedbackkleuren */
-.feedback{margin-top:8px; font-weight:bold; text-align: center;} /* Centreren van feedback */
+.feedback{margin-top:8px; font-weight:bold; text-align: center; flex-shrink: 0;} /* Centreren van feedback */
 .ok{color:var(--ok)}
 .wrong{color:var(--wrong)}
 
@@ -121,8 +124,23 @@ p{margin:0 0 10px}
 .audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
 
 /* Sections */
-.task{display:none; text-align: center;} /* Centreren van de hele sectie voor Intro, Klaar */
-.task.active{display:block}
+.task{
+  display:none; 
+  text-align: center;
+  /* NIEUW: Zorgt ervoor dat task de resterende ruimte inneemt */
+  flex-grow: 1;
+  /* NIEUW: Maak de task-sectie zelf een flex-container om de inhoud te beheren */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centreert de inhoud horizontaal */
+  /* Tijdelijk overschrijven voor niet-actieve state, zal overschreven worden door .active */
+  display:none !important; 
+}
+.task.active{
+  display:flex !important; /* Toon de actieve sectie */
+  /* NIEUW: Zorgt ervoor dat de inhoud van de taak kan schalen */
+  overflow: hidden;
+}
 
 /* Scènepaneel is responsive met aspect-ratio */
 .inner-panel{
@@ -135,6 +153,7 @@ p{margin:0 0 10px}
   aspect-ratio:16 / 9;
   position:relative;
   overflow:hidden;
+  flex-shrink: 0; /* Voorkom dat dit paneel krimpt */
 }
 .scene-play, .scene-pause{
   position:absolute; left:50%; top:clamp(20px, 5vh, 36px);
@@ -171,6 +190,7 @@ p{margin:0 0 10px}
   display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;
   /* BELANGRIJKE WIJZIGING: Centreren van de rondjes */
   justify-content: center;
+  flex-shrink: 0;
 }
 .circleBtn{
   width:48px; height:48px; border-radius:24px; border:1px solid #d7d7d7; background:#eee;
@@ -181,16 +201,14 @@ p{margin:0 0 10px}
 
 /* Onderbalk (Footer) - VASTGEZET onderaan */
 .bottomNav{
-  /* OUDE STICKY: position:sticky; bottom:0; */
   /* BELANGRIJKE WIJZIGING: Vaste positie onderaan */
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  /* OUDE MARGIN: margin-top:20px; */
   /* NIEUWE Z-INDEX: Zorgt ervoor dat deze boven de hoofdinhoud ligt */
   z-index: 999;
-  
+    
   display:flex; align-items:center; justify-content:space-between; gap:10px;
   background:#fafafa; border:1px solid #ececec; border-radius:0; /* Verwijder radius zodat deze de hele breedte pakt */
   border-top: 1px solid #ececec; border-bottom: none; border-left: none; border-right: none;
@@ -239,16 +257,113 @@ p{margin:0 0 10px}
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
-/* Container voor afbeelding en invoerveld */
-.image-wrapper {
-  margin-top: 15px; /* Ruimte boven de wrapper */
-  margin-bottom: 15px; /* Ruimte onder de wrapper */
+/* Container voor afbeelding, invoerveld en toetsenbord */
+.task-content-wrapper {
+  display: flex;
+  flex-direction: column; /* Standaard boven elkaar */
+  align-items: center;
+  gap: 15px; /* Ruimte tussen elementen */
+  flex-grow: 1; /* Neemt de beschikbare ruimte in beslag */
+  width: 100%;
+  max-width: 1000px; /* Maximale breedte van de wrapper */
+  margin: 0 auto; /* Centreer de wrapper */
+  padding: 0 10px; /* Voorkom dat de inhoud de randen raakt */
+  min-height: 0; /* Zorgt ervoor dat de flex-items kunnen schalen */
 }
 
-/* Zorg dat de invoer netjes onder de afbeelding staat */
-.image-wrapper .input {
-  margin: 0 auto; /* Centreert de input */
-  display: block; /* Zorgt dat de input een blok-element is */
+/* BELANGRIJKE WIJZIGING VOOR LAY-OUT */
+@media (min-width: 768px) {
+  /* Op grotere schermen: input en toetsenbord rechts van de afbeelding */
+  .task-content-wrapper.with-keyboard {
+    flex-direction: row; /* Naast elkaar */
+    justify-content: center; /* Centreer de groep horizontaal */
+    align-items: flex-start; /* Begin bovenaan uitgelijnd */
+  }
+}
+
+.image-container {
+  /* Nieuwe container voor de afbeelding, zorgt ervoor dat deze de beschikbare ruimte gebruikt en de hoogte van het toetsenbord overneemt */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centreert de afbeelding verticaal */
+  align-items: center;
+  max-width: 100%;
+  max-height: 100%; /* Zorgt dat het binnen de container past */
+  min-height: 0;
+  flex-shrink: 1;
+}
+
+.image-container img {
+  /* Zorgt ervoor dat de afbeelding binnen de beschikbare ruimte schaalt */
+  max-height: 100%; 
+  width: auto;
+  object-fit: contain;
+  margin: 0; /* Haal de auto margins weg uit de algemene .task img regel */
+}
+
+.input-keyboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0; /* Voorkom dat de invoer/toetsenbord container krimpt */
+}
+
+/* Visueel Toetsenbord CSS */
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 260px; /* Maximale breedte van het toetsenbord */
+  margin-top: 10px;
+}
+
+.key-btn {
+  background-color: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: bold;
+  aspect-ratio: 1 / 1; /* Zorgt voor vierkante knoppen */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.key-btn:hover {
+  background-color: var(--blue-dark);
+}
+
+.key-btn.zero {
+  grid-column: 1 / span 2;
+}
+
+.key-btn.backspace {
+  background-color: #9c27b0; /* Paars voor Backspace */
+  font-size: 0; /* Verberg de tekst als er een icoon is */
+}
+
+.key-btn.backspace:hover {
+  background-color: #7b1fa2;
+}
+
+.backspace-icon {
+  width: 50%;
+  height: 50%;
+  fill: white;
+}
+
+.input-with-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
 }
 </style>
 </head>
@@ -285,9 +400,16 @@ p{margin:0 0 10px}
 <p class="q">Sophie heeft 1 briefje van &euro;10, 2 muntjes van &euro;2 en 1 muntje van &euro;1. Hoeveel euro heeft Sophie in totaal?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
-<div class="image-wrapper">
-      <img src="01 geld.jpg" alt="Briefje van 10 euro, twee munten van 2 euro en één munt van 1 euro.">
-      <input class="input" inputmode="numeric" placeholder="Antwoord in euro's" />
+<div class="task-content-wrapper with-keyboard">
+  <div class="image-container">
+    <img src="01 geld.jpg" alt="Briefje van 10 euro, twee munten van 2 euro en één munt van 1 euro.">
+  </div>
+  <div class="input-keyboard-container">
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoord in euro's" data-numeric-only="true" />
+    </div>
+    <div class="keyboard" data-target-input=".input"></div>
+  </div>
 </div>
 <div class="feedback"></div>
 </section>
@@ -297,9 +419,16 @@ p{margin:0 0 10px}
 <p class="q">Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
-<div class="image-wrapper">
-      <img src="02 tom blokkentoren.jpg" alt="Blokken in drie kleuren die opgestapeld worden.">
-      <input class="input" inputmode="numeric" placeholder="Antwoord in blokken" />
+<div class="task-content-wrapper with-keyboard">
+  <div class="image-container">
+    <img src="02 tom blokkentoren.jpg" alt="Blokken in drie kleuren die opgestapeld worden.">
+  </div>
+  <div class="input-keyboard-container">
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoord in blokken" data-numeric-only="true" />
+    </div>
+    <div class="keyboard" data-target-input=".input"></div>
+  </div>
 </div>
 <div class="feedback"></div>
 </section>
@@ -309,9 +438,17 @@ p{margin:0 0 10px}
 <p class="q">Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
-<div class="image-wrapper">
-      <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
-      <input class="input" placeholder="Antwoord in uur" />
+<div class="task-content-wrapper with-keyboard">
+  <div class="image-container">
+    <img src="03 snoepjes tellen.png" alt="Illustratie van een klok of tijd.">
+  </div>
+  <div class="input-keyboard-container">
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoord in uur" data-numeric-only="false" />
+        <small class="text-muted">Typ "uur" of gebruik het fysieke toetsenbord.</small>
+    </div>
+    <div class="keyboard" data-target-input=".input"></div>
+  </div>
 </div>
 <div class="feedback"></div>
 </section>
@@ -321,9 +458,16 @@ p{margin:0 0 10px}
 <p class="q">Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen, hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
-<div class="image-wrapper">
-      <img src="04 dobbelen.jpg" alt="Een dobbelsteen met vier ogen.">
-      <input class="input" inputmode="numeric" placeholder="Antwoord in ogen" />
+<div class="task-content-wrapper with-keyboard">
+  <div class="image-container">
+    <img src="04 dobbelen.jpg" alt="Een dobbelsteen met vier ogen.">
+  </div>
+  <div class="input-keyboard-container">
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoord in ogen" data-numeric-only="true" />
+    </div>
+    <div class="keyboard" data-target-input=".input"></div>
+  </div>
 </div>
 <div class="feedback"></div>
 </section>
@@ -333,9 +477,16 @@ p{margin:0 0 10px}
 <p class="q">Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
-<div class="image-wrapper">
-      <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
-      <input class="input" inputmode="numeric" placeholder="Antwoord in snoepjes" />
+<div class="task-content-wrapper with-keyboard">
+  <div class="image-container">
+    <img src="illustratie 05 snoepjes.jpg" alt="Een groepje van zes snoepjes en een groepje van negen snoepjes.">
+  </div>
+  <div class="input-keyboard-container">
+    <div class="input-with-label">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoord in snoepjes" data-numeric-only="true" />
+    </div>
+    <div class="keyboard" data-target-input=".input"></div>
+  </div>
 </div>
 <div class="feedback"></div>
 </section>
@@ -367,6 +518,7 @@ const itemIx = taskIndexes.filter(x=>x.kind==='task').map(x=>x.ix);
 const firstTask = itemIx[0];
 const introIx = tasks.findIndex(t=>t.dataset.kind==='intro');
 const sceneIx = tasks.findIndex(t=>t.dataset.kind==='scene');
+const endIx = tasks.findIndex(t=>t.dataset.kind==='end');
 
 // administratie
 let i=0, score=0;
@@ -376,33 +528,33 @@ const state = itemIx.reduce((acc,ix)=>{ acc[ix] = { answered:false, correct:null
 const synth = window.speechSynthesis;
 let voices = [], chosenVoiceIndex = 0;
 function loadVoices(){ voices = synth ? synth.getVoices() : []; if(voices.length>0){
- const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
- if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
+  const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
+  if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
 }}
 if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
 function hardResetTTS(){
- try{
-   if(!synth) return;
-   synth.cancel();
-   if(synth.paused){ synth.resume(); }
-   const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
- }catch(e){}
+  try{
+    if(!synth) return;
+    synth.cancel();
+    if(synth.paused){ synth.resume(); }
+    const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
+  }catch(e){}
 }
 function stopAllTTS(){ try{ if(synth){ hardResetTTS(); } }catch(e){}
- document.querySelectorAll('.ttsImgBtn').forEach(btn=>{ const img = btn.querySelector('img'); if(img) img.src='speel.jpg'; btn.dataset.playing='false'; });
- showPlayIcon();
+  document.querySelectorAll('.ttsImgBtn').forEach(btn=>{ const img = btn.querySelector('img'); if(img) img.src='speel.jpg'; btn.dataset.playing='false'; });
+  showPlayIcon();
 }
 function speakOnce(text, opts={onstart:null,onend:null,pauseable:true,section:null}){
- if(!synth || !text) return;
- try{ hardResetTTS(); }catch(e){}
- const u = new SpeechSynthesisUtterance(text);
- const v = voices[chosenVoiceIndex];
- if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
- u.rate = ('rate' in opts)? opts.rate : 0.95;
- u.pitch = ('pitch' in opts)? opts.pitch : 1.0;
- if(typeof opts.onstart==='function') u.onstart = opts.onstart;
- if(typeof opts.onend==='function') u.onend = opts.onend;
- synth.speak(u);
+  if(!synth || !text) return;
+  try{ hardResetTTS(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices[chosenVoiceIndex];
+  if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
+  u.rate = ('rate' in opts)? opts.rate : 0.95;
+  u.pitch = ('pitch' in opts)? opts.pitch : 1.0;
+  if(typeof opts.onstart==='function') u.onstart = opts.onstart;
+  if(typeof opts.onend==='function') u.onend = opts.onend;
+  synth.speak(u);
 }
 
 // Scene logica
@@ -413,200 +565,260 @@ function showPauseIcon(){ if(scenePlay) scenePlay.classList.add('hidden'); if(sc
 function showPlayIcon(){ if(scenePause) scenePause.classList.add('hidden'); if(scenePlay) scenePlay.classList.remove('hidden'); }
 function enterSceneIntro(){ showPlayIcon(); const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.'; speakOnce(line1,{onend:()=>{ showPlayIcon(); }}); }
 function handleScenePlay(){
- if(scenePlaying){
-   try{ synth.pause(); }catch(e){}
-   scenePlaying=false; showPlayIcon(); return;
- }
- scenePlaying=true; showPauseIcon();
- const main = 'Klik rechtsonder op de knop';
- const emphas = 'volgende';
- speakOnce(main,{onend:()=>{
-   speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{
-     scenePlaying=false; showPlayIcon(); setNextEnabled(true);
-   }});
- }});
- setNextEnabled(false);
+  if(scenePlaying){
+    try{ synth.pause(); }catch(e){}
+    scenePlaying=false; showPlayIcon(); return;
+  }
+  scenePlaying=true; showPauseIcon();
+  const main = 'Klik rechtsonder op de knop';
+  const emphas = 'volgende';
+  speakOnce(main,{onend:()=>{
+    speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{
+      scenePlaying=false; showPlayIcon(); setNextEnabled(true);
+    }});
+  }});
+  setNextEnabled(false);
 }
 function pauseScene(){ try{ synth.pause(); }catch(e){} scenePlaying=false; showPlayIcon(); }
 if(scenePlay){ scenePlay.addEventListener('click', handleScenePlay); }
 if(scenePause){ scenePause.addEventListener('click', pauseScene); }
 
 function setNextEnabled(on){ nextBtn.disabled = !on; }
-function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');} 
+function normalizeClock(s){return s.toLowerCase().trim().replace('½','half').replace(/\s+/g,' ');}  
 function check(ix){
- const t=tasks[ix];
- if(!t||t.dataset.kind!=='task') return true;
- const ans=t.dataset.answer;
- const input=t.querySelector('input.input');
- const fb=t.querySelector('div.feedback');
- let ok=false, value=null;
- if(input){
-   value=input.value.trim();
-   ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
-    // Custom check voor "5 uur" of "5"
-    if(ans === '5 uur' && (value.toLowerCase() === '5 uur' || value === '5')) { ok = true; } else if (ans !== '5 uur') { ok = String(ans) === value; }
-    
- }else{
-   const r=t.querySelector('input[type=radio]:checked');
-   value=r ? r.value : null;
-   ok= value && value===ans;
- }
- fb.textContent='';
- fb.className='feedback';
- if(value!==null && value!==''){
-   state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
-   if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
-   if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
- }else{
-   state[ix].answered=false; state[ix].correct=null;
-   if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
- }
- renderPager();
- return state[ix].answered ? ok : false;
+  const t=tasks[ix];
+  if(!t||t.dataset.kind!=='task') return true;
+  const ans=t.dataset.answer;
+  const input=t.querySelector('input.input');
+  const fb=t.querySelector('div.feedback');
+  let ok=false, value=null;
+  if(input){
+    value=input.value.trim();
+    ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
+     // Custom check voor "5 uur" of "5"
+     if(ans === '5 uur' && (value.toLowerCase() === '5 uur' || value === '5')) { ok = true; } else if (ans !== '5 uur') { ok = String(ans) === value; }
+      
+  }else{
+    const r=t.querySelector('input[type=radio]:checked');
+    value=r ? r.value : null;
+    ok= value && value===ans;
+  }
+  fb.textContent='';
+  fb.className='feedback';
+  if(value!==null && value!==''){
+    state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
+    if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
+    if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+  }else{
+    state[ix].answered=false; state[ix].correct=null;
+    if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+  }
+  renderPager();
+  return state[ix].answered ? ok : false;
 }
 
 // Inject TTS image buttons voor tasks
 function ensureTaskTTSControls(section){
- if(section.dataset.kind!=='task') return;
- if(!section.dataset.tts) return;
- const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
- const img = btn.querySelector('img'); if(!img) return;
- btn.dataset.playing='false';
- function onStart(){ btn.dataset.playing='true'; img.src='pauze.jpg'; }
- function onEnd(){ btn.dataset.playing='false'; img.src='speel.jpg'; }
- if(!btn._bound){
-   btn.addEventListener('click', ()=>{
-     const playing = btn.dataset.playing==='true';
-     if(playing){ try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
-     onStart();
-     const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
-     speakOnce(tts,{onend:()=>{ onEnd(); }});
-   });
-   btn._bound = true;
- }
+  if(section.dataset.kind!=='task') return;
+  if(!section.dataset.tts) return;
+  const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
+  const img = btn.querySelector('img'); if(!img) return;
+  btn.dataset.playing='false';
+  function onStart(){ btn.dataset.playing='true'; img.src='pauze.jpg'; }
+  function onEnd(){ btn.dataset.playing='false'; img.src='speel.jpg'; }
+  if(!btn._bound){
+    btn.addEventListener('click', ()=>{
+      const playing = btn.dataset.playing==='true';
+      if(playing){ try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
+      onStart();
+      const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
+      speakOnce(tts,{onend:()=>{ onEnd(); }});
+    });
+    btn._bound = true;
+  }
 }
 
 function show(k){
- tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
- const active = tasks[k];
- const kind = active?.dataset.kind;
+  tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
+  const active = tasks[k];
+  const kind = active?.dataset.kind;
 
- // Vorige alleen verbergen op het geluidscontrole-scherm
- if (kind === 'intro') { prevBtn.style.visibility = 'hidden'; } else { prevBtn.style.visibility = 'visible'; }
+  // Vorige alleen verbergen op het geluidscontrole-scherm
+  if (kind === 'intro') { prevBtn.style.visibility = 'hidden'; } else { prevBtn.style.visibility = 'visible'; }
 
- const endSection = tasks.find(t=>t.dataset.kind==='end');
- if(endSection){
-   if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
-   else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
- }
- if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
+  const endSection = tasks.find(t=>t.dataset.kind==='end');
+  if(endSection){
+    if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
+    else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
+  }
+  if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
 
- stopAllTTS();
- showPlayIcon();
- if(kind!=='intro'){ stopSoundLoop(); }
+  stopAllTTS();
+  showPlayIcon();
+  if(kind!=='intro'){ stopSoundLoop(); }
 
- if(kind==='task'){
-   ensureTaskTTSControls(active);
-   const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
-   prevBtn.disabled = (itemIx.indexOf(k)===0);
-   setNextEnabled(true);
-   renderPager();
- }else if(kind==='intro'){
-   const introText = active.dataset.tts || 'Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.';
-   speakOnce(introText);
-   setNextEnabled(!!document.getElementById('soundOk')?.checked);
-   renderPager(true);
- }else if(kind==='scene'){
-   setNextEnabled(false);
-   renderPager(true);
-   enterSceneIntro();
- }else if(kind==='end'){
-   fillEndCircles();
-   setNextEnabled(false);
-   renderPager(true);
- }
+  if(kind==='task'){
+    ensureTaskTTSControls(active);
+    const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
+    prevBtn.disabled = (itemIx.indexOf(k)===0);
+    setNextEnabled(true);
+    renderPager();
+  }else if(kind==='intro'){
+    const introText = active.dataset.tts || 'Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.';
+    speakOnce(introText);
+    setNextEnabled(!!document.getElementById('soundOk')?.checked);
+    renderPager(true);
+  }else if(kind==='scene'){
+    setNextEnabled(false);
+    renderPager(true);
+    enterSceneIntro();
+  }else if(kind==='end'){
+    fillEndCircles();
+    setNextEnabled(false);
+    renderPager(true);
+  }
 }
 
 // Paginering
 function renderPager(hideAll){
- pager.innerHTML='';
- if(hideAll){ return; }
- const total = itemIx.length; if(total===0) return;
- const currentIdx = itemIx.indexOf(i);
- for(let k=0;k<total;k++){
-  const ixTask = itemIx[k];
-  const b=document.createElement('button');
-  const isCurrent = (currentIdx===k);
-  b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
-  b.type='button'; b.textContent=String(k+1);
-  if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
-  pager.appendChild(b);
- }
+  pager.innerHTML='';
+  if(hideAll){ return; }
+  const total = itemIx.length; if(total===0) return;
+  const currentIdx = itemIx.indexOf(i);
+  for(let k=0;k<total;k++){
+   const ixTask = itemIx[k];
+   const b=document.createElement('button');
+   const isCurrent = (currentIdx===k);
+   b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
+   b.type='button'; b.textContent=String(k+1);
+   if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
+   pager.appendChild(b);
+  }
 }
 
 // Eindscherm
 function fillEndCircles(){
- const wrap=document.getElementById('endCircles');
- wrap.innerHTML='';
- itemIx.forEach((ix,idx)=>{
-   const btn=document.createElement('button');
-   btn.type='button';
-   btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
-   btn.textContent=String(idx+1);
-   btn.addEventListener('click', ()=>{ i=ix; show(i); });
-   wrap.appendChild(btn);
- });
+  const wrap=document.getElementById('endCircles');
+  wrap.innerHTML='';
+  itemIx.forEach((ix,idx)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
+    btn.textContent=String(idx+1);
+    btn.addEventListener('click', ()=>{ i=ix; show(i); });
+    wrap.appendChild(btn);
+  });
+}
+
+// Virtueel Toetsenbord Logica
+const keyboardLayout = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'del'];
+const keyboards = document.querySelectorAll('.keyboard');
+
+function renderKeyboards() {
+    keyboards.forEach(kb => {
+        kb.innerHTML = '';
+        const targetSelector = kb.dataset.targetInput;
+        if (!targetSelector) return;
+        const targetInput = kb.closest('.task').querySelector(targetSelector);
+        if (!targetInput) return;
+
+        keyboardLayout.forEach(key => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.classList.add('key-btn');
+            
+            if (key === 'del') {
+                btn.classList.add('backspace');
+                btn.innerHTML = `<svg class="backspace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3.41L20.59 2L15 7.59L9.41 2L8 3.41L13.59 9L8 14.59L9.41 16L15 10.41L20.59 16L22 14.59L16.41 9L22 3.41z"/></svg>`;
+                btn.setAttribute('aria-label', 'Wissen');
+            } else {
+                btn.textContent = key;
+                btn.setAttribute('aria-label', key);
+                if (key === 0) {
+                    btn.classList.add('zero');
+                }
+            }
+
+            btn.addEventListener('click', (e) => handleKeyClick(e, targetInput, key));
+            kb.appendChild(btn);
+        });
+    });
+}
+
+function handleKeyClick(event, inputElement, key) {
+    event.preventDefault(); // Voorkomt dat de knop focus steelt van de input
+    inputElement.focus();
+    const isNumericOnly = inputElement.dataset.numericOnly === 'true';
+
+    let currentValue = inputElement.value;
+
+    if (key === 'del') {
+        // Backspace logica
+        if (currentValue.length > 0) {
+            inputElement.value = currentValue.slice(0, -1);
+        }
+    } else {
+        // Nummer invoer logica
+        const char = String(key);
+        if (isNumericOnly && !/^\d$/.test(char)) {
+            // Negeer niet-numerieke input als numericOnly=true
+            return; 
+        }
+        inputElement.value += char;
+    }
+
+    // Trigger het check-mechanisme na de invoer
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 // Onderbalk knoppen
 prevBtn.addEventListener('click', ()=>{
- const kind = tasks[i]?.dataset.kind;
- if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
- if(kind==='intro'){ return; }
- const idx=itemIx.indexOf(i);
- const prev = itemIx[idx-1];
- if(prev!==undefined){ i=prev; show(i); }
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
+  if(kind==='intro'){ return; }
+  const idx=itemIx.indexOf(i);
+  const prev = itemIx[idx-1];
+  if(prev!==undefined){ i=prev; show(i); }
 });
 nextBtn.addEventListener('click', ()=>{
- const kind = tasks[i].dataset.kind;
- if(kind==='intro'){
-   if(!document.getElementById('soundOk').checked) return;
-   i = sceneIx>=0 ? sceneIx : i; show(i); return;
- }
- if(kind==='scene'){
-   i = firstTask>=0 ? firstTask : i; show(i); return;
- }
- if(kind==='task'){
-   check(i);
-   const idx=itemIx.indexOf(i);
-   const next = itemIx[idx+1];
-   if(next!==undefined){
-     i=next; show(i);
-   } else {
-     i = tasks.findIndex(t=>t.dataset.kind==='end');
-     if(i<0) i=tasks.length-1;
-     show(i);
-   }
-   return;
- }
+  const kind = tasks[i].dataset.kind;
+  if(kind==='intro'){
+    if(!document.getElementById('soundOk').checked) return;
+    i = sceneIx>=0 ? sceneIx : i; show(i); return;
+  }
+  if(kind==='scene'){
+    i = firstTask>=0 ? firstTask : i; show(i); return;
+  }
+  if(kind==='task'){
+    check(i);
+    const idx=itemIx.indexOf(i);
+    const next = itemIx[idx+1];
+    if(next!==undefined){
+      i=next; show(i);
+    } else if (endIx >= 0) {
+      i = endIx;
+      show(i);
+    }
+    return;
+  }
 });
 
 // Keyboard
 window.addEventListener('keydown', (e)=>{
- const kind = tasks[i]?.dataset.kind;
- if(kind==='task'){
-   if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
-   if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
-   if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
- }
- if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='task'){
+    if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+    if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+  }
+  if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
 });
 
 // Inputs, direct check
 itemIx.forEach(ix=>{
- const node = tasks[ix];
- node.addEventListener('input', ()=>{ check(ix); });
- node.addEventListener('change', ()=>{ check(ix); });
+  const node = tasks[ix];
+  node.addEventListener('input', ()=>{ check(ix); });
+  node.addEventListener('change', ()=>{ check(ix); });
 });
 
 // Geluidstest
@@ -616,51 +828,52 @@ const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
 function ensureCtx(){ if(!ctx&&AudioCtx){ ctx=new AudioCtx(); } }
 const DRUM_PATTERN=[ {offset:0.0,freq:120,type:'sine'}, {offset:0.4,freq:300,type:'square'}, {offset:0.6,freq:800,type:'triangle'}, {offset:0.8,freq:120,type:'sine'} ];
 function playDrum(time,freq=150,dur=0.2,type='sine'){
- const o=ctx.createOscillator(); const g=ctx.createGain();
- o.connect(g); g.connect(ctx.destination);
- o.type=type; o.frequency.setValueAtTime(freq,time);
- g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
- o.start(time); o.stop(time+dur);
+  const o=ctx.createOscillator(); const g=ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type=type; o.frequency.setValueAtTime(freq,time);
+  g.gain.setValueAtTime(1,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+  o.start(time); o.stop(time+dur);
 }
 function playDrumPatternAt(now){ DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type)); }
 let soundLoopTimeouts=[];
 function stopSoundLoop(){
- soundLoopTimeouts.forEach(id=> clearTimeout(id));
- soundLoopTimeouts=[];
- if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
+  soundLoopTimeouts.forEach(id=> clearTimeout(id));
+  soundLoopTimeouts=[];
+  if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
 }
 function playDrumPatternRepeated(times=3, gapMs=900){
- ensureCtx(); if(!ctx) return;
- stopSoundLoop();
- for(let r=0;r<times;r++){
-   const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
-   soundLoopTimeouts.push(tId);
- }
+  ensureCtx(); if(!ctx) return;
+  stopSoundLoop();
+  for(let r=0;r<times;r++){
+    const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
+    soundLoopTimeouts.push(tId);
+  }
 }
 function updateIntro(){
- if(tasks[i]?.dataset.kind==='intro'){
-   setNextEnabled(!!soundOk.checked);
-   if(soundOk.checked){ stopSoundLoop(); }
- }
+  if(tasks[i]?.dataset.kind==='intro'){
+    setNextEnabled(!!soundOk.checked);
+    if(soundOk.checked){ stopSoundLoop(); }
+  }
 }
 soundOk.addEventListener('change', updateIntro);
 const originalAudioBtnHTML = audioBtn ? audioBtn.innerHTML : '';
 if(audioBtn){
- audioBtn.addEventListener('click', ()=>{
-   const loops=4, gap=1000;
-   playDrumPatternRepeated(loops, gap);
-   audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
-   const totalMs = loops*gap + 200;
-   setTimeout(()=>{
-     if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
-   }, totalMs);
- });
+  audioBtn.addEventListener('click', ()=>{
+    const loops=4, gap=1000;
+    playDrumPatternRepeated(loops, gap);
+    audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
+    const totalMs = loops*gap + 200;
+    setTimeout(()=>{
+      if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
+    }, totalMs);
+  });
 }
 
 // Start
 function init(){
- document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
- i = 0; show(i);
+  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+  renderKeyboards(); // Render het toetsenbord bij de start
+  i = 0; show(i);
 }
 init();
 })();
