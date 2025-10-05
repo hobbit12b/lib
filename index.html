@@ -12,6 +12,7 @@
   --navH:76px;
 }
 
+/* Basis, echte fullscreen met mobiele address-bar fixes */
 html, body{height:100%; margin:0; padding:0}
 body{
   min-height:100svh;
@@ -24,6 +25,7 @@ body{
   flex-direction:column;
 }
 
+/* Headerbalk */
 .sky{
   height:clamp(56px, 8svh, 80px);
   background:var(--blue);
@@ -31,6 +33,7 @@ body{
   flex:0 0 auto;
 }
 
+/* Hoofdpodium vult het resterende scherm */
 .stage{
   flex:1 1 auto;
   min-height:0;
@@ -38,6 +41,7 @@ body{
   padding:clamp(8px, 1.5vw, 16px);
 }
 
+/* De “card” wordt het canvas dat het scherm vult */
 .card{
   background:var(--panel);
   width:100%;
@@ -50,6 +54,7 @@ body{
   overflow:auto;
 }
 
+/* Op grotere schermen net wat zachter */
 @media (min-width:900px){
   .card{
     max-width:1200px;
@@ -60,10 +65,12 @@ body{
   }
 }
 
+/* Typografie */
 h1{font-size:clamp(18px, 1.2vw + .8rem, 24px); font-weight:bold; margin:0 0 12px}
 p{margin:0 0 10px}
 .q{font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold; margin:14px 0 8px}
 
+/* Inputs en keuzes, grotere touch-targets */
 .input{
   font-size:clamp(16px, 1vw + .6rem, 18px);
   padding:10px 12px;
@@ -75,12 +82,15 @@ p{margin:0 0 10px}
 .choice{display:block; margin-bottom:8px}
 .choice input{width:20px; height:20px}
 
+/* Feedbackkleuren */
 .feedback{margin-top:8px; font-weight:bold}
 .ok{color:var(--ok)}
 .wrong{color:var(--wrong)}
 
+/* Verberg voortgang rechtsboven, zoals gewenst */
 .progress{display:none}
 
+/* TTS knoppen compact, maar vinger-vriendelijk */
 .ttsRow{display:inline-flex; align-items:center; gap:10px; margin-left:8px}
 .ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
 .ttsImgBtn img{width:40px; height:40px; display:block}
@@ -92,9 +102,11 @@ p{margin:0 0 10px}
 .audioBtn svg{width:22px; height:22px; fill:var(--blue)}
 .audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
 
+/* Sections */
 .task{display:none}
 .task.active{display:block}
 
+/* Scènepaneel is responsive met aspect-ratio */
 .inner-panel{
   background:#fff;
   border-radius:clamp(10px, 1vw, 16px);
@@ -115,6 +127,7 @@ p{margin:0 0 10px}
 .scene-play img, .scene-pause img{width:100%; height:100%; display:block}
 .scene-pause.hidden, .scene-play.hidden{display:none}
 
+/* Afbeeldingen binnen de scène schalen proportioneel en blijven zichtbaar */
 .scene-boy{
   position:absolute; left:50%; top:45%;
   transform:translate(-50%, -50%);
@@ -128,10 +141,12 @@ p{margin:0 0 10px}
 .hidden{display:none}
 .hide-ui .progress{display:none}
 
+/* Buttons algemeen */
 .btn{border:1px solid #d0d0d0; background:#fff; border-radius:10px; padding:12px 16px; font-weight:bold; cursor:pointer}
 .btn:hover{background:#f4f6ff}
 .btn[disabled]{opacity:.5; cursor:not-allowed}
 
+/* Eindscherm, overzicht met tikbare rondjes */
 .review{display:none}
 .review.show{display:block}
 .circles{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0}
@@ -142,6 +157,7 @@ p{margin:0 0 10px}
 .circleBtn.done{background:#fff}
 .endTitle{font-weight:bold; margin-top:6px}
 
+/* Onderbalk blijft bruikbaar en past zich aan */
 .bottomNav{
   position:sticky; bottom:0;
   left:0; right:0;
@@ -156,6 +172,7 @@ p{margin:0 0 10px}
 }
 .navBtn[disabled]{background:#e0e0e0; color:#666; border:1px solid #d0d0d0; cursor:not-allowed; opacity:1}
 
+/* Pager kan scrollen en wrappen op klein scherm */
 .pager{
   display:flex; align-items:center; gap:8px; justify-content:center;
   flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
@@ -169,10 +186,13 @@ p{margin:0 0 10px}
 .pageBtn.current{
   width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff; border-color:var(--blue)
 }
+/* Reeds beantwoord, wit, huidige, blauw */
 .pageBtn.answered:not(.current){background:#fff}
 
+/* In eindscherm geen onderbalk tonen, zoals bij je vorige versie */
 .end-view .bottomNav{display:none}
 
+/* Respecteer reduced motion voorkeuren */
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto}
 }
@@ -183,8 +203,8 @@ p{margin:0 0 10px}
 <div class="stage">
 <main class="card">
 
-<!-- Uitlegscene -->
-<section class="task active" data-kind="scene" data-tts="Uitlegscreen">
+<!-- 2. Uitlegscene -->
+<section class="task" data-kind="scene" data-tts="Uitlegscreen">
 <h1>Luisteren naar de uitleg</h1>
 <div class="inner-panel" aria-label="Uitlegscherm">
 <img src="jongetje.jpg" alt="Jongen" class="scene-boy">
@@ -198,14 +218,14 @@ p{margin:0 0 10px}
 </div>
 </section>
 
-<!-- Opgaven -->
+<!-- 3. Opgaven -->
 <section class="task" data-kind="task" data-answer="7" data-tts="Opgave 1, splits dertien in twee delen, het eerste deel is zes, wat is het tweede deel">
 <h1>Opgave 1</h1>
 <p class="q">Splits 13 in twee delen. Het eerste deel is 6. Wat is het tweede deel
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <input class="input" inputmode="numeric" />
-<div class="feedback" role="status" aria-live="polite"></div>
+<div class="feedback"></div>
 </section>
 
 <section class="task" data-kind="task" data-answer="11" data-tts="Opgave 2, reken uit, zeven plus zes min twee is hoeveel">
@@ -214,7 +234,7 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <input class="input" inputmode="numeric" />
-<div class="feedback" role="status" aria-live="polite"></div>
+<div class="feedback"></div>
 </section>
 
 <section class="task" data-kind="task" data-answer="half 4" data-tts="Opgave 3, de grote wijzer staat op zes, de kleine wijzer staat tussen drie en vier, hoe laat is het">
@@ -223,7 +243,7 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <input class="input" />
-<div class="feedback" role="status" aria-live="polite"></div>
+<div class="feedback"></div>
 </section>
 
 <section class="task" data-kind="task" data-answer="b" data-tts="Opgave 4, lees, de poes slaapt op de mat, waar ligt de poes">
@@ -236,7 +256,7 @@ p{margin:0 0 10px}
 <label class="choice"><input type="radio" name="q4" value="b"> op de mat</label>
 <label class="choice"><input type="radio" name="q4" value="c"> in de doos</label>
 </div>
-<div class="feedback" role="status" aria-live="polite"></div>
+<div class="feedback"></div>
 </section>
 
 <section class="task" data-kind="task" data-answer="85" data-tts="Opgave 5, een appel kost vijfendertig cent, een banaan kost vijftig cent, hoeveel cent samen">
@@ -245,10 +265,10 @@ p{margin:0 0 10px}
 <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
 </p>
 <input class="input" inputmode="numeric" />
-<div class="feedback" role="status" aria-live="polite"></div>
+<div class="feedback"></div>
 </section>
 
-<!-- Eindscherm -->
+<!-- 4. Eindscherm -->
 <section class="task review" data-kind="end" data-tts="Klaar, je bent nu bij het eindscherm, controleer of je alle opgaven hebt gemaakt">
 <h1>Klaar</h1>
 <p class="endTitle">Je bent nu bij het eindscherm. Controleer of je alle opdrachten hebt gemaakt.</p>
@@ -281,80 +301,37 @@ const sceneIx = tasks.findIndex(t=>t.dataset.kind==='scene');
 let i=0, score=0;
 const state = itemIx.reduce((acc,ix)=>{ acc[ix] = { answered:false, correct:null, value:null }; return acc; },{});
 
-// TTS basis, inclusief iOS priming
+// TTS basis
 const synth = window.speechSynthesis;
 let voices = [], chosenVoiceIndex = 0;
-function loadVoices(){
-  voices = synth ? synth.getVoices() : [];
-  if(voices.length>0){
-    const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
-    if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
-  }
-}
-if(synth){
-  loadVoices();
-  synth.onvoiceschanged = loadVoices;
-  // extra poging, sommige browsers vullen stemmen later
-  setTimeout(loadVoices, 400);
-}
-
-let ttsPrimed = false;
+function loadVoices(){ voices = synth ? synth.getVoices() : []; if(voices.length>0){
+ const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
+ if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
+}}
+if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
 function hardResetTTS(){
-  try{
-    if(!synth) return;
-    synth.cancel();
-    if(synth.paused){ synth.resume(); }
-    const u=new SpeechSynthesisUtterance('');
-    u.volume=0;
-    synth.speak(u);
-    synth.cancel();
-  }catch(e){}
+ try{
+   if(!synth) return;
+   synth.cancel();
+   if(synth.paused){ synth.resume(); }
+   const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
+ }catch(e){}
 }
-function primeAudioStacks(){
-  try{
-    if(synth){
-      synth.cancel();
-      const u=new SpeechSynthesisUtterance(' ');
-      u.volume=0;
-      synth.speak(u);
-      synth.cancel();
-    }
-    ttsPrimed = true;
-  }catch(e){}
+function stopAllTTS(){ try{ if(synth){ hardResetTTS(); } }catch(e){}
+ document.querySelectorAll('.ttsImgBtn').forEach(btn=>{ const img = btn.querySelector('img'); if(img) img.src='speel.jpg'; btn.dataset.playing='false'; });
+ showPlayIcon();
 }
-function ensurePrimed(){
-  if(!ttsPrimed){
-    try{ primeAudioStacks(); }catch(e){}
-  }
-}
-
-// belangrijk: prime vóór andere click handlers, gebruik capture
-window.addEventListener('pointerdown', primeAudioStacks, { once:true, capture:true });
-window.addEventListener('keydown', primeAudioStacks, { once:true, capture:true });
-
-function speakOnceSafe(text, opts={onstart:null,onend:null,rate:0.95,pitch:1.0}){
-  if(!synth || !text) return;
-  if(!ttsPrimed){ ensurePrimed(); }
-  if(!ttsPrimed) return; // nog niet toegestaan door browser
-  try{ hardResetTTS(); }catch(e){}
-  const u = new SpeechSynthesisUtterance(text);
-  const v = voices[chosenVoiceIndex];
-  if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
-  u.rate = opts.rate;
-  u.pitch = opts.pitch;
-  if(typeof opts.onstart==='function') u.onstart = opts.onstart;
-  if(typeof opts.onend==='function') u.onend = opts.onend;
-  synth.speak(u);
-}
-function stopAllTTS(){
-  try{ if(synth){ hardResetTTS(); } }catch(e){}
-  document.querySelectorAll('.ttsImgBtn').forEach(btn=>{
-    const img = btn.querySelector('img');
-    if(img) img.src='speel.jpg';
-    btn.dataset.playing='false';
-    btn.setAttribute('aria-pressed','false');
-  });
-  showPlayIcon();
+function speakOnce(text, opts={onstart:null,onend:null,pauseable:true,section:null}){
+ if(!synth || !text) return;
+ try{ hardResetTTS(); }catch(e){}
+ const u = new SpeechSynthesisUtterance(text);
+ const v = voices[chosenVoiceIndex];
+ if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
+ u.rate = ('rate' in opts)? opts.rate : 0.95;
+ u.pitch = ('pitch' in opts)? opts.pitch : 1.0;
+ if(typeof opts.onstart==='function') u.onstart = opts.onstart;
+ if(typeof opts.onend==='function') u.onend = opts.onend;
+ synth.speak(u);
 }
 
 // Scene logica
@@ -363,242 +340,166 @@ const scenePause = document.getElementById('scenePause');
 let scenePlaying = false;
 function showPauseIcon(){ if(scenePlay) scenePlay.classList.add('hidden'); if(scenePause) scenePause.classList.remove('hidden'); }
 function showPlayIcon(){ if(scenePause) scenePause.classList.add('hidden'); if(scenePlay) scenePlay.classList.remove('hidden'); }
-function enterSceneIntro(){
-  showPlayIcon();
-  const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.';
-  speakOnceSafe(line1,{onend:()=>{ showPlayIcon(); }});
-}
+function enterSceneIntro(){ showPlayIcon(); const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.'; speakOnce(line1,{onend:()=>{ showPlayIcon(); }}); }
 function handleScenePlay(){
-  ensurePrimed();
-  if(scenePlaying){
-    try{ synth.cancel(); }catch(e){}
-    scenePlaying=false; showPlayIcon(); return;
-  }
-  scenePlaying=true; showPauseIcon();
-  const main = 'Klik rechtsonder op de knop';
-  const emphas = 'volgende';
-  speakOnceSafe(main,{onend:()=>{
-    speakOnceSafe(emphas,{rate:0.9,pitch:1.6,onend:()=>{
-      scenePlaying=false; showPlayIcon(); setNextEnabled(true);
-    }});
-  }});
-  setNextEnabled(false);
-  // failsafe als onend niet vuurt
-  setTimeout(()=>{ if(scenePlaying){ scenePlaying=false; showPlayIcon(); setNextEnabled(true); } }, 6000);
+ if(scenePlaying){
+   try{ synth.pause(); }catch(e){}
+   scenePlaying=false; showPlayIcon(); return;
+ }
+ scenePlaying=true; showPauseIcon();
+ const main = 'Klik rechtsonder op de knop';
+ const emphas = 'volgende';
+ speakOnce(main,{onend:()=>{ speakOnce(emphas,{rate:0.9,pitch:1.6,onend:()=>{ scenePlaying=false; showPlayIcon(); setNextEnabled(true); }}); }}); setNextEnabled(false);
 }
-function pauseScene(){
-  try{ synth.cancel(); }catch(e){}
-  scenePlaying=false; showPlayIcon();
-}
+function pauseScene(){ try{ synth.pause(); }catch(e){} scenePlaying=false; showPlayIcon(); }
 if(scenePlay){ scenePlay.addEventListener('click', handleScenePlay); }
 if(scenePause){ scenePause.addEventListener('click', pauseScene); }
 
 function setNextEnabled(on){ nextBtn.disabled = !on; }
-
-// Antwoord normalisatie en vergelijking
-function normalizeNumber(s){
-  return String(s ?? '')
-    .trim()
-    .replace(/\s+/g,'')
-    .replace(/^0+(?=\d)/,'');
-}
-function normalizeClock(s){
-  const t = String(s ?? '')
-    .toLowerCase()
-    .replace(/[.,]/g,' ')
-    .replace(/\s+/g,' ')
-    .trim();
-
-  if(/^(3\s*[:.]?\s*30|03\s*[:.]?\s*30)$/.test(t)) return 'half 4';
-  if(/^(half\s*vier|half\s*4)$/.test(t)) return 'half 4';
-  if(/^(drie\s*(uur)?\s*dertig)$/.test(t)) return 'half 4';
-  if(/^(30\s*over\s*3|30\s*minuten\s*na\s*3)$/.test(t)) return 'half 4';
-  return t;
-}
-function equalsAnswer(ans, val, isNumeric){
-  if(ans==='half 4') return normalizeClock(val)==='half 4';
-  if(isNumeric) return normalizeNumber(val)===normalizeNumber(ans);
-  return String(ans)===String(val).trim();
-}
-
 function check(ix){
-  const t=tasks[ix];
-  if(!t||t.dataset.kind!=='task') return true;
-  const ans=t.dataset.answer;
-  const input=t.querySelector('input.input');
-  const fb=t.querySelector('div.feedback');
-  let ok=false, value=null;
-
-  if(input){
-    value=input.value;
-    const isNumeric = input.getAttribute('inputmode')==='numeric' || /^[0-9]+$/.test(String(ans));
-    ok = equalsAnswer(ans, value, isNumeric);
-  }else{
-    const r=t.querySelector('input[type=radio]:checked');
-    value=r ? r.value : null;
-    ok= !!value && equalsAnswer(ans, value, false);
-  }
-
-  fb.textContent='';
-  fb.className='feedback';
-  if(value!==null && String(value).trim()!==''){
-    state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
-  }else{
-    state[ix].answered=false; state[ix].correct=null; state[ix].value=null;
-  }
-  renderPager();
-  return state[ix].answered ? ok : false;
+ const t=tasks[ix];
+ if(!t||t.dataset.kind!=='task') return true;
+ const ans=t.dataset.answer;
+ const input=t.querySelector('input.input');
+ const fb=t.querySelector('div.feedback');
+ let ok=false, value=null;
+ if(input){
+   value=input.value.trim();
+   ok=(ans==='half 4'? normalizeClock(value).includes('half 4') : String(ans)===value);
+ }else{
+   const r=t.querySelector('input[type=radio]:checked');
+   value=r ? r.value : null;
+   ok= value && value===ans;
+ }
+ fb.textContent='';
+ fb.className='feedback';
+ if(value!==null && value!==''){
+   state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
+   if(ok && !t.dataset.counted){ score++; t.dataset.counted='1'; }
+   if(!ok && t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+ }else{
+   state[ix].answered=false; state[ix].correct=null;
+   if(t.dataset.counted){ score=Math.max(0,score-1); delete t.dataset.counted; }
+ }
+ renderPager();
+ return state[ix].answered ? ok : false;
 }
 
-// TTS knoppen bij tasks
+// Inject TTS image buttons voor tasks
 function ensureTaskTTSControls(section){
-  if(section.dataset.kind!=='task') return;
-  if(!section.dataset.tts) return;
-  const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
-  const img = btn.querySelector('img'); if(!img) return;
-  btn.dataset.playing='false';
-  btn.setAttribute('aria-pressed','false');
-
-  if(!btn._bound){
-    btn.addEventListener('click', ()=>{
-      ensurePrimed();
-      const playing = btn.dataset.playing==='true';
-      if(playing){
-        try{ synth.cancel(); }catch(e){}
-        btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; return;
-      }
-      btn.dataset.playing='true'; btn.setAttribute('aria-pressed','true'); img.src='pauze.jpg';
-      const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
-      speakOnceSafe(tts,{onend:()=>{ btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; }});
-    });
-    btn._bound = true;
-  }
+ if(section.dataset.kind!=='task') return;
+ if(!section.dataset.tts) return;
+ const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
+ const img = btn.querySelector('img'); if(!img) return;
+ btn.dataset.playing='false';
+ function onStart(){ btn.dataset.playing='true'; img.src='pauze.jpg'; }
+ function onEnd(){ btn.dataset.playing='false'; img.src='speel.jpg'; }
+ if(!btn._bound){
+   btn.addEventListener('click', ()=>{ 
+     const playing = btn.dataset.playing==='true';
+     if(playing){ try{ synth.pause(); }catch(e){} btn.dataset.playing='false'; img.src='speel.jpg'; return; }
+     onStart();
+     const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
+     speakOnce(tts,{onend:()=>{ onEnd(); }});
+   });
+   btn._bound = true;
+ }
 }
 
 function show(k){
-  tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
-  const active = tasks[k];
-  const kind = active?.dataset.kind;
+ tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
+ const active = tasks[k];
+ const kind = active?.dataset.kind;
 
-  // Vorige knop verbergen op de uitlegscene
-  if (kind === 'scene') { prevBtn.style.visibility = 'hidden'; }
-  else { prevBtn.style.visibility = 'visible'; }
+ stopAllTTS();
+ showPlayIcon();
+ if(kind!=='scene'){ stopSoundLoop(); }
 
-  const endSection = tasks.find(t=>t.dataset.kind==='end');
-  if(endSection){
-    if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
-    else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
-  }
-  if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
-
-  stopAllTTS();
-  showPlayIcon();
-
-  if(kind==='task'){
-    ensureTaskTTSControls(active);
-    const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
-    // op eerste task is Vorige zichtbaar, maar hij gaat terug naar scene
-    setNextEnabled(true);
-    renderPager();
-  }else if(kind==='scene'){
-    setNextEnabled(false);
-    renderPager(true);
-    enterSceneIntro();
-  }else if(kind==='end'){
-    fillEndCircles();
-    setNextEnabled(false);
-    renderPager(true);
-  }
+ if(kind==='task'){
+   ensureTaskTTSControls(active);
+   const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
+   prevBtn.disabled = (itemIx.indexOf(k)===0);
+   setNextEnabled(true);
+   renderPager();
+ }else if(kind==='scene'){
+   setNextEnabled(false);
+   renderPager(true);
+   enterSceneIntro();
+ }else if(kind==='end'){
+   fillEndCircles();
+   setNextEnabled(false);
+   renderPager(true);
+ }
 }
 
 // Paginering
-function renderPager(hideAll){
-  pager.innerHTML='';
-  if(hideAll){ return; }
-  const total = itemIx.length; if(total===0) return;
-  const currentIdx = itemIx.indexOf(i);
-  for(let k=0;k<total;k++){
-    const ixTask = itemIx[k];
-    const b=document.createElement('button');
-    const isCurrent = (currentIdx===k);
-    b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
-    b.type='button'; b.textContent=String(k+1);
-    if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
-    pager.appendChild(b);
-  }
+function renderPager(){
+ pager.innerHTML='';
+ const total = itemIx.length; if(total===0) return;
+ const currentIdx = itemIx.indexOf(i);
+ for(let k=0;k<total;k++){
+   const ixTask = itemIx[k];
+   const b=document.createElement('button');
+   const isCurrent = (currentIdx===k);
+   b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
+
+   b.type='button'; b.textContent=String(k+1);
+   if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
+   pager.appendChild(b);
+ }
 }
 
 // Eindscherm
 function fillEndCircles(){
-  const wrap=document.getElementById('endCircles');
-  wrap.innerHTML='';
-  itemIx.forEach((ix,idx)=>{
-    const btn=document.createElement('button');
-    btn.type='button';
-    btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
-    btn.textContent=String(idx+1);
-    btn.addEventListener('click', ()=>{ i=ix; show(i); });
-    wrap.appendChild(btn);
-  });
+ const wrap=document.getElementById('endCircles');
+ wrap.innerHTML='';
+ itemIx.forEach((ix,idx)=>{
+   const btn=document.createElement('button');
+   btn.type='button';
+   btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
+   btn.textContent=String(idx+1);
+   btn.addEventListener('click', ()=>{ i=ix; show(i); });
+   wrap.appendChild(btn);
+ });
 }
 
 // Onderbalk knoppen
-prevBtn.addEventListener('click', ()=>{
-  const kind = tasks[i]?.dataset.kind;
-  if(kind==='scene'){ return; } // op scene geen vorige
-  if(kind==='task'){
-    const idx=itemIx.indexOf(i);
-    const prev = itemIx[idx-1];
-    if(prev!==undefined){ i=prev; show(i); }
-    else { i = sceneIx>=0 ? sceneIx : i; show(i); } // vanaf eerste task terug naar scene
-  }
+prevBtn.addEventListener('click', ()=>{ 
+ const kind = tasks[i]?.dataset.kind; 
+ if(kind==='scene'){ i = sceneIx>=0 ? sceneIx : i; show(i); return; }
+ if(kind==='intro'){ return; } 
+ const idx=itemIx.indexOf(i); const prev = itemIx[idx-1]; 
+ if(prev!==undefined){ i=prev; show(i); }
 });
-nextBtn.addEventListener('click', ()=>{
-  const kind = tasks[i].dataset.kind;
-  if(kind==='scene'){
-    i = firstTask>=0 ? firstTask : i; show(i); return;
-  }
-  if(kind==='task'){
-    check(i);
-    const idx=itemIx.indexOf(i);
-    const next = itemIx[idx+1];
-    if(next!==undefined){
-      i=next; show(i);
-    } else {
-      i = tasks.findIndex(t=>t.dataset.kind==='end');
-      if(i<0) i=tasks.length-1;
-      show(i);
-    }
-    return;
-  }
+nextBtn.addEventListener('click', ()=>{ 
+ const kind = tasks[i].dataset.kind;
+ if(kind==='scene'){ i = firstTask>=0 ? firstTask : i; show(i); return; }
+ if(kind==='task'){ check(i); const idx=itemIx.indexOf(i); const next = itemIx[idx+1]; if(next!==undefined){ i=next; show(i); } else { i = tasks.findIndex(t=>t.dataset.kind==='end'); if(i<0) i=tasks.length-1; show(i); } 
+ return; 
 });
 
-// Keyboard
 window.addEventListener('keydown', (e)=>{
-  const kind = tasks[i]?.dataset.kind;
-  if(kind==='task'){
-    if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
-    if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
-    if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
-  }
+ const kind = tasks[i]?.dataset.kind;
+ if(kind==='task'){
+   if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+   if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+   if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+ }
+ if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
 });
 
-// Inputs, direct check
 itemIx.forEach(ix=>{
-  const node = tasks[ix];
-  node.addEventListener('input', ()=>{ check(ix); });
-  node.addEventListener('change', ()=>{ check(ix); });
+ const node = tasks[ix];
+ node.addEventListener('input', ()=>{ check(ix); });
+ node.addEventListener('change', ()=>{ check(ix); });
 });
 
-// Start direct op de scene
 function init(){
-  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
-  i = sceneIx>=0 ? sceneIx : (firstTask ?? 0);
-  show(i);
+ document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+ i = 0; show(i);
 }
 init();
 })();
 </script>
-
 </body>
 </html>
