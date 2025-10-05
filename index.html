@@ -284,51 +284,77 @@ const state = itemIx.reduce((acc,ix)=>{ acc[ix] = { answered:false, correct:null
 // TTS basis, inclusief iOS priming
 const synth = window.speechSynthesis;
 let voices = [], chosenVoiceIndex = 0;
-function loadVoices(){ voices = synth ? synth.getVoices() : []; if(voices.length>0){
- const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
- if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
-}}
-if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
+function loadVoices(){
+  voices = synth ? synth.getVoices() : [];
+  if(voices.length>0){
+    const nl = voices.findIndex(v=>v.lang && v.lang.startsWith('nl'));
+    if(nl>=0) chosenVoiceIndex = nl; else chosenVoiceIndex = 0;
+  }
+}
+if(synth){
+  loadVoices();
+  synth.onvoiceschanged = loadVoices;
+  // extra poging, sommige browsers vullen stemmen later
+  setTimeout(loadVoices, 400);
+}
 
 let ttsPrimed = false;
 function hardResetTTS(){
- try{
-   if(!synth) return;
-   synth.cancel();
-   if(synth.paused){ synth.resume(); }
-   const u=new SpeechSynthesisUtterance(''); u.volume=0; synth.speak(u); synth.cancel();
- }catch(e){}
+  try{
+    if(!synth) return;
+    synth.cancel();
+    if(synth.paused){ synth.resume(); }
+    const u=new SpeechSynthesisUtterance('');
+    u.volume=0;
+    synth.speak(u);
+    synth.cancel();
+  }catch(e){}
 }
 function primeAudioStacks(){
   try{
-    if(synth){ synth.cancel(); const u=new SpeechSynthesisUtterance(' '); u.volume=0; synth.speak(u); synth.cancel(); }
+    if(synth){
+      synth.cancel();
+      const u=new SpeechSynthesisUtterance(' ');
+      u.volume=0;
+      synth.speak(u);
+      synth.cancel();
+    }
     ttsPrimed = true;
   }catch(e){}
 }
-window.addEventListener('click', primeAudioStacks, { once:true });
-window.addEventListener('keydown', primeAudioStacks, { once:true });
+function ensurePrimed(){
+  if(!ttsPrimed){
+    try{ primeAudioStacks(); }catch(e){}
+  }
+}
+
+// belangrijk: prime vóór andere click handlers, gebruik capture
+window.addEventListener('pointerdown', primeAudioStacks, { once:true, capture:true });
+window.addEventListener('keydown', primeAudioStacks, { once:true, capture:true });
 
 function speakOnceSafe(text, opts={onstart:null,onend:null,rate:0.95,pitch:1.0}){
- if(!synth || !text || !ttsPrimed) return;
- try{ hardResetTTS(); }catch(e){}
- const u = new SpeechSynthesisUtterance(text);
- const v = voices[chosenVoiceIndex];
- if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
- u.rate = opts.rate;
- u.pitch = opts.pitch;
- if(typeof opts.onstart==='function') u.onstart = opts.onstart;
- if(typeof opts.onend==='function') u.onend = opts.onend;
- synth.speak(u);
+  if(!synth || !text) return;
+  if(!ttsPrimed){ ensurePrimed(); }
+  if(!ttsPrimed) return; // nog niet toegestaan door browser
+  try{ hardResetTTS(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices[chosenVoiceIndex];
+  if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'nl-NL'; }
+  u.rate = opts.rate;
+  u.pitch = opts.pitch;
+  if(typeof opts.onstart==='function') u.onstart = opts.onstart;
+  if(typeof opts.onend==='function') u.onend = opts.onend;
+  synth.speak(u);
 }
 function stopAllTTS(){
- try{ if(synth){ hardResetTTS(); } }catch(e){}
- document.querySelectorAll('.ttsImgBtn').forEach(btn=>{
-   const img = btn.querySelector('img');
-   if(img) img.src='speel.jpg';
-   btn.dataset.playing='false';
-   btn.setAttribute('aria-pressed','false');
- });
- showPlayIcon();
+  try{ if(synth){ hardResetTTS(); } }catch(e){}
+  document.querySelectorAll('.ttsImgBtn').forEach(btn=>{
+    const img = btn.querySelector('img');
+    if(img) img.src='speel.jpg';
+    btn.dataset.playing='false';
+    btn.setAttribute('aria-pressed','false');
+  });
+  showPlayIcon();
 }
 
 // Scene logica
@@ -338,26 +364,32 @@ let scenePlaying = false;
 function showPauseIcon(){ if(scenePlay) scenePlay.classList.add('hidden'); if(scenePause) scenePause.classList.remove('hidden'); }
 function showPlayIcon(){ if(scenePause) scenePause.classList.add('hidden'); if(scenePlay) scenePlay.classList.remove('hidden'); }
 function enterSceneIntro(){
- showPlayIcon();
- const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.';
- speakOnceSafe(line1,{onend:()=>{ showPlayIcon(); }});
+  showPlayIcon();
+  const line1 = 'Als je de uitleg wil horen, klik je op de driehoek.';
+  speakOnceSafe(line1,{onend:()=>{ showPlayIcon(); }});
 }
 function handleScenePlay(){
- if(scenePlaying){
-   try{ synth.pause(); }catch(e){}
-   scenePlaying=false; showPlayIcon(); return;
- }
- scenePlaying=true; showPauseIcon();
- const main = 'Klik rechtsonder op de knop';
- const emphas = 'volgende';
- speakOnceSafe(main,{onend:()=>{
-   speakOnceSafe(emphas,{rate:0.9,pitch:1.6,onend:()=>{
-     scenePlaying=false; showPlayIcon(); setNextEnabled(true);
-   }});
- }});
- setNextEnabled(false);
+  ensurePrimed();
+  if(scenePlaying){
+    try{ synth.cancel(); }catch(e){}
+    scenePlaying=false; showPlayIcon(); return;
+  }
+  scenePlaying=true; showPauseIcon();
+  const main = 'Klik rechtsonder op de knop';
+  const emphas = 'volgende';
+  speakOnceSafe(main,{onend:()=>{
+    speakOnceSafe(emphas,{rate:0.9,pitch:1.6,onend:()=>{
+      scenePlaying=false; showPlayIcon(); setNextEnabled(true);
+    }});
+  }});
+  setNextEnabled(false);
+  // failsafe als onend niet vuurt
+  setTimeout(()=>{ if(scenePlaying){ scenePlaying=false; showPlayIcon(); setNextEnabled(true); } }, 6000);
 }
-function pauseScene(){ try{ synth.pause(); }catch(e){} scenePlaying=false; showPlayIcon(); }
+function pauseScene(){
+  try{ synth.cancel(); }catch(e){}
+  scenePlaying=false; showPlayIcon();
+}
 if(scenePlay){ scenePlay.addEventListener('click', handleScenePlay); }
 if(scenePause){ scenePause.addEventListener('click', pauseScene); }
 
@@ -390,181 +422,183 @@ function equalsAnswer(ans, val, isNumeric){
 }
 
 function check(ix){
- const t=tasks[ix];
- if(!t||t.dataset.kind!=='task') return true;
- const ans=t.dataset.answer;
- const input=t.querySelector('input.input');
- const fb=t.querySelector('div.feedback');
- let ok=false, value=null;
+  const t=tasks[ix];
+  if(!t||t.dataset.kind!=='task') return true;
+  const ans=t.dataset.answer;
+  const input=t.querySelector('input.input');
+  const fb=t.querySelector('div.feedback');
+  let ok=false, value=null;
 
- if(input){
-   value=input.value;
-   const isNumeric = input.getAttribute('inputmode')==='numeric' || /^[0-9]+$/.test(String(ans));
-   ok = equalsAnswer(ans, value, isNumeric);
- }else{
-   const r=t.querySelector('input[type=radio]:checked');
-   value=r ? r.value : null;
-   ok= !!value && equalsAnswer(ans, value, false);
- }
+  if(input){
+    value=input.value;
+    const isNumeric = input.getAttribute('inputmode')==='numeric' || /^[0-9]+$/.test(String(ans));
+    ok = equalsAnswer(ans, value, isNumeric);
+  }else{
+    const r=t.querySelector('input[type=radio]:checked');
+    value=r ? r.value : null;
+    ok= !!value && equalsAnswer(ans, value, false);
+  }
 
- fb.textContent='';
- fb.className='feedback';
- if(value!==null && String(value).trim()!==''){
-   state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
- }else{
-   state[ix].answered=false; state[ix].correct=null; state[ix].value=null;
- }
- renderPager();
- return state[ix].answered ? ok : false;
+  fb.textContent='';
+  fb.className='feedback';
+  if(value!==null && String(value).trim()!==''){
+    state[ix].answered=true; state[ix].correct=ok; state[ix].value=value;
+  }else{
+    state[ix].answered=false; state[ix].correct=null; state[ix].value=null;
+  }
+  renderPager();
+  return state[ix].answered ? ok : false;
 }
 
 // TTS knoppen bij tasks
 function ensureTaskTTSControls(section){
- if(section.dataset.kind!=='task') return;
- if(!section.dataset.tts) return;
- const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
- const img = btn.querySelector('img'); if(!img) return;
- btn.dataset.playing='false';
- btn.setAttribute('aria-pressed','false');
+  if(section.dataset.kind!=='task') return;
+  if(!section.dataset.tts) return;
+  const btn = section.querySelector('.ttsImgBtn'); if(!btn) return;
+  const img = btn.querySelector('img'); if(!img) return;
+  btn.dataset.playing='false';
+  btn.setAttribute('aria-pressed','false');
 
- if(!btn._bound){
-   btn.addEventListener('click', ()=>{
-     const playing = btn.dataset.playing==='true';
-     if(playing){
-       try{ synth.pause(); }catch(e){}
-       btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; return;
-     }
-     btn.dataset.playing='true'; btn.setAttribute('aria-pressed','true'); img.src='pauze.jpg';
-     const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
-     speakOnceSafe(tts,{onend:()=>{ btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; }});
-   });
-   btn._bound = true;
- }
+  if(!btn._bound){
+    btn.addEventListener('click', ()=>{
+      ensurePrimed();
+      const playing = btn.dataset.playing==='true';
+      if(playing){
+        try{ synth.cancel(); }catch(e){}
+        btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; return;
+      }
+      btn.dataset.playing='true'; btn.setAttribute('aria-pressed','true'); img.src='pauze.jpg';
+      const tts = section.dataset.tts || section.querySelector('.q')?.textContent || '';
+      speakOnceSafe(tts,{onend:()=>{ btn.dataset.playing='false'; btn.setAttribute('aria-pressed','false'); img.src='speel.jpg'; }});
+    });
+    btn._bound = true;
+  }
 }
 
 function show(k){
- tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
- const active = tasks[k];
- const kind = active?.dataset.kind;
+  tasks.forEach((t,ix)=>t.classList.toggle('active', ix===k));
+  const active = tasks[k];
+  const kind = active?.dataset.kind;
 
- // Vorige knop verbergen op de uitlegscene
- if (kind === 'scene') { prevBtn.style.visibility = 'hidden'; }
- else { prevBtn.style.visibility = 'visible'; }
+  // Vorige knop verbergen op de uitlegscene
+  if (kind === 'scene') { prevBtn.style.visibility = 'hidden'; }
+  else { prevBtn.style.visibility = 'visible'; }
 
- const endSection = tasks.find(t=>t.dataset.kind==='end');
- if(endSection){
-   if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
-   else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
- }
- if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
+  const endSection = tasks.find(t=>t.dataset.kind==='end');
+  if(endSection){
+    if(kind==='end'){ endSection.classList.add('show'); document.body.classList.add('end-view'); }
+    else { endSection.classList.remove('show'); document.body.classList.remove('end-view'); }
+  }
+  if(kind==='scene'){ document.body.classList.add('hide-ui'); } else { document.body.classList.remove('hide-ui'); }
 
- stopAllTTS();
- showPlayIcon();
+  stopAllTTS();
+  showPlayIcon();
 
- if(kind==='task'){
-   ensureTaskTTSControls(active);
-   const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
-   // op eerste task is Vorige zichtbaar, maar hij gaat terug naar scene
-   setNextEnabled(true);
-   renderPager();
- }else if(kind==='scene'){
-   setNextEnabled(false);
-   renderPager(true);
-   enterSceneIntro();
- }else if(kind==='end'){
-   fillEndCircles();
-   setNextEnabled(false);
-   renderPager(true);
- }
+  if(kind==='task'){
+    ensureTaskTTSControls(active);
+    const firstInput = active.querySelector('input,textarea,select'); if(firstInput){ setTimeout(()=>firstInput.focus(), 50); }
+    // op eerste task is Vorige zichtbaar, maar hij gaat terug naar scene
+    setNextEnabled(true);
+    renderPager();
+  }else if(kind==='scene'){
+    setNextEnabled(false);
+    renderPager(true);
+    enterSceneIntro();
+  }else if(kind==='end'){
+    fillEndCircles();
+    setNextEnabled(false);
+    renderPager(true);
+  }
 }
 
 // Paginering
 function renderPager(hideAll){
- pager.innerHTML='';
- if(hideAll){ return; }
- const total = itemIx.length; if(total===0) return;
- const currentIdx = itemIx.indexOf(i);
- for(let k=0;k<total;k++){
-  const ixTask = itemIx[k];
-  const b=document.createElement('button');
-  const isCurrent = (currentIdx===k);
-  b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
-  b.type='button'; b.textContent=String(k+1);
-  if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
-  pager.appendChild(b);
- }
+  pager.innerHTML='';
+  if(hideAll){ return; }
+  const total = itemIx.length; if(total===0) return;
+  const currentIdx = itemIx.indexOf(i);
+  for(let k=0;k<total;k++){
+    const ixTask = itemIx[k];
+    const b=document.createElement('button');
+    const isCurrent = (currentIdx===k);
+    b.className='pageBtn'+(isCurrent?' current':'')+(state[ixTask]?.answered && !isCurrent ? ' answered':'');
+    b.type='button'; b.textContent=String(k+1);
+    if(!isCurrent){ b.addEventListener('click', ()=>{ i=itemIx[k]; show(i); }); }
+    pager.appendChild(b);
+  }
 }
 
 // Eindscherm
 function fillEndCircles(){
- const wrap=document.getElementById('endCircles');
- wrap.innerHTML='';
- itemIx.forEach((ix,idx)=>{
-   const btn=document.createElement('button');
-   btn.type='button';
-   btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
-   btn.textContent=String(idx+1);
-   btn.addEventListener('click', ()=>{ i=ix; show(i); });
-   wrap.appendChild(btn);
- });
+  const wrap=document.getElementById('endCircles');
+  wrap.innerHTML='';
+  itemIx.forEach((ix,idx)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='circleBtn'+(state[ix].answered ? ' done' : '');
+    btn.textContent=String(idx+1);
+    btn.addEventListener('click', ()=>{ i=ix; show(i); });
+    wrap.appendChild(btn);
+  });
 }
 
 // Onderbalk knoppen
 prevBtn.addEventListener('click', ()=>{
- const kind = tasks[i]?.dataset.kind;
- if(kind==='scene'){ return; } // op scene geen vorige
- if(kind==='task'){
-   const idx=itemIx.indexOf(i);
-   const prev = itemIx[idx-1];
-   if(prev!==undefined){ i=prev; show(i); }
-   else { i = sceneIx>=0 ? sceneIx : i; show(i); } // vanaf eerste task terug naar scene
- }
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='scene'){ return; } // op scene geen vorige
+  if(kind==='task'){
+    const idx=itemIx.indexOf(i);
+    const prev = itemIx[idx-1];
+    if(prev!==undefined){ i=prev; show(i); }
+    else { i = sceneIx>=0 ? sceneIx : i; show(i); } // vanaf eerste task terug naar scene
+  }
 });
 nextBtn.addEventListener('click', ()=>{
- const kind = tasks[i].dataset.kind;
- if(kind==='scene'){
-   i = firstTask>=0 ? firstTask : i; show(i); return;
- }
- if(kind==='task'){
-   check(i);
-   const idx=itemIx.indexOf(i);
-   const next = itemIx[idx+1];
-   if(next!==undefined){
-     i=next; show(i);
-   } else {
-     i = tasks.findIndex(t=>t.dataset.kind==='end');
-     if(i<0) i=tasks.length-1;
-     show(i);
-   }
-   return;
- }
+  const kind = tasks[i].dataset.kind;
+  if(kind==='scene'){
+    i = firstTask>=0 ? firstTask : i; show(i); return;
+  }
+  if(kind==='task'){
+    check(i);
+    const idx=itemIx.indexOf(i);
+    const next = itemIx[idx+1];
+    if(next!==undefined){
+      i=next; show(i);
+    } else {
+      i = tasks.findIndex(t=>t.dataset.kind==='end');
+      if(i<0) i=tasks.length-1;
+      show(i);
+    }
+    return;
+  }
 });
 
 // Keyboard
 window.addEventListener('keydown', (e)=>{
- const kind = tasks[i]?.dataset.kind;
- if(kind==='task'){
-   if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
-   if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
-   if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
- }
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='task'){
+    if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+    if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+  }
 });
 
 // Inputs, direct check
 itemIx.forEach(ix=>{
- const node = tasks[ix];
- node.addEventListener('input', ()=>{ check(ix); });
- node.addEventListener('change', ()=>{ check(ix); });
+  const node = tasks[ix];
+  node.addEventListener('input', ()=>{ check(ix); });
+  node.addEventListener('change', ()=>{ check(ix); });
 });
 
 // Start direct op de scene
 function init(){
- document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
- i = sceneIx>=0 ? sceneIx : (firstTask ?? 0);
- show(i);
+  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+  i = sceneIx>=0 ? sceneIx : (firstTask ?? 0);
+  show(i);
 }
 init();
 })();
 </script>
+
 </body>
 </html>
