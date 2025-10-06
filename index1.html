@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voorbeeldtoets Groep 3, Oefenomgeving, fullscreen responsive</title>
+<style>
+/* ... (Bestaande CSS blijft hier staan) ... */
+:root{
+  --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6;
+  --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
+  --pad:clamp(12px, 2.2vw, 24px);
+  --radius:16px;
+  --navH:76px;
+/* Hoogte van de Header EN de Footer wordt door deze variabele bepaald */
+}
+
+/* Basis, echte fullscreen met mobiele address-bar fixes */
+html, body{height:100%;
+margin:0; padding:0}
+body{
+  min-height:100svh;
+  font-family:Arial, Helvetica, sans-serif;
+  font-size:clamp(15px, 1.1vw + .4rem, 17px);
+  line-height:1.5;
+  color:var(--text);
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+/* BELANGRIJKE WIJZIGING: Voeg padding toe aan de bovenkant om ruimte te maken voor de vaste header */
+  padding-top: var(--navH);
+/* BELANGRIJKE WIJZIGING: Voeg padding toe aan de onderkant om ruimte te maken voor de vaste footer */
+  padding-bottom: var(--navH);
+}
+
+/* Headerbalk - VASTGEZET bovenaan */
+.sky{
+  height:clamp(56px, 8svh, 80px);
+  background:var(--blue);
+  border-bottom:2px solid var(--line);
+  flex:0 0 auto;
+/* BELANGRIJKE WIJZIGING: Vaste positie bovenaan */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+/* Zorgt ervoor dat de balk boven de rest van de inhoud ligt */
+}
+
+/* Hoofdpodium vult het resterende scherm */
+.stage{
+  flex:1 1 auto;
+min-height:0;
+  display:flex;
+  padding:clamp(8px, 1.5vw, 16px);
+}
+
+/* De “card” wordt het canvas dat het scherm vult */
+.card{
+  background:var(--panel);
+  width:100%;
+height:calc(100% - 0px);
+  min-height:0;
+  border-radius:0;
+  box-shadow:none;
+  /* NIEUWE PADDING: Nu alleen de nodige padding.
+De ruimte voor de footer wordt door de body padding-bottom verzorgd */
+  padding:calc(var(--pad) + 4px) calc(var(--pad) + 6px) var(--pad);
+position:relative;
+  /* BELANGRIJKE WIJZIGING: Verwijder de algemene overflow, we laten de inhoud binnen de taaksecties de hoogte bepalen */
+  overflow:hidden;
+display: flex;
+  flex-direction: column;
+}
+
+/* Op grotere schermen net wat zachter */
+@media (min-width:900px){
+  .card{
+    max-width:1200px;
+margin:0 auto;
+    border-radius:var(--radius);
+    box-shadow:0 1px 12px rgba(0,0,0,.08);
+    /* NIEUWE PADDING: Nu alleen de nodige padding. */
+    padding-bottom:var(--pad);
+  }
+}
+
+/* Typografie */
+h1{font-size:clamp(18px, 1.2vw + .8rem, 24px); font-weight:bold; margin:0 0 12px}
+p{margin:0 0 10px}
+.q{
+  font-size:clamp(17px, 1.1vw + .6rem, 20px); font-weight:bold;
+margin:14px 0 8px;
+  /* BELANGRIJKE WIJZIGING: Centreer de vraagtekst */
+  text-align: center;
+}
+
+/* Inputs en keuzes, grotere touch-targets */
+.input{
+  font-size:clamp(16px, 1vw + .6rem, 18px);
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #bbb;
+width:min(320px, 100%);
+  /* Zorgt ervoor dat het inputveld niet de hele breedte pakt in de flex-container */
+  flex-shrink: 0;
+}
+.choices{margin-top:8px}
+.choice{display:block; margin-bottom:8px}
+.choice input{width:20px; height:20px}
+
+/* Feedbackkleuren */
+.feedback{margin-top:8px; font-weight:bold; text-align: center; flex-shrink: 0;} /* Centreren van feedback */
+.ok{color:var(--ok)}
+.wrong{color:var(--wrong)}
+
+/* Verberg voortgang rechtsboven, zoals gewenst */
+.progress{display:none}
+
+/* TTS knoppen compact, maar vinger-vriendelijk */
+.ttsRow{display:inline-flex;
+align-items:center; gap:10px; margin-left:8px}
+.ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
+.ttsImgBtn img{width:40px; height:40px; display:block}
+.audioBtn{
+  border:0; background:#eee;
+  width:48px; height:48px; border-radius:24px;
+  cursor:pointer; display:inline-flex;
+align-items:center; justify-content:center
+}
+.audioBtn svg{width:22px; height:22px; fill:var(--blue)}
+.audioBtn img{width:22px; height:22px; display:block; object-fit:contain}
+
+/* Sections */
+.task{
+  display:none; 
+  text-align: center;
+/* NIEUW: Zorgt ervoor dat task de resterende ruimte inneemt */
+  flex-grow: 1;
+/* NIEUW: Maak de task-sectie zelf een flex-container om de inhoud te beheren */
+  display: flex;
+  flex-direction: column;
+align-items: center; /* Centreert de inhoud horizontaal */
+  /* Tijdelijk overschrijven voor niet-actieve state, zal overschreven worden door .active */
+  display:none !important;
+}
+.task.active{
+  display:flex !important; /* Toon de actieve sectie */
+  /* NIEUW: Zorgt ervoor dat de inhoud van de taak kan schalen */
+  overflow: hidden;
+}
+
+/* Scènepaneel is responsive met aspect-ratio */
+.inner-panel{
+  background:#fff;
+  border-radius:clamp(10px, 1vw, 16px);
+  box-shadow:inset 0 0 0 1px #eee;
+  width:100%;
+  max-width:1100px;
+margin:10px auto 0;
+  aspect-ratio:16 / 9;
+  position:relative;
+  overflow:hidden;
+  flex-shrink: 0; /* Voorkom dat dit paneel krimpt */
+}
+.scene-play, .scene-pause{
+  position:absolute;
+left:50%; top:clamp(20px, 5vh, 36px);
+  transform:translateX(-50%);
+  width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px);
+  border:0; background:transparent; padding:0; cursor:pointer
+}
+.scene-play img, .scene-pause img{width:100%; height:100%;
+display:block}
+.scene-pause.hidden, .scene-play.hidden{display:none}
+
+/* Afbeeldingen binnen de scène schalen proportioneel en blijven zichtbaar */
+.scene-boy{
+  position:absolute; left:50%; top:45%;
+  transform:translate(-50%, -50%);
+  height:min(48%, 42vh);
+width:auto; max-width:48%;
+}
+.scene-girl{
+  position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px);
+  height:min(52%, 46vh); width:auto; max-width:50%;
+}
+
+.hidden{display:none}
+.hide-ui .progress{display:none}
+
+/* Buttons algemeen */
+.btn{border:1px solid #d0d0d0; background:#fff; border-radius:10px; padding:12px 16px; font-weight:bold; cursor:pointer}
+.btn:hover{background:#f4f6ff}
+.btn[disabled]{opacity:.5;
+cursor:not-allowed}
+
+/* Eindscherm, overzicht met tikbare rondjes */
+.review{display:none}
+.review.show{display:block}
+.circles{
+  display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;
+/* BELANGRIJKE WIJZIGING: Centreren van de rondjes */
+  justify-content: center;
+  flex-shrink: 0;
+}
+.circleBtn{
+  width:48px; height:48px; border-radius:24px;
+border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; line-height:1
+}
+.circleBtn.done{background:#fff}
+.endTitle{font-weight:bold;
+margin-top:6px}
+
+/* Onderbalk (Footer) - VASTGEZET onderaan */
+.bottomNav{
+  /* BELANGRIJKE WIJZIGING: Vaste positie onderaan */
+  position: fixed;
+  bottom: 0;
+left: 0;
+  right: 0;
+  /* NIEUWE Z-INDEX: Zorgt ervoor dat deze boven de hoofdinhoud ligt */
+  z-index: 999;
+    
+  display:flex;
+align-items:center; justify-content:space-between; gap:10px;
+  background:#fafafa; border:1px solid #ececec; border-radius:0; /* Verwijder radius zodat deze de hele breedte pakt */
+  border-top: 1px solid #ececec;
+border-bottom: none; border-left: none; border-right: none;
+  padding:10px 12px; min-height:var(--navH);
+}
+.navBtn{
+  border:0; background:var(--blue); color:#fff; border-radius:12px;
+  padding:12px 18px; font-weight:bold; cursor:pointer;
+flex:0 0 auto
+}
+.navBtn[disabled]{background:#e0e0e0; color:#666; border:1px solid #d0d0d0; cursor:not-allowed; opacity:1}
+
+/* Pager kan scrollen en wrappen op klein scherm */
+.pager{
+  display:flex;
+align-items:center; gap:8px; justify-content:center;
+  flex:1 1 auto; flex-wrap:wrap; overflow:auto; padding:6px 4px;
+  scrollbar-width:thin;
+}
+.pageBtn{
+  width:46px; height:46px; border-radius:23px; border:1px solid #d7d7d7; background:#eee;
+display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0; line-height:1;
+  flex:0 0 auto;
+}
+.pageBtn.current{
+  width:56px; height:56px; border-radius:28px; font-size:18px; background:var(--blue); color:#fff;
+border-color:var(--blue)
+}
+/* Reeds beantwoord, wit, huidige, blauw */
+.pageBtn.answered:not(.current){background:#fff}
+
+/* In eindscherm geen onderbalk tonen, zoals bij je vorige versie */
+.end-view .bottomNav{display:none}
+/* BELANGRIJKE WIJZIGING: Verwijder de padding-bottom van de body als de footer verborgen is */
+.end-view body{padding-bottom: 0;}
+
+/* Respecteer reduced motion voorkeuren */
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto}
+}
+
+/* Nieuwe CSS voor centreren van de nieuwe taakafbeeldingen */
+.task img{
+  display: block;
+/* Zorgt ervoor dat margin: auto werkt voor centreren */
+  max-width: 100%;
+/* Zorgt ervoor dat de afbeelding schaalt binnen de container */
+  height: auto;
+  margin: 10px auto 16px;
+/* Centreert de afbeelding en geeft wat ruimte onder */
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+/* Container voor afbeelding, invoerveld en toetsenbord */
+.task-content-wrapper {
+  display: flex;
+  flex-direction: column;
+/* Standaard boven elkaar */
+  align-items: center;
+  gap: 15px; /* Ruimte tussen elementen */
+  flex-grow: 1;
+/* Neemt de beschikbare ruimte in beslag */
+  width: 100%;
+  max-width: 1000px;
+/* Maximale breedte van de wrapper */
+  margin: 0 auto; /* Centreer de wrapper */
+  padding: 0 10px;
+/* Voorkom dat de inhoud de randen raakt */
+  min-height: 0;
+/* Zorgt ervoor dat de flex-items kunnen schalen */
+}
+/* BELANGRIJKE WIJZIGING VOOR LAY-OUT */
+@media (min-width: 768px) {
+  /* Op grotere schermen: input en toetsenbord rechts van de afbeelding */
+  .task-content-wrapper.with-keyboard {
+    flex-direction: row;
+/* Naast elkaar */
+    justify-content: center; /* Centreer de groep horizontaal */
+    align-items: flex-start;
+/* Begin bovenaan uitgelijnd */
+  }
+}
+.image-container {
+  /* Nieuwe container voor de afbeelding, zorgt ervoor dat deze de beschikbare ruimte gebruikt en de hoogte van het toetsenbord overneemt */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centreert de afbeelding verticaal */
+  align-items: center;
+  max-width: 100%; max-height: 100%;
+/* Zorgt dat het binnen de container past */
+  min-height: 0;
+  flex-shrink: 1;
+}
+.image-container img {
+  /* Zorgt ervoor dat de afbeelding binnen de beschikbare ruimte schaalt */
+  max-height: 100%;
+  width: auto;
+object-fit: contain;
+  margin: 0; /* Haal de auto margins weg uit de algemene .task img regel */
+}
+.input-keyboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* WIJZIGING: Verhoogde gap voor meer ruimte tussen toetsenbord en invoervak */
+  gap: 20px;
+  flex-shrink: 0;
+/* Voorkom dat de invoer/toetsenbord container krimpt */
+}
+/* Visueel Toetsenbord CSS - BIJGEWERKT voor stijl en schaduw */
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; /* iets meer ruimte */
+  width: 100%;
+  max-width: 320px; /* Iets breder */
+  margin-top: 15px;
+  padding: 10px;
+  background: var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  flex-shrink: 0;
+}
+.key {
+  border: 0;
+  background: var(--panel);
+  color: var(--text);
+  font-size: clamp(20px, 1.5vw + .8rem, 28px);
+  font-weight: bold;
+  height: clamp(50px, 7vw, 64px);
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  transition: background .1s;
+  user-select: none; /* Voorkom selectie op touchscreens */
+}
+.key:active {
+  background: var(--blue);
+  color: #fff;
+}
+.key.ok{
+  background:var(--ok);
+  color:#fff;
+}
+.key.ok:active{
+  background:var(--ok);
+}
+.key.del{
+  background:#fff;
+  color:var(--wrong);
+  font-size:16px;
+}
+.key.del:active{
+  background:#ddd;
+  color:var(--wrong);
+}
+.key.del img{
+  width:28px;
+  height:28px;
+  display:block;
+  margin:0 auto;
+}
+/* Einde CSS */
+</style>
+</head>
+
+<body>
+<header class="sky">
+  <div style="padding:0 var(--pad); height:100%; display:flex; align-items:center; justify-content:space-between">
+    <h1 style="color:#fff">Voorbeeldtoets Groep 3</h1>
+    <div class="progress">Vraag <span id="currentQ">1</span> van <span id="totalQ">6</span></div>
+    <div class="ttsRow">
+      <p style="color:#fff; font-size:14px; margin:0">Lees voor:</p>
+      <button class="audioBtn" id="ttsBtn" title="Lees de tekst hardop voor">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 10v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71V6.41c0-.89-1.08-1.34-1.71-.71L7 9H4c-.55 0-1 .45-1 1zm13.5 4c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 4.45v2.02c4.08 1.11 7 4.72 7 8.51s-2.92 7.4-7 8.51v2.02c5.15-1.16 9-6.03 9-10.53S19.15 5.61 14 4.45z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="card">
+    
+    <div class="review" id="review">
+      <h2 style="text-align:center; margin-bottom: 20px">Overzicht van de vragen</h2>
+      <p style="text-align: center;">Klik op een rondje om terug te gaan naar de vraag.</p>
+      <div class="circles" id="reviewCircles">
+        </div>
+      <p class="endTitle" id="endScore"></p>
+      <p class="endTitle" id="endMessage" style="color:var(--blue)"></p>
+    </div>
+    
+    <section id="tasksContainer">
+        
+      <div class="task active" id="task0" data-kind="intro">
+        <p class="q">Lukt het om het geluid te horen? Druk op het luidspreker-icoon. <span style="font-size:16px">(Het geluid kan even op zich laten wachten)</span></p>
+        <div class="task-content-wrapper">
+          <div class="image-container">
+            <img src="geluidstest.jpg" alt="Geluidstest illustratie" style="max-height: 200px;" />
+          </div>
+          <div class="input-keyboard-container">
+             <label for="soundOk" class="choice" style="margin-top:20px"><input type="checkbox" id="soundOk" /> Ik hoorde het geluid</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" id="task1" data-kind="choice" data-answer="12">
+        <p class="q">Op de getallenlijn hangen de kaartjes 1, 14 en 20. Op de tafel liggen de kaartjes 10, 12, 5 en 18 die ook opgehangen moeten worden. Welk kaartje moet het dichtst bij 14 hangen?</p>
+        <div class="task-content-wrapper">
+          <div class="image-container">
+            <img src="06 getallenlijn.jpg" alt="Illustratie van een getallenlijn" />
+          </div>
+          <div class="input-keyboard-container">
+            <div class="choices" data-input-target="#q1-input">
+              <label class="choice"><input type="radio" name="q1" value="10" id="q1-choice-10" /> 10</label>
+              <label class="choice"><input type="radio" name="q1" value="12" id="q1-choice-12" /> 12</label>
+              <label class="choice"><input type="radio" name="q1" value="5" id="q1-choice-5" /> 5</label>
+              <label class="choice"><input type="radio" name="q1" value="18" id="q1-choice-18" /> 18</label>
+              <input type="hidden" class="input" id="q1-input" />
+            </div>
+          </div>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="task" id="task2" data-kind="input" data-answer="15">
+        <p class="q">Jan scoort met 3 ballen punten. Hoeveel is het samen?</p>
+        <div class="task-content-wrapper with-keyboard">
+          <div class="image-container">
+            <img src="07 poortbal.jpg" alt="Illustratie van poortbal met scores" />
+          </div>
+          <div class="input-keyboard-container">
+            <input type="number" class="input" id="q2-input" inputmode="none" readonly placeholder="Typ hier het antwoord" />
+            <div class="keyboard">
+              <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+              <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+              <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+              <button class="key del" data-key="del"><img src="wissen.jpg" alt="Wissen"></button>
+              <button class="key" data-key="0">0</button>
+              <button class="key ok" data-key="ok">OK</button>
+            </div>
+          </div>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="task" id="task3" data-kind="input" data-answer="12">
+        <p class="q">In een pot zitten 16 snoepjes. Jan eet 3 snoepjes en Eefke eet er 1. Hoeveel snoepjes blijven over?</p>
+        <div class="task-content-wrapper with-keyboard">
+          <div class="image-container">
+            <img src="08 snoepjes.jpg" alt="Illustratie van een pot met snoepjes" />
+          </div>
+          <div class="input-keyboard-container">
+            <input type="number" class="input" id="q3-input" inputmode="none" readonly placeholder="Typ hier het antwoord" />
+            <div class="keyboard">
+              <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+              <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+              <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+              <button class="key del" data-key="del"><img src="wissen.jpg" alt="Wissen"></button>
+              <button class="key" data-key="0">0</button>
+              <button class="key ok" data-key="ok">OK</button>
+            </div>
+          </div>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="task" id="task4" data-kind="input" data-answer="15">
+        <p class="q">maak sprongen van 5. Welk getal moet bij het vraagteken staan?</p>
+        <div class="task-content-wrapper with-keyboard">
+          <div class="image-container">
+            <img src="09 sprongen.jpg" alt="Illustratie van sprongen op een getallenlijn" />
+          </div>
+          <div class="input-keyboard-container">
+            <input type="number" class="input" id="q4-input" inputmode="none" readonly placeholder="Typ hier het antwoord" />
+            <div class="keyboard">
+              <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+              <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+              <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+              <button class="key del" data-key="del"><img src="wissen.jpg" alt="Wissen"></button>
+              <button class="key" data-key="0">0</button>
+              <button class="key ok" data-key="ok">OK</button>
+            </div>
+          </div>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="task" id="task5" data-kind="input" data-answer="4">
+        <p class="q">Er zijn 3 kinderen. 12 kaarten verdelen ze zodat iedereen er evenveel krijgt. Hoeveel kaarten krijgt ieder kind?</p>
+        <div class="task-content-wrapper with-keyboard">
+          <div class="image-container">
+            <img src="10 kaarten verdelen.jpg" alt="Illustratie van 3 kinderen en kaarten" />
+          </div>
+          <div class="input-keyboard-container">
+            <input type="number" class="input" id="q5-input" inputmode="none" readonly placeholder="Typ hier het antwoord" />
+            <div class="keyboard">
+              <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+              <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+              <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+              <button class="key del" data-key="del"><img src="wissen.jpg" alt="Wissen"></button>
+              <button class="key" data-key="0">0</button>
+              <button class="key ok" data-key="ok">OK</button>
+            </div>
+          </div>
+        </div>
+        <div class="feedback"></div>
+      </div>
+      
+    </section>
+    
+  </div>
+</main>
+
+<footer class="bottomNav">
+  <button class="navBtn" id="prevBtn" disabled>Vorige</button>
+  <div class="pager" id="pager">
+    </div>
+  <button class="navBtn" id="nextBtn">Volgende</button>
+  <button class="navBtn hidden" id="finishBtn">Klaar</button>
+</footer>
+
+<script>
+  
+// GLOBALE VARIABELEN
+const tasks = document.querySelectorAll('.task');
+const totalQ = tasks.length - 1; // min de introductietaak
+const currentQSpan = document.getElementById('currentQ');
+const totalQSpan = document.getElementById('totalQ');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const finishBtn = document.getElementById('finishBtn');
+const pager = document.getElementById('pager');
+const reviewCircles = document.getElementById('reviewCircles');
+const ttsBtn = document.getElementById('ttsBtn');
+const soundOk = document.getElementById('soundOk');
+let i = 0; // Huidige taak index (start bij 0)
+
+// AUDIO & TTS LOGICA
+let ctx;
+function ensureCtx() {
+  if (!ctx) {
+    // Probeer de AudioContext te initialiseren
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.error('Web Audio API wordt niet ondersteund in deze browser:', e);
+    }
+  }
+}
+function playDrum(time, freq, duration, type = 'sine') {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, time);
+  gain.gain.setValueAtTime(0.01, time);
+  gain.gain.exponentialRampToValueAtTime(0.5, time + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(time);
+  osc.stop(time + duration);
+}
+const DRUM_PATTERN = [
+  { offset: 0.0, freq: 220, type: 'sine' }, // A3
+  { offset: 0.15, freq: 330, type: 'sine' }, // E4
+  { offset: 0.3, freq: 440, type: 'sine' } // A4
+];
+function playDrumPatternAt(now) {
+  DRUM_PATTERN.forEach(p => playDrum(now + p.offset, p.freq, 0.15, p.type));
+}
+let soundLoopTimeouts = [];
+function stopSoundLoop() {
+  soundLoopTimeouts.forEach(id => clearTimeout(id));
+  soundLoopTimeouts = [];
+  if (audioBtn) { audioBtn.innerHTML = originalAudioBtnHTML; }
+}
+function playDrumPatternRepeated(times = 3, gapMs = 900) {
+  ensureCtx(); if (!ctx) return;
+  stopSoundLoop();
+  for (let r = 0; r < times; r++) {
+    const tId = setTimeout(() => { const now = ctx.currentTime; playDrumPatternAt(now); }, r * gapMs);
+    soundLoopTimeouts.push(tId);
+  }
+}
+
+function updateIntro() {
+  if (tasks[i]?.dataset.kind === 'intro') {
+    setNextEnabled(!!soundOk.checked);
+    if (soundOk.checked) { stopSoundLoop(); }
+  }
+}
+soundOk.addEventListener('change', updateIntro);
+
+const originalAudioBtnHTML = ttsBtn ?
+  ttsBtn.innerHTML : '';
+
+if (ttsBtn) {
+  ttsBtn.addEventListener('click', () => {
+    // Voor de geluidstest: speel een drum pattern
+    if (i === 0) {
+      const loops = 4, gap = 1000;
+      playDrumPatternRepeated(loops, gap);
+      ttsBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
+      const totalMs = loops * gap + 200;
+      setTimeout(() => {
+        ttsBtn.innerHTML = originalAudioBtnHTML;
+      }, totalMs);
+      return;
+    }
+    
+    // Voor andere taken: gebruik Speech Synthesis
+    const currentTask = tasks[i];
+    const questionText = currentTask.querySelector('.q')?.textContent;
+    if (questionText) {
+      const utterance = new SpeechSynthesisUtterance(questionText);
+      utterance.lang = 'nl-NL';
+      
+      // Optioneel: voeg een event listener toe om het icoon te veranderen
+      utterance.onstart = () => { ttsBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">'; };
+      utterance.onend = () => { ttsBtn.innerHTML = originalAudioBtnHTML; };
+      utterance.onerror = () => { ttsBtn.innerHTML = originalAudioBtnHTML; };
+      
+      // Stop eventuele eerdere spraak en start de nieuwe
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
+  });
+}
+
+
+// INVOER & KEYBOARD LOGICA
+const keyboardKeys = document.querySelectorAll('.keyboard .key');
+
+function handleKey(key, inputField) {
+  if (key === 'del') {
+    inputField.value = inputField.value.slice(0, -1);
+  } else if (key === 'ok') {
+    // Check answer, handled by moveNext logic
+  } else if (key.match(/^[0-9]$/)) {
+    // Beperk tot 2 cijfers voor dit type toets
+    if (inputField.value.length < 2) {
+      inputField.value += key;
+    }
+  }
+  // Enable/disable next button after input
+  setNextEnabled(inputField.value.trim().length > 0);
+}
+
+keyboardKeys.forEach(keyBtn => {
+  keyBtn.addEventListener('click', (e) => {
+    const currentTask = tasks[i];
+    const inputContainer = currentTask.querySelector('.input-keyboard-container');
+    
+    // Zoek het juiste invoerveld (verondersteld de eerste .input te zijn in de task)
+    const inputField = currentTask.querySelector('.input');
+
+    if (inputField && !keyBtn.classList.contains('ok')) {
+       handleKey(keyBtn.dataset.key, inputField);
+    } else if (keyBtn.dataset.key === 'ok') {
+        // De OK knop is een alternatief voor de Volgende knop
+        if (!nextBtn.disabled || tasks[i]?.dataset.kind === 'choice') {
+            moveNext();
+        }
+    }
+  });
+});
+
+// FUNCTIE OM TASK TE UPDATEN
+function updateTask() {
+  tasks.forEach((task, index) => {
+    task.classList.remove('active');
+    if (index === i) {
+      task.classList.add('active');
+    }
+  });
+
+  // PAGER updaten
+  updatePager();
+  
+  // Navigatie knoppen updaten
+  updateNavButtons();
+  
+  // Focus het invoerveld indien aanwezig (voor mobiele browsers)
+  const currentTask = tasks[i];
+  const inputField = currentTask.querySelector('.input');
+  if (inputField) {
+    // Voor input taken met virtueel toetsenbord, deactiveer het mobiele toetsenbord
+    inputField.setAttribute('readonly', 'readonly');
+    inputField.setAttribute('inputmode', 'none');
+  }
+
+  // Next button status
+  checkNextStatus();
+  
+  // Verberg TTS knop bij intro (want is al een speciale knop)
+  if(i===0){ ttsBtn.classList.add('hidden'); }
+  else { ttsBtn.classList.remove('hidden'); }
+}
+
+// FUNCTIE OM PAGINA-KNOPPEN TE MAKEN
+function createPagerButtons() {
+    pager.innerHTML = '';
+    for (let j = 1; j <= totalQ; j++) {
+        const btn = document.createElement('button');
+        btn.classList.add('pageBtn');
+        btn.textContent = j;
+        btn.setAttribute('data-index', j);
+        
+        // Laad opgeslagen antwoord status
+        const taskId = tasks[j].id;
+        const answer = localStorage.getItem(taskId);
+        if (answer) {
+            btn.classList.add('answered');
+        }
+
+        btn.addEventListener('click', () => {
+            i = j;
+            updateTask();
+        });
+        pager.appendChild(btn);
+    }
+    // Voeg het "Klaar" rondje toe (eindscherm)
+    const reviewBtn = document.createElement('button');
+    reviewBtn.classList.add('pageBtn');
+    reviewBtn.textContent = 'R';
+    reviewBtn.setAttribute('data-index', 'review');
+    reviewBtn.addEventListener('click', () => {
+        i = tasks.length;
+        updateTask();
+    });
+    pager.appendChild(reviewBtn);
+}
+
+// FUNCTIE OM PAGER VISUEEL TE UPDATEN
+function updatePager() {
+    const allBtns = pager.querySelectorAll('.pageBtn');
+    allBtns.forEach(btn => {
+        btn.classList.remove('current');
+        const index = btn.getAttribute('data-index');
+        
+        if (parseInt(index) === i) {
+            btn.classList.add('current');
+        } else if (index === 'review' && i === tasks.length) {
+            btn.classList.add('current');
+        }
+    });
+
+    if (i > 0 && i <= totalQ) {
+      currentQSpan.textContent = i;
+    }
+    
+    // Zorg dat de pager knop voor de huidige taak zichtbaar is
+    const currentBtn = pager.querySelector(`[data-index="${i}"]`);
+    if (currentBtn) {
+        currentBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
+
+
+// FUNCTIE OM NAVIGATIE KNOPPEN TE UPDATEN
+function updateNavButtons() {
+  // Intro/Review status
+  const isIntro = i === 0;
+  const isReview = i === tasks.length;
+  
+  prevBtn.classList.toggle('hidden', isReview);
+  nextBtn.classList.toggle('hidden', isReview);
+  finishBtn.classList.toggle('hidden', !isReview);
+  
+  // Toon of verberg het overzichtsscherm
+  document.getElementById('review').classList.toggle('show', isReview);
+  document.getElementById('tasksContainer').classList.toggle('hidden', isReview);
+  document.body.classList.toggle('end-view', isReview);
+
+  // Vorige knop
+  prevBtn.disabled = i <= 1;
+  
+  // Volgende knop
+  if (isReview) {
+      updateReviewScreen();
+  } else {
+    // Volgende knop wordt gecheckt door checkNextStatus()
+  }
+
+  // Pager zichtbaarheid
+  pager.classList.toggle('hidden', isReview);
+}
+
+// HULPFUNCTIE OM 'VOLGENDE' KNOP TE ENABLEN/DISABLEN
+function setNextEnabled(isEnabled) {
+    if (i === 0 && !isEnabled) {
+        nextBtn.disabled = true;
+    } else if (i > 0) {
+      nextBtn.disabled = !isEnabled;
+    } else {
+      nextBtn.disabled = !isEnabled;
+    }
+    // Zorg ervoor dat de OK knop van het virtuele toetsenbord de status volgt
+    const okKey = document.querySelector(`#task${i} .key.ok`);
+    if(okKey) okKey.disabled = !isEnabled;
+}
+
+// FUNCTIE OM DE STATUS VAN DE VOLGENDE KNOP TE CONTROLEREN
+function checkNextStatus() {
+  const currentTask = tasks[i];
+  
+  if (i === 0) {
+    // Intro taak: Volgende is alleen ingeschakeld als het vinkje is gezet
+    setNextEnabled(!!soundOk.checked);
+    return;
+  }
+  
+  const kind = currentTask.dataset.kind;
+  const taskId = currentTask.id;
+  const answer = localStorage.getItem(taskId);
+
+  if (kind === 'input') {
+    const inputField = currentTask.querySelector('.input');
+    // Is reeds beantwoord
+    if (answer) {
+      inputField.value = answer;
+      setNextEnabled(true);
+    } else {
+      // Is nog niet beantwoord, controleer of er input is
+      setNextEnabled(inputField.value.trim().length > 0);
+    }
+  } else if (kind === 'choice') {
+    // Is reeds beantwoord
+    if (answer) {
+      const selectedChoice = currentTask.querySelector(`input[value="${answer}"]`);
+      if(selectedChoice) selectedChoice.checked = true;
+      // Zorg ervoor dat de hidden input de waarde krijgt
+      const hiddenInput = currentTask.querySelector('.input[type="hidden"]');
+      if (hiddenInput) hiddenInput.value = answer;
+      setNextEnabled(true);
+    } else {
+      // Is nog niet beantwoord, controleer of er een radio button is aangeklikt
+      const selected = currentTask.querySelector(`input[type="radio"]:checked`);
+      setNextEnabled(!!selected);
+    }
+  }
+  
+  // Laatste taak: verander 'Volgende' in 'Klaar'
+  if (i === totalQ) {
+    nextBtn.textContent = 'Klaar';
+    nextBtn.removeEventListener('click', moveNext);
+    nextBtn.addEventListener('click', moveFinish);
+  } else {
+    nextBtn.textContent = 'Volgende';
+    nextBtn.removeEventListener('click', moveFinish);
+    nextBtn.addEventListener('click', moveNext);
+  }
+}
+
+// FUNCTIE OM HET ANTWOORD OP TE SLAAN
+function saveAnswer() {
+  const currentTask = tasks[i];
+  const kind = currentTask.dataset.kind;
+  let answer = '';
+
+  if (kind === 'input') {
+    const inputField = currentTask.querySelector('.input');
+    answer = inputField.value.trim();
+  } else if (kind === 'choice') {
+    const selected = currentTask.querySelector('input[type="radio"]:checked');
+    if (selected) {
+      answer = selected.value;
+    }
+  }
+
+  if (answer) {
+    localStorage.setItem(currentTask.id, answer);
+    
+    // Pager knop updaten naar 'answered'
+    const pageBtn = pager.querySelector(`[data-index="${i}"]`);
+    if(pageBtn) pageBtn.classList.add('answered');
+  }
+}
+
+// FUNCTIE OM TE VALIDEREN EN FEEDBACK TE TONEN
+function checkAnswer() {
+  const currentTask = tasks[i];
+  const correct = currentTask.dataset.answer;
+  const feedback = currentTask.querySelector('.feedback');
+  const taskId = currentTask.id;
+  
+  const answer = localStorage.getItem(taskId);
+
+  feedback.textContent = '';
+  feedback.classList.remove('ok', 'wrong');
+
+  if (answer) {
+    // Controleer alleen als er een correct antwoord is gedefinieerd
+    if (correct) {
+      const isCorrect = (answer.toLowerCase() === correct.toLowerCase());
+      localStorage.setItem(`${taskId}-status`, isCorrect ? 'correct' : 'incorrect');
+      if (isCorrect) {
+        feedback.textContent = 'Goed zo!';
+        feedback.classList.add('ok');
+      } else {
+        feedback.textContent = 'Dat is niet helemaal goed. Het juiste antwoord is ' + correct + '.';
+        feedback.classList.add('wrong');
+      }
+    }
+  } else {
+    // Geen antwoord opgeslagen (mag niet gebeuren bij Volgende klik)
+    localStorage.setItem(`${taskId}-status`, 'unanswered');
+  }
+}
+
+// FUNCTIE VOOR NAVIGATIE (VOLGENDE)
+function moveNext() {
+  if (i >= 1) {
+    saveAnswer();
+    checkAnswer();
+  }
+  
+  if (i < tasks.length - 1) {
+    i++;
+    // Navigeer direct naar het einde als de laatste taak is bereikt
+    if(i === tasks.length - 1) {
+        moveFinish();
+        return;
+    }
+    updateTask();
+  }
+}
+
+// FUNCTIE VOOR NAVIGATIE (VORIGE)
+function movePrev() {
+  // Bij teruggaan is valideren/opslaan niet nodig, de status wordt bewaard
+  if (i > 0) {
+    i--;
+    updateTask();
+  }
+}
+
+// FUNCTIE VOOR EINDIGEN/KLAAR
+function moveFinish() {
+  saveAnswer();
+  checkAnswer();
+  i = tasks.length;
+  updateTask();
+}
+
+// FUNCTIE VOOR HET EIND OVERZICHT SCHERM
+function updateReviewScreen() {
+    reviewCircles.innerHTML = '';
+    let correctCount = 0;
+    
+    for (let j = 1; j <= totalQ; j++) {
+        const btn = document.createElement('button');
+        btn.classList.add('circleBtn');
+        btn.textContent = j;
+        
+        const taskId = tasks[j].id;
+        const status = localStorage.getItem(`${taskId}-status`);
+        
+        if (status === 'correct') {
+            btn.classList.add('ok');
+            btn.classList.add('done');
+            correctCount++;
+        } else if (status === 'incorrect') {
+            btn.classList.add('wrong');
+            btn.classList.add('done');
+        } else if (status === 'unanswered') {
+            // Grijs is de default
+            btn.classList.remove('done');
+        } else {
+             // Als er een antwoord is, maar geen status (fout bij opslaan), toon het als beantwoord
+             if(localStorage.getItem(taskId)) btn.classList.add('done');
+        }
+        
+        btn.addEventListener('click', () => {
+            i = j;
+            updateTask();
+        });
+        reviewCircles.appendChild(btn);
+    }
+    
+    document.getElementById('endScore').textContent = `Je hebt ${correctCount} van de ${totalQ} vragen goed beantwoord.`;
+    document.getElementById('endMessage').textContent = 'Kijk de antwoorden na in het overzicht.';
+}
+
+// EVENT LISTENERS VOOR NAVIGATIE
+prevBtn.addEventListener('click', movePrev);
+// nextBtn event listener wordt in checkNextStatus() gezet (Volgende of Klaar)
+
+// CHOICE VELDAFWIKKELING
+document.querySelectorAll('.task[data-kind="choice"] .choices input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        // Zorg ervoor dat de hidden input de waarde van de radio button krijgt
+        const taskElement = e.target.closest('.task');
+        const hiddenInput = taskElement.querySelector('.input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = e.target.value;
+        }
+        setNextEnabled(true);
+        // Direct doorgaan na selectie (optioneel, maar gebruikelijk bij keuzetoetsen)
+        // moveNext();
+    });
+});
+
+// INITIALISATIE
+window.addEventListener('DOMContentLoaded', () => {
+    totalQSpan.textContent = totalQ;
+    createPagerButtons();
+    updateTask();
+});
+</script>
+
+</body>
+</html>
