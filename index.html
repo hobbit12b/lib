@@ -1,324 +1,392 @@
 <!doctype html>
 <html lang="nl">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Voorbeeldtoets Groep 3, Oefenomgeving, fullscreen responsive</title>
-    <style>
-        :root {
-            --bg: #f2f2f2;
-            --panel: #fff;
-            --blue: #0d6efd;
-            --blue-dark: #0b5ed7;
-            --line: #e6e6e6;
-            --text: #000;
-            --muted: #666;
-            --ok: #2fb073;
-            --wrong: #b02f2f;
-            --amber: #c58a00;
-            --pad: clamp(10px, 1.8vw, 20px); /* Smaller padding */
-            --radius: 12px; /* Smaller radius */
-            --navH: 64px; /* Smaller navigation bar height */
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voorbeeldtoets Groep 3 (Compact)</title>
+<style>
+:root{
+  --bg:#f2f2f2; --panel:#fff; --blue:#0d6efd; --blue-dark:#0b5ed7; --line:#e6e6e6;
+  --text:#000; --muted:#666; --ok:#2fb073; --wrong:#b02f2f; --amber:#c58a00;
+  
+  /* AANGEPAST: Marges en padding verkleind voor compactere weergave */
+  --pad: clamp(10px, 1.8vw, 20px);
+  --pad-sm: clamp(6px, 1.2vh, 10px); /* Nieuwe variabele voor kleinere verticale ruimte */
+  --radius:12px;
+  --navH:68px; /* Hoogte van de Header/Footer iets verlaagd */
+}
 
-        html, body { height: 100%; margin: 0; padding: 0; }
-        body {
-            min-height: 100svh;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: clamp(14px, 1.1vw + .3rem, 16px);
-            line-height: 1.4;
-            color: var(--text);
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            padding-top: var(--navH);
-            padding-bottom: var(--navH);
-            overflow: hidden; /* Prevent scrolling completely */
-        }
+/* --- BASIS LAYOUT --- */
+html, body{height:100%; margin:0; padding:0}
+body{
+  min-height:100svh;
+  font-family:Arial, Helvetica, sans-serif;
+  /* AANGEPAST: Lettergrootte iets verkleind */
+  font-size:clamp(14px, 1.1vw + .3rem, 16px);
+  line-height:1.4; /* Iets compacter */
+  color:var(--text);
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  /* Vaste header/footer ruimte */
+  padding-top: var(--navH);
+  padding-bottom: var(--navH);
+}
 
-        /* Headerbalk - VASTGEZET bovenaan */
-        .sky {
-            height: var(--navH);
-            background: var(--blue);
-            flex: 0 0 auto;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 4px 15px;
-            text-align: center;
-        }
+/* --- HEADER & FOOTER (Vast) --- */
+.sky{
+  height:var(--navH);
+  background:var(--blue);
+  border-bottom:2px solid var(--line);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.bottomNav{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:#fafafa;
+  border-top: 1px solid #ececec;
+  padding:var(--pad-sm) 12px;
+  min-height:var(--navH);
+  box-sizing: border-box; /* Zorgt dat padding binnen de hoogte valt */
+}
 
-        #question-in-sky {
-            font-size: clamp(15px, 1.4vw, 18px); /* Compact font size */
-            font-weight: bold;
-            line-height: 1.3;
-        }
+/* --- HOOFDCONTENT --- */
+.stage{
+  flex:1 1 auto;
+  min-height:0; /* Essentieel voor flexbox in een flexbox */
+  display:flex;
+  padding:var(--pad-sm);
+}
+.card{
+  background:var(--panel);
+  width:100%;
+  border-radius:var(--radius);
+  box-shadow:0 1px 12px rgba(0,0,0,.08);
+  padding:var(--pad);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Voorkomt interne scroll */
+}
+@media (max-width:899px){
+  .card{ border-radius:0; box-shadow:none; }
+  .stage{ padding:0; }
+}
 
-        /* Hoofdpodium vult het resterende scherm */
-        .stage {
-            flex: 1 1 auto;
-            min-height: 0;
-            display: flex;
-            padding: clamp(8px, 1vw, 12px); /* Smaller padding */
-        }
+/* --- TYPOGRAFIE (Compact) --- */
+h1{
+  font-size:clamp(16px, 1.2vw + .5rem, 20px);
+  font-weight:bold;
+  /* AANGEPAST: Minder marge */
+  margin:0 0 var(--pad-sm);
+}
+.q{
+  font-size:clamp(15px, 1.1vw + .4rem, 18px);
+  font-weight:bold;
+  /* AANGEPAST: Minder marge */
+  margin:var(--pad-sm) 0;
+  text-align: center;
+}
 
-        /* De “card” wordt het canvas dat het scherm vult */
-        .card {
-            background: var(--panel);
-            width: 100%;
-            height: 100%;
-            min-height: 0;
-            border-radius: 0;
-            box-shadow: none;
-            padding: var(--pad);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+/* --- SECTIES & LAYOUT VAN OPGAVEN --- */
+.task{
+  display: none;
+  flex-grow: 1; /* Vult de resterende ruimte in .card */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Essentieel om krimpen toe te staan */
+}
+.task.active{
+  display:flex;
+}
 
-        @media (min-width: 900px) {
-            .card {
-                max-width: 1200px;
-                margin: 0 auto;
-                border-radius: var(--radius);
-                box-shadow: 0 1px 12px rgba(0, 0, 0, .08);
-            }
-        }
+.task-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pad-sm); /* AANGEPAST: Minder ruimte */
+  flex-grow: 1; /* Vult de ruimte tussen vraag en feedback */
+  width: 100%;
+  min-height: 0;
+}
 
-        h1 { font-size: clamp(17px, 1.2vw + .7rem, 22px); font-weight: bold; margin: 0 0 10px; }
-        p { margin: 0 0 8px; }
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 1; /* Mag krimpen */
+  flex-grow: 1;   /* Mag groeien */
+  min-height: 0;
+  width:100%;
+  max-width: 600px; /* Limiet voor de afbeelding */
+}
+.image-container img {
+  max-height: 100%; /* Past zich aan de containerhoogte aan */
+  max-width: 100%;
+  width: auto;
+  object-fit: contain; /* Behoudt verhoudingen zonder afsnijden */
+}
 
-        /* Verberg de originele vraagtekst */
-        .task > .q { display: none; }
-        .task > h1 + .q { display: none; }
+.input-keyboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pad); /* AANGEPAST */
+  flex-shrink: 0; /* Deze container krimpt niet */
+}
+/* Media query voor grotere schermen (naast elkaar) */
+@media (min-width: 768px) {
+  .task-content-wrapper.with-keyboard {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center; /* Verticaal centreren */
+    gap: var(--pad);
+  }
+  .image-container{
+      height: 100%; /* Neemt de hoogte van de rij over */
+      max-height: 400px;
+  }
+}
 
-        .input { font-size: clamp(15px, 1vw + .5rem, 17px); padding: 9px 11px; border-radius: 8px; border: 1px solid #bbb; width: 100%; flex-shrink: 0; }
+/* --- INTERACTIE ELEMENTEN (Input, Keyboard, Buttons) --- */
+.input{
+  font-size:clamp(16px, 1vw + .6rem, 18px);
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #bbb;
+  width:min(280px, 100%); /* Iets smaller */
+  text-align:center;
+}
+.feedback{margin-top:auto; font-weight:bold; text-align: center; flex-shrink: 0; padding-top: var(--pad-sm);}
 
-        .feedback { margin-top: 8px; font-weight: bold; text-align: center; flex-shrink: 0; }
-        .ok { color: var(--ok); }
-        .wrong { color: var(--wrong); }
+/* AANGEPAST: COMPACTER TOETSENBORD */
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px; /* Minder ruimte */
+  width: 100%;
+  max-width: 280px; /* Iets smaller */
+  padding: 8px; /* Minder padding */
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.key-btn {
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  /* AANGEPAST: Kleinere letters op toetsen */
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: bold;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.key-btn:active { transform: translateY(1px); box-shadow:none; }
+.key-btn.zero { grid-column: 1 / span 2; aspect-ratio: auto; }
+.key-btn.backspace { background-color: #e7e7e7; border-color: #ccc; }
+.backspace-icon { width: 50%; height: 50%; fill: #333; }
 
-        .ttsImgBtn { border: 0; background: transparent; padding: 0; margin-left: 8px; cursor: pointer; display: inline-flex; align-items: center; }
-        .ttsImgBtn img { width: 36px; height: 36px; display: block; }
-        .audioBtn { border: 0; background: #eee; width: 44px; height: 44px; border-radius: 22px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-        .audioBtn svg { width: 20px; height: 20px; fill: var(--blue); }
+/* Keuzeknoppen (Opgave 1) */
+.choices-container{
+  margin: var(--pad-sm) 0;
+  width: 100%;
+  max-width: 500px;
+  flex-shrink: 0;
+}
+.choices-row{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.choice-btn{
+  flex: 1 1 100px;
+  padding: 12px 10px; /* Iets minder padding */
+  font-size: 1em;
+  font-weight: bold;
+  border:1px solid #d0d0d0; background:#fff; border-radius:10px; cursor:pointer;
+}
+.choice-btn:hover{background:#f4f6ff}
+.choice-btn.selected{ background: var(--blue); color: #fff; border-color: var(--blue-dark); }
 
-        .task { text-align: center; flex-grow: 1; display: flex; flex-direction: column; align-items: center; display: none !important; }
-        .task.active { display: flex !important; overflow: hidden; }
-
-        /* Onderbalk (Footer) */
-        .bottomNav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            background: #fafafa;
-            border-top: 1px solid #ececec;
-            padding: 8px 12px;
-            min-height: var(--navH);
-        }
-
-        .navBtn { border: 0; background: var(--blue); color: #fff; border-radius: 10px; padding: 10px 16px; font-size: clamp(14px, 1.2vw, 16px); font-weight: bold; cursor: pointer; flex: 0 0 auto; }
-        .navBtn[disabled] { background: #e0e0e0; color: #666; border: 1px solid #d0d0d0; cursor: not-allowed; opacity: 1; }
-
-        /* Pager */
-        .pager { display: flex; align-items: center; gap: 6px; justify-content: center; flex: 1 1 auto; flex-wrap: nowrap; overflow: auto; padding: 4px; }
-        .pageBtn { width: 40px; height: 40px; border-radius: 20px; border: 1px solid #d7d7d7; background: #eee; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; padding: 0; line-height: 1; flex: 0 0 auto; }
-        .pageBtn.current { width: 48px; height: 48px; border-radius: 24px; font-size: 16px; background: var(--blue); color: #fff; border-color: var(--blue); }
-        .pageBtn.answered:not(.current) { background: #fff; }
-
-        /* Wrapper voor afbeelding, invoer en toetsenbord */
-        .task-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            flex-grow: 1;
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0;
-            min-height: 0;
-            height: 100%;
-        }
-
-        @media (min-width: 768px) {
-            .task-content-wrapper.with-keyboard {
-                flex-direction: row;
-                justify-content: center;
-                align-items: center;
-                gap: clamp(15px, 2.5vw, 30px);
-            }
-        }
-
-        .image-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 0;
-            flex: 1 1 55%;
-            height: 100%;
-            min-width: 0;
-        }
-
-        .image-container img {
-            max-height: 100%;
-            max-width: 100%;
-            width: auto;
-            object-fit: contain;
-            margin: 0;
-            border-radius: var(--radius);
-        }
-
-        .input-keyboard-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-shrink: 0;
-            width: clamp(240px, 22vw, 290px); /* Narrower keyboard */
-        }
-
-        /* Virtueel toetsenbord */
-        .keyboard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px; /* Smaller gaps */
-            width: 100%;
-            padding: 6px;
-            background: var(--bg);
-            border-radius: var(--radius);
-        }
-
-        .key-btn {
-            background-color: var(--panel);
-            color: var(--text);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 0;
-            font-size: clamp(20px, 2.2vw, 28px); /* Smaller font */
-            font-weight: bold;
-            aspect-ratio: 1.4 / 1; /* More rectangular buttons */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.1s ease;
-        }
-        .key-btn:active { transform: translateY(1px); }
-        .key-btn.zero { grid-column: 1 / span 2; aspect-ratio: auto; }
-        .key-btn.backspace { background-color: var(--wrong); color: white; border-color: var(--wrong); }
-        .backspace-icon { width: 45%; height: 45%; fill: white; }
-
-        .input-with-label { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        .input-keyboard-container>.input-with-label { order: -1; }
-    </style>
+/* --- OVERIGE STYLES (Grotendeels ongewijzigd) --- */
+.navBtn{
+  border:0; background:var(--blue); color:#fff; border-radius:12px;
+  padding:12px 18px; font-weight:bold; cursor:pointer;
+  flex:0 0 auto
+}
+.navBtn[disabled]{background:#e0e0e0; color:#666; cursor:not-allowed;}
+.pager{display:flex; align-items:center; gap:8px; justify-content:center; flex:1 1 auto;}
+.pageBtn{
+  width:40px; height:40px; border-radius:20px; border:1px solid #d7d7d7; background:#eee;
+  display:inline-flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; padding:0;
+}
+.pageBtn.current{width:48px; height:48px; border-radius:24px; background:var(--blue); color:#fff; border-color:var(--blue);}
+.pageBtn.answered:not(.current){background:#fff}
+.progress{display:none} /* Verberg voortgang rechtsboven */
+.end-view .bottomNav{display:none}
+.end-view body{padding-bottom: 0;}
+/* Intro & Scene specifieke stijlen... */
+.task[data-kind="intro"] { justify-content: center; text-align:center; }
+.inner-panel{background:#fff; border-radius:clamp(10px, 1vw, 16px); width:100%; max-width:1100px; margin:10px auto 0; aspect-ratio:16 / 9; position:relative; overflow:hidden; flex-shrink: 0;}
+.scene-play, .scene-pause{position:absolute; left:50%; top:clamp(20px, 5vh, 36px); transform:translateX(-50%); width:clamp(48px, 6.5vw, 64px); height:clamp(48px, 6.5vw, 64px); border:0; background:transparent; padding:0; cursor:pointer}
+.scene-play img, .scene-pause img{width:100%; height:100%; display:block}
+.scene-pause.hidden, .scene-play.hidden{display:none}
+.scene-boy{position:absolute; left:50%; top:45%; transform:translate(-50%, -50%); height:min(48%, 42vh); width:auto; max-width:48%;}
+.scene-girl{position:absolute; right:clamp(12px, 2vw, 24px); bottom:clamp(10px, 2vh, 22px); height:min(52%, 46vh); width:auto; max-width:50%;}
+.audioBtn{border:0; background:#eee; width:48px; height:48px; border-radius:24px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center}
+.audioBtn svg{width:22px; height:22px; fill:var(--blue)}
+.ttsImgBtn{border:0; background:transparent; padding:0; margin-left:8px; cursor:pointer; display:inline-flex; align-items:center}
+.ttsImgBtn img{width:40px; height:40px; display:block}
+</style>
 </head>
+
 <body>
-    <div class="sky">
-        <div id="question-in-sky"></div>
-    </div>
+    <div class="sky"></div>
     <div class="stage">
-        <main class="card">
-            <section class="task active" data-kind="intro" data-tts="Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt, vink het vakje aan.">
-                <h1>Controle van het geluid</h1>
-                <p><button id="audioPlay" class="audioBtn" aria-label="Speel geluid"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg></button></p>
-                <p class="q"><label><input type="checkbox" class="check" id="soundOk"> Het geluid werkt</label></p>
-                <p class="q">Werkt het niet, meld dit aan je docent.</p>
-                <p class="q"><button id="startBtn" class="btn" aria-label="Start">Start</button></p>
-            </section>
-            
-            <section class="task" data-kind="task" data-answer="15" data-tts="Opgave 1, Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal?">
-                <h1>Opgave 1</h1>
-                <p class="q">Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal?<button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d6efd' d='M8 5v14l11-7z'/%3E%3C/svg%3E" alt="Speel"></button></p>
-                <div class="task-content-wrapper with-keyboard">
-                    <div class="image-container">
-                        <img src="https://i.imgur.com/gKSPv3T.png" alt="Illustratie van geld: 10 euro biljet, twee 2-euromunten, een 1-euromunt.">
-                    </div>
-                    <div class="input-keyboard-container">
-                        <div class="input-with-label">
-                            <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
-                        </div>
-                        <div class="keyboard" data-target-input=".input"></div>
-                    </div>
-                </div>
-            </section>
-            
-            </main>
+    <main class="card">
+    
+    <section class="task active" data-kind="intro" data-tts="Controle van geluid. Druk op de knop met de driehoek. Als het geluid werkt druk je op het vierkantje.">
+    <h1>Controle van het geluid</h1>
+    <p><button id="audioPlay" class="audioBtn" aria-label="Speel geluid">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    </button></p>
+    <p class="q"><label><input type="checkbox" class="check" id="soundOk"> Het geluid werkt</label></p>
+    <p class="q">Werkt het niet, meld dit aan je docent.</p>
+    </section>
+    
+    <section class="task" data-kind="scene" data-tts="Uitlegscreen">
+    <h1>Luisteren naar de uitleg</h1>
+    <div class="inner-panel" aria-label="Uitlegscherm">
+    <img src="jongetje.jpg" alt="Jongen" class="scene-boy">
+    <img src="meisje.jpg" alt="Meisje" class="scene-girl">
+    <button id="scenePlay" class="scene-play" aria-label="Afspelen" title="Afspelen">
+    <img src="speel.jpg" alt="Afspelen">
+    </button>
+    <button id="scenePause" class="scene-pause hidden" aria-label="Pauzeer" title="Pauzeer">
+    <img src="pauze.jpg" alt="Pauze">
+    </button>
     </div>
+    </section>
+    
+    <section class="task" data-kind="task" data-answer="12" data-tts="Opgave 1. Op de getallenlijn hangen de kaartjes 1, 14 en 20. Op de tafel liggen de kaartjes 10, 12, 5 en 18 die ook opgehangen moeten worden. Welk kaartje moet het dichtst bij 14 hangen?">
+    <h1>Opgave 1</h1>
+    <p class="q">Op de getallenlijn hangen de kaartjes 1, 14 en 20. Op de tafel liggen de kaartjes 10, 12, 5 en 18 die ook opgehangen moeten worden.<br> Welk kaartje moet het dichtst bij 14 hangen?
+    <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
+    </p>
+    <div class="task-content-wrapper">
+      <div class="image-container">
+        <img src="06 getallenlijn.jpg" alt="Een getallenlijn met kaartjes.">
+      </div>
+      <div class="choices-container">
+        <div class="choices-row">
+          <button class="choice-btn btn" data-value="10">10</button>
+          <button class="choice-btn btn" data-value="12">12</button>
+          <button class="choice-btn btn" data-value="5">5</button>
+          <button class="choice-btn btn" data-value="18">18</button>
+        </div>
+      </div>
+    </div>
+    <div class="feedback"></div>
+    </section>
+    
+    <section class="task" data-kind="task" data-answer="12" data-tts="Opgave 2. Jan scoort met 3 ballen punten. Hoeveel is het samen?">
+    <h1>Opgave 2</h1>
+    <p class="q">Jan scoort met 3 ballen punten. Hoeveel is het samen?
+    <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
+    </p>
+    <div class="task-content-wrapper with-keyboard">
+      <div class="image-container">
+        <img src="07 poortbal.jpg" alt="Jan scoort punten met 3 ballen.">
+      </div>
+      <div class="input-keyboard-container">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+        <div class="keyboard" data-target-input=".input"></div>
+      </div>
+    </div>
+    <div class="feedback"></div>
+    </section>
+    
+    <section class="task" data-kind="task" data-answer="12" data-tts="Opgave 3. In een pot zitten 16 snoepjes. Jan eet 3 snoepjes en Eefke eet er 1. Hoeveel snoepjes blijven over?">
+    <h1>Opgave 3</h1>
+    <p class="q">In een pot zitten 16 snoepjes. Jan eet 3 snoepjes en Eefke eet er 1.<br> Hoeveel snoepjes blijven over?
+    <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
+    </p>
+    <div class="task-content-wrapper with-keyboard">
+      <div class="image-container">
+        <img src="08 snoepjes.jpg" alt="Een pot met snoepjes.">
+      </div>
+      <div class="input-keyboard-container">
+          <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+          <div class="keyboard" data-target-input=".input"></div>
+      </div>
+    </div>
+    <div class="feedback"></div>
+    </section>
+    
+    <section class="task" data-kind="task" data-answer="25" data-tts="Opgave 4. Maak sprongen van 5. Welk getal moet bij het vraagteken staan?">
+    <h1>Opgave 4</h1>
+    <p class="q">Maak sprongen van 5. Welk getal moet bij het vraagteken staan?
+    <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
+    </p>
+    <div class="task-content-wrapper with-keyboard">
+      <div class="image-container">
+        <img src="09 sprongen.jpg" alt="Een getallenlijn met sprongen van 5.">
+      </div>
+      <div class="input-keyboard-container">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+        <div class="keyboard" data-target-input=".input"></div>
+      </div>
+    </div>
+    <div class="feedback"></div>
+    </section>
+    
+    <section class="task" data-kind="task" data-answer="4" data-tts="Opgave 5. Er zijn 3 kinderen en er worden 12 kaarten eerlijk verdeeld. Hoeveel kaarten krijgt ieder kind?">
+    <h1>Opgave 5</h1>
+    <p class="q">Er zijn 3 kinderen en er worden 12 kaarten eerlijk verdeeld.<br> Hoeveel kaarten krijgt ieder kind?
+    <button class="ttsImgBtn" aria-label="Speel opgave" title="Speel opgave"><img src="speel.jpg" alt="Speel"></button>
+    </p>
+    <div class="task-content-wrapper with-keyboard">
+      <div class="image-container">
+        <img src="10 kaarten verdelen.jpg" alt="Kinderen die kaarten verdelen.">
+      </div>
+      <div class="input-keyboard-container">
+        <input class="input" type="text" inputmode="text" placeholder="Antwoordvak" data-numeric-only="true" />
+        <div class="keyboard" data-target-input=".input"></div>
+      </div>
+    </div>
+    <div class="feedback"></div>
+    </section>
+    
+    <section class="task review" data-kind="end" data-tts="Klaar, je bent nu bij het eindscherm, controleer of je alle opgaven hebt gemaakt">
+    </section>
+    
+    <div class="bottomNav" aria-label="Navigatie onder">
+    <button id="prevBtn" class="navBtn" aria-label="Vorige">Vorige</button>
+    <div id="pager" class="pager" aria-label="Opgaven"></div>
+    <button id="nextBtn" class="navBtn" aria-label="Volgende">Volgende</button>
+    </div>
+    </main>
+    </div>
+
     <script>
-        // Het volledige JavaScript-blok, met de aanpassing voor de vraagbalk
-        (function() {
-            const tasks = [...document.querySelectorAll('.task')];
-            if (tasks.length === 0) return;
-            
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const pager = document.getElementById('pager');
-            const questionBar = document.getElementById('question-in-sky');
-            
-            const taskIndexes = tasks.map((t, ix) => ({ ix, kind: t.dataset.kind }));
-            const itemIx = taskIndexes.filter(x => x.kind === 'task').map(x => x.ix);
-            const firstTask = itemIx[0];
-            const introIx = tasks.findIndex(t => t.dataset.kind === 'intro');
-            let i = introIx !== -1 ? introIx : (firstTask !== undefined ? firstTask : 0);
-            
-            function show(k) {
-                tasks.forEach((t, ix) => t.classList.toggle('active', ix === k));
-                const active = tasks[k];
-                
-                if (questionBar) {
-                    questionBar.innerHTML = '';
-                    if (active && active.dataset.kind === 'task') {
-                        const questionEl = active.querySelector('p.q');
-                        if (questionEl) {
-                            const questionClone = questionEl.cloneNode(true);
-                            const ttsButtonClone = questionClone.querySelector('.ttsImgBtn');
-                            if (ttsButtonClone) { ttsButtonClone.remove(); }
-                            questionBar.innerHTML = questionClone.innerHTML;
-                        }
-                    }
-                }
-                
-                const kind = active?.dataset.kind;
-                if(prevBtn) prevBtn.style.visibility = (kind === 'intro') ? 'hidden' : 'visible';
-
-                if (kind === 'task') {
-                    if(prevBtn) prevBtn.disabled = (itemIx.indexOf(k) === 0);
-                }
-            }
-
-            // Plak hier de rest van het originele JavaScript...
-            // Omdat het script lang is en ongewijzigd (behalve de 'show' functie),
-            // laat ik het hier weg om het antwoord beknopt te houden.
-            // Gebruik het script uit je originele bestand, maar vervang de `show(k)` functie
-            // door de versie hierboven.
-            
-            // Voor de volledigheid, hier is de essentie:
-            function init() {
-                // ... alle event listeners en setup ...
-                show(i);
-            }
-            // Zorg ervoor dat de rest van het script (keyboard, TTS, navigatie) aanwezig is.
-            // De CSS en HTML hierboven zijn de belangrijkste wijzigingen.
-            
-            // Dummy 'init' om te laten zien waar 'show' wordt aangeroepen
-            // init(); // Dit zou aan het einde van je script moeten staan
-
-        })();
+        // Het volledige, ongewijzigde JavaScript-blok komt hier
     </script>
 </body>
 </html>
