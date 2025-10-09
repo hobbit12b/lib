@@ -759,3 +759,154 @@ function renderKeyboards() {
       btn.classList.add('key-btn');
       if (key === 'del') {
         btn.classList.add('backspace');
+        btn.innerHTML = `<svg class="backspace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3h-10c-1.1 0-2 .9-2 2v2h2v-2h10v14h-10v-2h-2v2c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-16c0-1.1-.9-2-2-2zm-12 5l-5 4 5 4v-3h7v-2h-7v-3z"/></svg>`;
+        btn.setAttribute('aria-label', 'Wissen');
+      } else {
+        btn.textContent = key;
+        btn.setAttribute('aria-label', key);
+        if (key === 0) { btn.classList.add('zero'); }
+      }
+      btn.addEventListener('click', (e) => handleKeyClick(e, targetInput, key));
+      kb.appendChild(btn);
+    });
+  });
+}
+
+function handleKeyClick(event, inputElement, key) {
+  event.preventDefault();
+  inputElement.focus();
+  const isNumericOnly = inputElement.dataset.numericOnly === 'true';
+  let currentValue = inputElement.value;
+
+  if (key === 'del') {
+    if (currentValue.length > 0) {
+      inputElement.value = currentValue.slice(0, -1);
+    }
+  } else {
+    const char = String(key);
+    if (isNumericOnly && !/^\d$/.test(char)) {
+      return;
+    }
+    inputElement.value += char;
+  }
+  inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// Onderbalk knoppen
+prevBtn.addEventListener('click', ()=>{
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
+  if(kind==='intro'){ return; }
+  const idx=itemIx.indexOf(i);
+  const prev = itemIx[idx-1];
+  if(prev!==undefined){ i=prev; show(i); }
+});
+nextBtn.addEventListener('click', ()=>{
+  const kind = tasks[i].dataset.kind;
+  if(kind==='intro'){
+    if(!document.getElementById('soundOk').checked) return;
+    i = sceneIx>=0 ? sceneIx : i; show(i); return;
+  }
+  if(kind==='scene'){
+    i = firstTask>=0 ? firstTask : i; show(i); return;
+  }
+  if(kind==='task'){
+    check(i);
+    const idx=itemIx.indexOf(i);
+    const next = itemIx[idx+1];
+    if(next!==undefined){
+      i=next; show(i);
+    } else if (endIx >= 0) {
+      i = endIx;
+      show(i);
+    }
+    return;
+  }
+});
+// Keyboard shortcuts
+window.addEventListener('keydown', (e)=>{
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='task'){
+    if(e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+    if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+  }
+  if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+});
+// Inputs, direct check
+itemIx.forEach(ix=>{
+  const node = tasks[ix];
+  node.addEventListener('input', ()=>{ check(ix); });
+  node.addEventListener('change', ()=>{ check(ix); });
+});
+
+// Geluidstest
+const soundOk=document.getElementById('soundOk');
+const audioBtn=document.getElementById('audioPlay');
+const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
+function ensureCtx(){ if(!ctx&&AudioCtx){ ctx=new AudioCtx(); } }
+const DRUM_PATTERN=[ {offset:0.0,freq:120,type:'sine'}, {offset:0.4,freq:300,type:'square'}, {offset:0.6,freq:800,type:'triangle'}, {offset:0.8,freq:120,type:'sine'} ];
+function playDrum(time,freq=150,dur=0.2,type='sine'){
+  const o=ctx.createOscillator(); const g=ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type=type; o.frequency.setValueAtTime(freq,time);
+  g.gain.setValueAtTime(1,time);
+  g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+  o.start(time); o.stop(time+dur);
+}
+function playDrumPatternAt(now){ DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type)); }
+let soundLoopTimeouts=[];
+function stopSoundLoop(){
+  soundLoopTimeouts.forEach(id=> clearTimeout(id));
+  soundLoopTimeouts=[];
+  if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
+}
+function playDrumPatternRepeated(times=3, gapMs=900){
+  ensureCtx(); if(!ctx) return;
+  stopSoundLoop();
+  for(let r=0;r<times;r++){
+    const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
+    soundLoopTimeouts.push(tId);
+  }
+}
+function updateIntro(){
+  if(tasks[i]?.dataset.kind==='intro'){
+    setNextEnabled(!!soundOk.checked);
+    if(soundOk.checked){ stopSoundLoop(); }
+  }
+}
+soundOk.addEventListener('change', updateIntro);
+const originalAudioBtnHTML = audioBtn ? audioBtn.innerHTML : '';
+if(audioBtn){
+  audioBtn.addEventListener('click', ()=>{
+    const loops=4, gap=1000;
+    playDrumPatternRepeated(loops, gap);
+    audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
+    const totalMs = loops*gap + 200;
+    setTimeout(()=>{
+      if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
+    }, totalMs);
+  });
+}
+
+/* NIEUW: laat de Start knop het woord 'start' uitspreken */
+const startBtn = document.getElementById('startBtn');
+if(startBtn){
+  startBtn.addEventListener('click', ()=>{
+    speakOnce('start', { rate: 0.98 });
+  });
+}
+
+// Start
+function init(){
+  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+  renderKeyboards();
+  setupChoiceButtons();
+  i = 0; show(i);
+}
+init();
+})();
+</script>
+</body>
+</html>
