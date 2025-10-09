@@ -29,7 +29,7 @@ body{
   padding-bottom: var(--navH);
 }
 
-/* Headerbalk - VASTGEZET bovenaan, hoogte gelijk aan var(--navH) */
+/* Headerbalk, vastgezet bovenaan, hoogte gelijk aan var(--navH) */
 .sky{
   height: var(--navH);
   background:var(--blue);
@@ -50,7 +50,7 @@ body{
   padding:clamp(8px, 1.5vw, 16px);
 }
 
-/* De “card” wordt het canvas dat het scherm vult */
+/* De card wordt het canvas dat het scherm vult */
 .card{
   background:var(--panel);
   width:100%;
@@ -193,7 +193,7 @@ p{margin:0 0 10px}
 .circleBtn.done{background:#fff}
 .endTitle{font-weight:bold; margin-top:6px}
 
-/* Onderbalk (Footer) */
+/* Onderbalk, footer */
 .bottomNav{
   position: fixed;
   bottom: 0;
@@ -351,15 +351,15 @@ p{margin:0 0 10px}
 .choice-btn{ flex: 1 1 auto; min-width: 100px; padding: 15px 10px; font-size: 1.1em; font-weight: bold; }
 .choice-btn.selected{ background: var(--blue); color: #fff; border-color: var(--blue-dark); }
 
-/* Compacte stand voor lagere schermhoogte zoals 1242 × 698 */
+/* COMPACTE STAND VOOR LAGERE SCHERMHOOGTE zoals 1242 × 698 */
 @media (max-height: 740px){
   :root{
     --navH: 60px;
     --pad: 12px;
   }
-  .stage{ padding: 8px; }
+  .stage{ padding:8px; }
   .card{ padding: calc(var(--pad) + 2px) var(--pad) var(--pad); }
-  .q{ margin: 8px 0 6px; }
+  .q{ margin:8px 0 6px; }
 
   .pageBtn{ width:40px; height:40px; border-radius:20px; }
   .pageBtn.current{ width:48px; height:48px; border-radius:24px; font-size:16px; }
@@ -369,32 +369,36 @@ p{margin:0 0 10px}
   .key-btn.zero{ height: 100%; }
 
   .input-with-label{ gap:4px; }
+
+  .navBtn{ padding:10px 16px; }
 }
 
-/* Extra compacte stand voor zeer lage schermhoogte, netbooks e.d. */
+/* EXTRA STRAKKE STAND VOOR ZEER LAGE HOOGTE, bijvoorbeeld <= 640 px */
 @media (max-height: 640px){
   :root{
     --navH: 52px;
     --pad: 10px;
   }
   body{ font-size:clamp(14px, 1vw + .35rem, 16px); }
-  h1{ font-size:clamp(16px, 1vw + .7rem, 20px); margin:6px 0 8px; }
-  .q{ font-size:clamp(16px, 1vw + .5rem, 18px); margin:6px 0 6px; }
-
+  h1{ margin:0 0 8px; }
   .stage{ padding:6px; }
   .card{ padding: calc(var(--pad) + 2px) var(--pad) var(--pad); }
 
-  .inner-panel{ margin-top:6px; }
+  .inner-panel{ margin:6px auto 0; }
+
+  .q{ margin:6px 0 4px; }
+  .choices-container{ margin:10px 0; }
+  .choice-btn{ padding:12px 8px; }
+
+  .keyboard{ gap:6px; padding:6px; max-width:300px; }
+  .key-btn{ border-radius:10px; font-size: clamp(20px, 3.2vw, 30px); }
+  .key-btn.backspace .backspace-icon{ width:58%; height:58%; }
 
   .pageBtn{ width:36px; height:36px; border-radius:18px; }
   .pageBtn.current{ width:44px; height:44px; border-radius:22px; font-size:15px; }
-  .navBtn{ padding:10px 14px; }
 
-  .keyboard{ gap:6px; padding:6px; max-width:300px; }
-  .key-btn{ font-size: clamp(22px, 3.3vw, 32px); border-radius:10px; }
-  .input{ padding:8px 10px; }
-
-  .image-container img{ max-height: 52vh; }
+  .bottomNav{ padding:8px 10px; }
+  .navBtn{ padding:8px 14px; }
 }
 </style>
 </head>
@@ -414,6 +418,7 @@ p{margin:0 0 10px}
     <label><input type="checkbox" class="check" id="soundOk"> Het geluid werkt</label>
   </p>
   <p class="q">Werkt het niet, meld dit aan je docent.</p>
+  <!-- NIEUW: Start knop die het woord 'start' uitspreekt -->
   <p class="q">
     <button id="startBtn" class="btn" aria-label="Start">Start</button>
   </p>
@@ -771,7 +776,7 @@ function fillEndCircles(){
   });
 }
 
-// Keuzeknoppen instellen (Opgave 3)
+// Keuzeknoppen instellen, opgave 3
 function setupChoiceButtons() {
   document.querySelectorAll('.choice-btn').forEach(btn => {
     if (btn._bound) return;
@@ -786,7 +791,7 @@ function setupChoiceButtons() {
   });
 }
 
-// Virtueel Toetsenbord
+// Virtueel toetsenbord
 const keyboardLayout = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'del'];
 const keyboards = document.querySelectorAll('.keyboard');
 
@@ -804,4 +809,154 @@ function renderKeyboards() {
       btn.classList.add('key-btn');
       if (key === 'del') {
         btn.classList.add('backspace');
-        btn.innerHTML = `<svg class="backspace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3h-10c-1.1 0-2 .9-2 2v2h2
+        btn.innerHTML = `<svg class="backspace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3h-10c-1.1 0-2 .9-2 2v2h2v-2h10v14h-10v-2h-2v2c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-16c0-1.1-.9-2-2-2zm-12 5l-5 4 5 4v-3h7v-2h-7v-3z"/></svg>`;
+        btn.setAttribute('aria-label', 'Wissen');
+      } else {
+        btn.textContent = key;
+        btn.setAttribute('aria-label', key);
+        if (key === 0) { btn.classList.add('zero'); }
+      }
+      btn.addEventListener('click', (e) => handleKeyClick(e, targetInput, key));
+      kb.appendChild(btn);
+    });
+  });
+}
+
+function handleKeyClick(event, inputElement, key) {
+  event.preventDefault();
+  inputElement.focus();
+  const isNumericOnly = inputElement.dataset.numericOnly === 'true';
+  let currentValue = inputElement.value;
+
+  if (key === 'del') {
+    if (currentValue.length > 0) {
+      inputElement.value = currentValue.slice(0, -1);
+    }
+  } else {
+    const char = String(key);
+    if (isNumericOnly && !/^\d$/.test(char)) {
+      return;
+    }
+    inputElement.value += char;
+  }
+  inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// Onderbalk knoppen
+prevBtn.addEventListener('click', ()=>{
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='scene'){ i = introIx>=0 ? introIx : i; show(i); return; }
+  if(kind==='intro'){ return; }
+  const idx=itemIx.indexOf(i);
+  const prev = itemIx[idx-1];
+  if(prev!==undefined){ i=prev; show(i); }
+});
+nextBtn.addEventListener('click', ()=>{
+  const kind = tasks[i].dataset.kind;
+  if(kind==='intro'){
+    if(!document.getElementById('soundOk').checked) return;
+    i = sceneIx>=0 ? sceneIx : i; show(i); return;
+  }
+  if(kind==='scene'){
+    i = firstTask>=0 ? firstTask : i; show(i); return;
+  }
+  if(kind==='task'){
+    check(i);
+    const idx=itemIx.indexOf(i);
+    const next = itemIx[idx+1];
+    if(next!==undefined){
+      i=next; show(i);
+    } else if (endIx >= 0) {
+      i = endIx;
+      show(i);
+    }
+    return;
+  }
+});
+// Keyboard shortcuts
+window.addEventListener('keydown', (e)=>{
+  const kind = tasks[i]?.dataset.kind;
+  if(kind==='task'){
+    if(e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); }
+    if(e.key.toLowerCase()==='p'){ e.preventDefault(); const btn=tasks[i].querySelector('.ttsImgBtn'); if(btn){ btn.click(); } }
+  }
+  if(kind==='intro' && e.key==='Enter'){ e.preventDefault(); nextBtn.click(); }
+});
+// Inputs, direct check
+itemIx.forEach(ix=>{
+  const node = tasks[ix];
+  node.addEventListener('input', ()=>{ check(ix); });
+  node.addEventListener('change', ()=>{ check(ix); });
+});
+
+// Geluidstest
+const soundOk=document.getElementById('soundOk');
+const audioBtn=document.getElementById('audioPlay');
+const AudioCtx=window.AudioContext||window.webkitAudioContext; let ctx=null;
+function ensureCtx(){ if(!ctx&&AudioCtx){ ctx=new AudioCtx(); } }
+const DRUM_PATTERN=[ {offset:0.0,freq:120,type:'sine'}, {offset:0.4,freq:300,type:'square'}, {offset:0.6,freq:800,type:'triangle'}, {offset:0.8,freq:120,type:'sine'} ];
+function playDrum(time,freq=150,dur=0.2,type='sine'){
+  const o=ctx.createOscillator(); const g=ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type=type; o.frequency.setValueAtTime(freq,time);
+  g.gain.setValueAtTime(1,time);
+  g.gain.exponentialRampToValueAtTime(0.001,time+dur);
+  o.start(time); o.stop(time+dur);
+}
+function playDrumPatternAt(now){ DRUM_PATTERN.forEach(p=> playDrum(now+p.offset,p.freq,0.15,p.type)); }
+let soundLoopTimeouts=[];
+function stopSoundLoop(){
+  soundLoopTimeouts.forEach(id=> clearTimeout(id));
+  soundLoopTimeouts=[];
+  if(audioBtn){ audioBtn.innerHTML = originalAudioBtnHTML; }
+}
+function playDrumPatternRepeated(times=3, gapMs=900){
+  ensureCtx(); if(!ctx) return;
+  stopSoundLoop();
+  for(let r=0;r<times;r++){
+    const tId = setTimeout(()=>{ const now = ctx.currentTime; playDrumPatternAt(now); }, r*gapMs);
+    soundLoopTimeouts.push(tId);
+  }
+}
+function updateIntro(){
+  if(tasks[i]?.dataset.kind==='intro'){
+    setNextEnabled(!!soundOk.checked);
+    if(soundOk.checked){ stopSoundLoop(); }
+  }
+}
+soundOk.addEventListener('change', updateIntro);
+const originalAudioBtnHTML = audioBtn ? audioBtn.innerHTML : '';
+if(audioBtn){
+  audioBtn.addEventListener('click', ()=>{
+    const loops=4, gap=1000;
+    playDrumPatternRepeated(loops, gap);
+    audioBtn.innerHTML = '<img src="pauze.jpg" alt="Pauze">';
+    const totalMs = loops*gap + 200;
+    setTimeout(()=>{
+      if(tasks[i]?.dataset.kind==='intro'){ audioBtn.innerHTML = originalAudioBtnHTML; }
+    }, totalMs);
+  });
+}
+
+/* NIEUW: laat de Start knop het woord start uitspreken */
+const startBtn = document.getElementById('startBtn');
+if(startBtn){
+  startBtn.addEventListener('click', ()=>{
+    speakOnce('start', { rate: 0.98 });
+  });
+}
+
+// Start
+function init(){
+  document.querySelectorAll('.task').forEach(sec=> ensureTaskTTSControls(sec));
+  renderKeyboards();
+  setupChoiceButtons();
+  i = 0; show(i);
+}
+init();
+})();
+</script>
+</body>
+</html>
