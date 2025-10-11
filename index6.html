@@ -20,7 +20,7 @@
 
         --page-padding-x:24px;
 
-        /* wordt door JS gezet zodat de afbeelding nooit te groot wordt */
+        /* door JS gezet zodat de afbeelding nooit te groot wordt */
         --img-max-h: 60vh;
     }
 
@@ -99,7 +99,6 @@
     .image-container img{
         width:auto;
         max-width:100%;
-        /* de sleutel: absolute bovengrens op basis van berekende vrije hoogte */
         max-height:var(--img-max-h);
         object-fit:contain;
         border-radius:10px;
@@ -107,8 +106,12 @@
 
     .interaction-container{
         flex:1 1 0;
-        display:flex; flex-direction:column; align-items:center; justify-content:center;
-        gap:10px; min-width:0;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;  /* standaard centreren */
+        gap:10px;
+        min-width:0;
     }
 
     /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald en gecentreerd */
@@ -193,15 +196,33 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* Chromebook vensterweergave */
+    /* Chromebook vensterweergave: alles blijft in beeld, beide kolommen gecentreerd */
     @media (max-height: 760px) and (min-width: 901px){
         .toets-main{ align-items:center; }
-        .interaction-container{ justify-content:flex-start; align-items:flex-start; }
+        .image-container{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        /* sleutel: ook de hele rechterkolom centreren */
+        .interaction-container{
+            justify-content:center;
+            align-items:center;
+        }
         .ia-outer{ max-width:300px; }
     }
 
-    /* Chromebook fullscreen */
+    /* Chromebook fullscreen: idem, net iets ruimer waar het kan */
     @media (min-height: 761px) and (min-width: 901px){
+        .image-container{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .interaction-container{
+            justify-content:center;
+            align-items:center;
+        }
         .ia-outer{ max-width:320px; }
     }
 
@@ -243,6 +264,7 @@
         </div>
 
         <div class="interaction-container">
+            <!-- rechts exact even hoog als de afbeelding, daarin wordt de stack gecentreerd -->
             <div class="ia-outer" id="ia-outer">
                 <div class="ia-stack" id="ia-stack">
                     <div class="keypad-area" id="keypad-area">
@@ -337,7 +359,7 @@ document.addEventListener('DOMContentLoaded',() => {
 
     function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
-    /* beschikbare hoogte voor de afbeelding berekenen, zodat die nooit uit beeld valt */
+    /* beschikbare hoogte voor de afbeelding berekenen */
     function updateImgMaxHeight(){
         const vpH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
@@ -345,16 +367,12 @@ document.addEventListener('DOMContentLoaded',() => {
         const vraagH = vraagNode ? vraagNode.closest('.vraag-blok').getBoundingClientRect().height : 0;
         const footerH = footerNode ? footerNode.getBoundingClientRect().height : 0;
 
-        /* marge voor paddings en lucht in het middengebied */
         const safety = 24;
 
-        /* beschikbare hoogte voor het middengebied */
         let avail = vpH - brandH - vraagH - footerH - safety;
 
-        /* iets groter toestaan in fullscreen, maar altijd grenzen */
         if(mqChromebookFull.matches){ avail *= 1.06; }
 
-        /* onder- en bovengrens tegen extreem smalle of hoge schermen */
         avail = clamp(avail, 140, vpH * 0.82);
 
         document.documentElement.style.setProperty('--img-max-h', `${Math.round(avail)}px`);
@@ -389,7 +407,7 @@ document.addEventListener('DOMContentLoaded',() => {
 
         let s = imgH / hNat;
         if(mqChromebook.matches){ s = Math.min(1, s); }            /* venster, niet opblazen */
-        if(mqChromebookFull.matches){ s = Math.min(1.06, s); }     /* fullscreen, iets groter mag */
+        if(mqChromebookFull.matches){ s = Math.min(1.06, s); }     /* fullscreen, klein tikje groter */
 
         iaStack.style.position = 'absolute';
         iaStack.style.top = '50%';
@@ -400,7 +418,6 @@ document.addEventListener('DOMContentLoaded',() => {
 
     function relayout(){
         updateImgMaxHeight();
-        /* wacht een frame zodat de nieuwe max-height is toegepast, daarna de rechter stack syncen */
         requestAnimationFrame(syncRightStackToImage);
     }
 
