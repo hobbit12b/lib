@@ -19,6 +19,9 @@
         --keypad-gap:10px;
 
         --page-padding-x:24px;
+
+        /* wordt door JS gezet zodat de afbeelding nooit te groot wordt */
+        --img-max-h: 60vh;
     }
 
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -90,14 +93,16 @@
         flex:1.5 1 0;
         display:flex;
         justify-content:center;
-        align-items:center;   /* altijd verticaal gecentreerd */
+        align-items:center;   /* verticaal en horizontaal gecentreerd */
         min-width:0;
     }
     .image-container img{
-        width:78%;
-        max-width:78%;
-        max-height:82%;
-        object-fit:contain; border-radius:10px;
+        width:auto;
+        max-width:100%;
+        /* de sleutel: absolute bovengrens op basis van berekende vrije hoogte */
+        max-height:var(--img-max-h);
+        object-fit:contain;
+        border-radius:10px;
     }
 
     .interaction-container{
@@ -137,7 +142,7 @@
     .keypad-button{
         aspect-ratio:1/1;
         border-radius:14px;
-        background:var(--white);
+        background:#fff;
         border:2px solid var(--tile-border);
         box-shadow:0 2px 0 var(--tile-shadow);
         display:flex; align-items:center; justify-content:center;
@@ -188,38 +193,15 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* CHROMEBOOK, NIET SCHERMVULLEND: alles blijft in beeld, afbeelding gecentreerd */
+    /* Chromebook vensterweergave */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{ align-items:center; } /* geen stretch, zo blijft verticaal centreren intact */
-        .image-container{
-            display:flex;
-            align-items:center;      /* verticaal centreren */
-            justify-content:center;  /* horizontaal centreren */
-        }
-        .image-container img{
-            width:auto; max-width:100%;
-            height:61%;
-            object-fit:contain;
-        }
-        .interaction-container{
-            justify-content:flex-start;
-            align-items:flex-start;
-        }
+        .toets-main{ align-items:center; }
+        .interaction-container{ justify-content:flex-start; align-items:flex-start; }
         .ia-outer{ max-width:300px; }
     }
 
-    /* CHROMEBOOK, SCHERMVULLEND: alles blijft in beeld, afbeelding gecentreerd en iets groter */
+    /* Chromebook fullscreen */
     @media (min-height: 761px) and (min-width: 901px){
-        .image-container{
-            display:flex;
-            align-items:center;
-            justify-content:center;
-        }
-        .image-container img{
-            width:auto; max-width:100%;
-            height:66%;
-            object-fit:contain;
-        }
         .ia-outer{ max-width:320px; }
     }
 
@@ -233,7 +215,7 @@
         .brand-strip-wrap{ padding:10px 16px 0 16px; }
         .vraag-blok{ padding:12px 16px 6px 16px; }
         .image-container{ min-height:150px; }
-        .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
+        .image-container img{ width:100%; max-width:100%; object-fit:contain; }
         .interaction-container{ justify-content:flex-start; align-items:center; }
         .ia-outer{ max-width:300px; }
     }
@@ -261,7 +243,6 @@
         </div>
 
         <div class="interaction-container">
-            <!-- schaalbare groep rechts, exact even hoog als de illustratie en verticaal gecentreerd -->
             <div class="ia-outer" id="ia-outer">
                 <div class="ia-stack" id="ia-stack">
                     <div class="keypad-area" id="keypad-area">
@@ -279,7 +260,7 @@
                             <button class="keypad-button">0</button>
                             <button class="keypad-button backspace" aria-label="Wissen">
                                 <svg viewBox="0 0 24 24">
-                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a 2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
                                 </svg>
                             </button>
                         </div>
@@ -293,7 +274,7 @@
         </div>
     </main>
 
-    <footer class="toets-footer">
+    <footer class="toets-footer" id="toets-footer">
         <button class="footer-button vorige-button" id="btn-prev">Vorige</button>
         <div class="pagination" role="tablist" aria-label="Pagina navigatie">
             <button class="page-dot active" role="tab" aria-selected="true" aria-label="Pagina 1">1</button>
@@ -313,6 +294,8 @@ document.addEventListener('DOMContentLoaded',() => {
     const antwoordVak=document.querySelector('.antwoord-vak');
     const playButton=document.getElementById('play-vraag-button');
     const vraagNode=document.getElementById('vraag-tekst');
+    const footerNode=document.getElementById('toets-footer');
+    const brandWrap=document.querySelector('.brand-strip-wrap');
     const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
 
     /* keypad invoer */
@@ -344,7 +327,7 @@ document.addEventListener('DOMContentLoaded',() => {
         speechSynthesis.speak(u);
     });
 
-    /* Chromebook modi, rechter stack schalen en centreren binnen dezelfde hoogte als de illustratie */
+    /* media queries */
     const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');      // venster
     const mqChromebookFull = window.matchMedia('(min-height: 761px) and (min-width: 901px)');   // fullscreen
 
@@ -352,53 +335,61 @@ document.addEventListener('DOMContentLoaded',() => {
     const iaOuter = document.getElementById('ia-outer');
     const iaStack = document.getElementById('ia-stack');
 
-    function measureNaturalHeight(el){
-        const prevTransform = el.style.transform;
-        const prevPosition = el.style.position;
-        const prevTop = el.style.top;
-        const prevLeft = el.style.left;
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
+    /* beschikbare hoogte voor de afbeelding berekenen, zodat die nooit uit beeld valt */
+    function updateImgMaxHeight(){
+        const vpH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+        const brandH = brandWrap ? brandWrap.getBoundingClientRect().height : 0;
+        const vraagH = vraagNode ? vraagNode.closest('.vraag-blok').getBoundingClientRect().height : 0;
+        const footerH = footerNode ? footerNode.getBoundingClientRect().height : 0;
+
+        /* marge voor paddings en lucht in het middengebied */
+        const safety = 24;
+
+        /* beschikbare hoogte voor het middengebied */
+        let avail = vpH - brandH - vraagH - footerH - safety;
+
+        /* iets groter toestaan in fullscreen, maar altijd grenzen */
+        if(mqChromebookFull.matches){ avail *= 1.06; }
+
+        /* onder- en bovengrens tegen extreem smalle of hoge schermen */
+        avail = clamp(avail, 140, vpH * 0.82);
+
+        document.documentElement.style.setProperty('--img-max-h', `${Math.round(avail)}px`);
+    }
+
+    function measureNaturalHeight(el){
+        const prev = { transform:el.style.transform, position:el.style.position, top:el.style.top, left:el.style.left };
         el.style.transform = 'none';
         el.style.position = 'static';
         el.style.top = '';
         el.style.left = '';
-
         const h = el.getBoundingClientRect().height;
-
-        el.style.transform = prevTransform;
-        el.style.position = prevPosition;
-        el.style.top = prevTop;
-        el.style.left = prevLeft;
-
+        el.style.transform = prev.transform;
+        el.style.position = prev.position;
+        el.style.top = prev.top;
+        el.style.left = prev.left;
         return h;
     }
 
-    function syncToIllustration(){
+    function syncRightStackToImage(){
         if(!img || !iaOuter || !iaStack) return;
-
-        if(!(mqChromebook.matches || mqChromebookFull.matches)){
-            iaOuter.style.height='';
-            iaStack.style.transform='';
-            iaStack.style.position='';
-            iaStack.style.top='';
-            iaStack.style.left='';
-            return;
-        }
 
         const imgH = Math.round(img.getBoundingClientRect().height);
         if(imgH<=0) return;
 
+        /* maak de drager even hoog als de afbeelding */
         iaOuter.style.height = imgH + 'px';
 
+        /* schaal de stack zodat hij in die hoogte past, centreer exact */
         const hNat = measureNaturalHeight(iaStack);
         if(hNat<=0) return;
 
         let s = imgH / hNat;
-        if(mqChromebookFull.matches){
-            s = Math.min(1.06, s);
-        }else{
-            s = Math.min(1, s);
-        }
+        if(mqChromebook.matches){ s = Math.min(1, s); }            /* venster, niet opblazen */
+        if(mqChromebookFull.matches){ s = Math.min(1.06, s); }     /* fullscreen, iets groter mag */
 
         iaStack.style.position = 'absolute';
         iaStack.style.top = '50%';
@@ -407,13 +398,21 @@ document.addEventListener('DOMContentLoaded',() => {
         iaStack.style.transform = `translate(-50%,-50%) scale(${s})`;
     }
 
-    window.addEventListener('resize', syncToIllustration);
-    mqChromebook.addEventListener?.('change', syncToIllustration);
-    mqChromebookFull.addEventListener?.('change', syncToIllustration);
-    if(img && !img.complete){
-        img.addEventListener('load', syncToIllustration, {once:true});
+    function relayout(){
+        updateImgMaxHeight();
+        /* wacht een frame zodat de nieuwe max-height is toegepast, daarna de rechter stack syncen */
+        requestAnimationFrame(syncRightStackToImage);
     }
-    syncToIllustration();
+
+    window.addEventListener('resize', relayout);
+    mqChromebook.addEventListener?.('change', relayout);
+    mqChromebookFull.addEventListener?.('change', relayout);
+
+    if(img && !img.complete){
+        img.addEventListener('load', relayout, {once:true});
+    }
+
+    relayout();
 
     /* paginanavigatie */
     const dots=[...document.querySelectorAll('.page-dot')];
