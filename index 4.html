@@ -8,12 +8,16 @@
     :root{
         --main-blue:#0D99FF;
         --light-grey:#F0F2F5;          /* drager achter keypad */
-        --medium-grey:#E9ECEF;         /* randen licht */
+        --medium-grey:#E9ECEF;         /* randkleur antwoordvak en paginacirkels */
         --tile-border:#ECECEC;         /* rand tegels */
         --tile-shadow:rgba(0,0,0,.06); /* schaduw tegels */
         --text-color:#222;
         --white:#FFFFFF;
-        --red:#C44444;                 /* keypad backspace zoals bijlage */
+        --red:#C44444;
+
+        /* compacter keypad */
+        --keypad-maxwidth:320px;
+        --keypad-gap:10px;
     }
 
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -52,56 +56,80 @@
 
     /* Main */
     .toets-main{
-        flex:1; display:flex; gap:clamp(16px,3vw,32px);
-        padding:clamp(16px,3vh,32px); min-height:0;
+        flex:1;
+        display:flex;
+        gap:clamp(16px,3vw,32px);
+        padding:clamp(16px,3vh,32px);
+        min-height:0;
+        align-items:stretch; /* beide kolommen delen dezelfde bodlijn */
     }
-    .image-container{flex:1.5; display:flex; justify-content:center; align-items:center; min-width:0}
-    .image-container img{max-width:100%; max-height:100%; object-fit:contain; border-radius:10px}
-    .interaction-container{flex:1; display:flex; flex-direction:column; align-items:center; gap:16px}
+    .image-container{
+        flex:1.5;
+        display:flex;
+        justify-content:center;
+        align-items:flex-end; /* onderkant illustratie op bodlijn */
+        min-width:0;
+    }
+    .image-container img{
+        max-width:100%; max-height:100%;
+        object-fit:contain; border-radius:10px;
+    }
 
-    /* Drager achter keypad zoals bijlage */
+    /* Rechterkolom, zorgt dat antwoordvak onderaan gelijk loopt */
+    .interaction-container{
+        flex:1;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-end; /* onderkant van deze kolom uitlijnen met afbeelding */
+        gap:12px;
+        min-width:0;
+    }
+
+    /* Drager achter keypad */
     .keypad-area{
         background:var(--light-grey);
         border:2px solid var(--medium-grey);
         border-radius:18px;
-        padding:16px;
-        width:100%; max-width:340px;
+        padding:14px;                 /* compacter */
+        width:100%; max-width:var(--keypad-maxwidth);
     }
 
     /* Grid 3x4 */
     .keypad{
         display:grid;
         grid-template-columns:repeat(3,1fr);
-        gap:14px;
+        gap:var(--keypad-gap);
     }
 
-    /* Tegelstijl exact zoals screenshot, afgeronde rechthoeken met schaduw en rand */
+    /* Tegels, iets kleiner dan voorheen */
     .keypad-button{
         aspect-ratio:1/1;
-        border-radius:18px;
+        border-radius:16px;
         background:var(--white);
         border:2px solid var(--tile-border);
-        box-shadow:0 3px 0 var(--tile-shadow);
+        box-shadow:0 2px 0 var(--tile-shadow);
         display:flex; align-items:center; justify-content:center;
-        font-weight:700; font-size:clamp(1.35rem,3.8vh,2rem);
+        font-weight:700; font-size:clamp(1.2rem,3.4vh,1.8rem);
         color:#000; cursor:pointer; user-select:none;
         transition:transform .05s ease;
     }
     .keypad-button:active{ transform:translateY(1px) }
     .keypad-button.empty{ visibility:hidden }
 
-    /* Rode terugknop rechts onderin, afgeronde vierkant, wit icoon */
+    /* Rode terugknop rechts onderin, wit icoon */
     .keypad-button.backspace{
         background:var(--red);
         border-color:var(--red);
-        box-shadow:0 3px 0 rgba(0,0,0,.08);
+        box-shadow:0 2px 0 rgba(0,0,0,.08);
     }
     .keypad-button.backspace svg{width:46%; height:46%; fill:#fff}
 
-    /* Antwoordvak onder de drager, zelfde randtaal als bijlage */
+    /* Antwoordvak direct onder keypad, onderrand op dezelfde lijn als illustratie */
     .antwoord-wrap{
-        width:100%; max-width:340px;
-        margin-top:10px;
+        width:100%;
+        max-width:var(--keypad-maxwidth);
+        margin-top:6px;  /* dichter onder keypad */
     }
     .antwoord-vak{
         width:100%;
@@ -114,7 +142,7 @@
     }
     .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue) }
 
-    /* Footer met genummerde cirkels, uit eerdere stap behouden */
+    /* Footer met genummerde cirkels */
     .toets-footer{
         background:#F8F9FA; border-top:1px solid #E9ECEF;
         padding:1.5vh 3vw; display:flex; justify-content:space-between; align-items:center;
@@ -126,10 +154,14 @@
     .vorige-button{background:#E9ECEF; color:#6D6D6D}
     .volgende-button{background:var(--main-blue); color:#fff}
 
+    /* Paginacirkels, exact dezelfde grijstint als antwoordvakrand */
     .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
     .page-dot{
         width:clamp(42px,6.2vh,56px); height:clamp(42px,6.2vh,56px);
-        border-radius:50%; background:#D9D9D9; color:#4B4B4B; border:2px solid #D9D9D9;
+        border-radius:50%;
+        background:var(--medium-grey);
+        border:2px solid var(--medium-grey);
+        color:#4B4B4B;
         display:inline-flex; align-items:center; justify-content:center;
         font-weight:700; font-size:clamp(.95rem,2.2vh,1.15rem);
         transition:all .15s ease; cursor:pointer; user-select:none;
@@ -144,8 +176,8 @@
         body{padding:0}
         .toets-container{border-radius:0}
         .toets-main{flex-direction:column; overflow-y:auto}
-        .image-container{min-height:150px}
-        .keypad-area{padding:14px}
+        .image-container{min-height:150px; align-items:flex-end}
+        .keypad-area{padding:12px}
     }
 </style>
 </head>
@@ -166,8 +198,7 @@
         </div>
 
         <div class="interaction-container">
-
-            <!-- Drager + keypad exact als voorbeeld -->
+            <!-- Drager + keypad -->
             <div class="keypad-area">
                 <div class="keypad">
                     <button class="keypad-button">1</button>
@@ -182,16 +213,17 @@
                     <button class="keypad-button empty" aria-hidden="true"></button>
                     <button class="keypad-button">0</button>
                     <button class="keypad-button backspace" aria-label="Wissen">
-                        <svg viewBox="0 0 24 24"><path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                        </svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Antwoordvak onder de drager -->
+            <!-- Antwoordvak onderaan, lijnt met onderkant illustratie -->
             <div class="antwoord-wrap">
                 <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
             </div>
-
         </div>
     </main>
 
