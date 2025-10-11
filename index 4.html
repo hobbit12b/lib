@@ -7,6 +7,7 @@
 <style>
     :root{
         --main-blue:#0D99FF;
+        --main-blue-dark:#0B86E0;
         --light-grey:#F0F2F5;          /* drager achter keypad */
         --medium-grey:#E9ECEF;         /* randkleur antwoordvak en paginacirkels */
         --tile-border:#ECECEC;         /* rand tegels */
@@ -45,29 +46,58 @@
         display:flex; flex-direction:column; overflow:hidden;
     }
 
-    /* Header */
-    .toets-header{
-        background:var(--main-blue); color:var(--white);
-        padding:1.5vh 3vw; display:flex; justify-content:space-between; align-items:center;
-        font-weight:700; line-height:1.35; font-size:clamp(1rem,2.2vh,1.25rem);
+    /* Bovenste blauwe balk zoals voorbeeld */
+    .brand-strip-wrap{
+        padding:10px 12px 0 12px;      /* lucht rondom de strip */
+        background:transparent;
     }
-    .play-button{background:none;border:0;cursor:pointer;padding:0 10px}
-    .play-button svg{width:clamp(30px,4.5vh,42px);height:clamp(30px,4.5vh,42px);fill:#fff}
+    .brand-strip{
+        height:18px;
+        border-radius:12px;
+        background:linear-gradient(180deg,var(--main-blue) 0%, var(--main-blue-dark) 100%);
+        box-shadow:0 3px 8px rgba(13,153,255,.25) inset, 0 1px 0 rgba(255,255,255,.35);
+    }
+
+    /* Vraagblok: witte achtergrond, donkere tekst, meer opmaak zoals screenshot */
+    .vraag-blok{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:12px;
+        padding:14px 24px 8px 24px;
+    }
+    .vraag-tekst{
+        font-weight:600;
+        color:#1f2937;                 /* donkergrijs, geen puur zwart */
+        font-size:clamp(1.05rem, 2.4vh, 1.3rem);
+        line-height:1.55;
+        margin:0;
+    }
+    .play-button{
+        background:var(--main-blue);
+        border:0;
+        border-radius:10px;
+        padding:8px 10px;
+        cursor:pointer;
+        align-self:flex-start;
+        box-shadow:0 2px 0 rgba(13,153,255,.25);
+    }
+    .play-button svg{width:28px;height:28px;fill:#fff}
 
     /* Main */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
-        padding:clamp(16px,3vh,32px);
+        padding:0 24px 24px 24px;       /* vraagblok nam al wat ruimte in */
         min-height:0;
-        align-items:stretch; /* beide kolommen delen dezelfde bodlijn */
+        align-items:stretch;            /* beide kolommen delen dezelfde bodlijn */
     }
     .image-container{
         flex:1.5;
         display:flex;
         justify-content:center;
-        align-items:flex-end; /* onderkant illustratie op bodlijn */
+        align-items:flex-end;           /* onderkant illustratie op bodlijn */
         min-width:0;
     }
     .image-container img{
@@ -81,7 +111,7 @@
         display:flex;
         flex-direction:column;
         align-items:center;
-        justify-content:flex-end; /* onderkant van deze kolom uitlijnen met afbeelding */
+        justify-content:flex-end;       /* onderkant van deze kolom uitlijnen met afbeelding */
         gap:12px;
         min-width:0;
     }
@@ -91,7 +121,7 @@
         background:var(--light-grey);
         border:2px solid var(--medium-grey);
         border-radius:18px;
-        padding:14px;                 /* compacter */
+        padding:14px;                   /* compacter */
         width:100%; max-width:var(--keypad-maxwidth);
     }
 
@@ -129,7 +159,7 @@
     .antwoord-wrap{
         width:100%;
         max-width:var(--keypad-maxwidth);
-        margin-top:6px;  /* dichter onder keypad */
+        margin-top:6px;  /* dicht onder keypad */
     }
     .antwoord-vak{
         width:100%;
@@ -145,16 +175,16 @@
     /* Footer met genummerde cirkels */
     .toets-footer{
         background:#F8F9FA; border-top:1px solid #E9ECEF;
-        padding:1.5vh 3vw; display:flex; justify-content:space-between; align-items:center;
+        padding:1.2vh 24px; display:flex; justify-content:space-between; align-items:center;
     }
     .footer-button{
-        padding:1.5vh 2.5vw; border:0; border-radius:25px; cursor:pointer;
+        padding:1.2vh 2.2vw; border:0; border-radius:25px; cursor:pointer;
         font-size:clamp(.9rem,2vh,1.05rem); font-weight:500;
     }
     .vorige-button{background:#E9ECEF; color:#6D6D6D}
     .volgende-button{background:var(--main-blue); color:#fff}
 
-    /* Paginacirkels, exact dezelfde grijstint als antwoordvakrand */
+    /* Paginacirkels, dezelfde grijstint als antwoordvakrand */
     .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
     .page-dot{
         width:clamp(42px,6.2vh,56px); height:clamp(42px,6.2vh,56px);
@@ -175,7 +205,9 @@
     @media (max-width:768px) and (orientation:portrait),(max-height:650px){
         body{padding:0}
         .toets-container{border-radius:0}
-        .toets-main{flex-direction:column; overflow-y:auto}
+        .brand-strip-wrap{padding:10px 10px 0 10px}
+        .vraag-blok{padding:12px 16px 6px 16px}
+        .toets-main{flex-direction:column; overflow-y:auto; padding:0 16px 16px 16px}
         .image-container{min-height:150px; align-items:flex-end}
         .keypad-area{padding:12px}
     }
@@ -185,12 +217,21 @@
 
 <div class="toets-container">
 
-    <header class="toets-header">
-        <span id="vraag-tekst">Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.<br>Hoeveel euro heeft Sophie in totaal?</span>
+    <!-- Smalle blauwe balk -->
+    <div class="brand-strip-wrap">
+        <div class="brand-strip" aria-hidden="true"></div>
+    </div>
+
+    <!-- Vraag in donkere tekst, naast een compacte playbutton -->
+    <div class="vraag-blok">
+        <p id="vraag-tekst" class="vraag-tekst">
+            Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.<br>
+            Hoeveel euro heeft Sophie in totaal?
+        </p>
         <button class="play-button" id="play-vraag-button" aria-label="Lees vraag voor">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </button>
-    </header>
+    </div>
 
     <main class="toets-main">
         <div class="image-container">
@@ -263,7 +304,7 @@ document.addEventListener('DOMContentLoaded',() => {
         if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
     });
 
-    /* voorlezen */
+    /* voorlezen van de vraag */
     playButton.addEventListener('click',()=>{
         speechSynthesis.cancel();
         const u=new SpeechSynthesisUtterance(vraagTekst);
