@@ -52,14 +52,14 @@
         .toets-container{ min-height:100dvh; }
     }
 
-    /* Blauwe lijn */
+    /* blauwe lijn */
     .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
     .brand-strip{
         height:4px; border-radius:4px; background:var(--main-blue);
         box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
-    /* Vraag */
+    /* vraag */
     .vraag-blok{
         display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
         padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -75,14 +75,14 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Middenvlak, verticaal centreren binnen de beschikbare ruimte */
+    /* middenvlak */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
         padding:0 var(--page-padding-x) 16px var(--page-padding-x);
         min-height:0;
-        align-items:center;   /* verticaal in het midden */
+        align-items:center;      /* standaard gecentreerd */
         overflow:visible;
     }
 
@@ -155,7 +155,7 @@
     }
     .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-    /* Footer sticky */
+    /* footer sticky */
     .toets-footer{
         position:sticky; bottom:0; z-index:10;
         background:#F8F9FA; border-top:1px solid #E9ECEF;
@@ -183,7 +183,22 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* Stapelen bij smalle breedte */
+    /* compact stand, venster niet schermvullend of lage hoogte
+       niets schalen, alleen uitlijning en randen compacter maken */
+    @media (max-height: 760px) and (min-width: 901px){
+        .brand-strip-wrap{ padding:6px var(--page-padding-x) 0 var(--page-padding-x); }
+        .vraag-blok{ padding:8px var(--page-padding-x) 4px var(--page-padding-x); }
+
+        .toets-main{
+            align-items:flex-start;         /* niet centreren, zo win je ruimte onderaan */
+            padding:0 var(--page-padding-x) 8px var(--page-padding-x);
+            overflow:visible;               /* niets scrollen in het middenvlak */
+        }
+        .image-container{ align-items:flex-start; }
+        /* niets aan formaten wijzigen */
+    }
+
+    /* stapelen bij smalle breedte */
     @media (max-width: 900px){
         .toets-main{
             flex-direction:column;
