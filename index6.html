@@ -15,7 +15,7 @@
     --white:#FFFFFF;
     --red:#C44444;
 
-    --keypad-maxwidth:300px;
+    --keypad-maxwidth:300px;          /* basisbreedte keypad */
     --keypad-gap:10px;
 
     --page-padding-x:24px;
@@ -37,7 +37,7 @@
     color:var(--text-color);
   }
 
-  /* kaart als grid: blauwe balk, vraag, rode zone, footer */
+  /* Kaart in grid: blauwe balk, vraag, rode zone, footer */
   .toets-container{
     width:100%;
     background:var(--white);
@@ -53,18 +53,22 @@
     .toets-container{ height:100dvh; }
   }
 
-  /* blauwe balk boven */
+  /* Blauwe balk */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
-    height:4px;
+    height:4px;                       /* standaard hoogte */
     border-radius:4px;
     background:var(--main-blue);
     box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
-    transition:height .18s ease;
+    transition:height .18s ease,width .18s ease;
   }
-  .brand-strip.tall{ height:40px; } /* 10x in fullscreen */
+  .brand-strip.tall{ height:40px; }   /* 10x zo hoog in fullscreen */
+  .brand-strip.narrow{
+    width:90%;                        /* in fullscreen 10% smaller in breedte */
+    margin-inline:auto;
+  }
 
-  /* vraag */
+  /* Vraag */
   .vraag-blok{
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
     padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -73,17 +77,17 @@
     font-weight:600; color:#1f2937;
     font-size:clamp(1.05rem, 2.4vh, 1.3rem);
     line-height:1.55; margin:0;
-    text-indent:1.25em;          /* lichte inspringing van de eerste regel */
+    padding-left:1.25em;              /* beide regels inspringen, dus ook de 2e */
   }
   .play-button{
     background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
   }
   .play-button svg{width:28px;height:28px;fill:#fff}
 
-  /* rode zone, schaalt en centreert visueel */
+  /* Rode zone, schaalt en centreert visueel */
   .toets-main{
     display:flex;
-    align-items:flex-start;
+    align-items:flex-start;            /* verticale centrering via marges (JS) */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
@@ -100,7 +104,7 @@
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    align-items:stretch;      /* kolommen even hoog */
+    align-items:stretch;               /* kolommen even hoog */
     transform-origin:top center;
     margin-top:0;
     margin-bottom:0;
@@ -123,7 +127,7 @@
     gap:10px; min-width:0;
   }
 
-  /* toetsenbord drager vijf procent smaller dan de oude max breedte */
+  /* Toetsenbord 5% kleiner via dragerbreedte */
   .ia-outer{
     width:100%;
     max-width:calc(var(--keypad-maxwidth) * 0.95);
@@ -164,11 +168,14 @@
   .keypad-button.backspace{ background:var(--red); border-color:var(--red); }
   .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
 
-  /* antwoordvak tien procent smaller dan zijn drager */
-  .antwoord-wrap{ width:100%; }
+  /* Antwoordvak 10% smaller en horizontaal gecentreerd onder keypad */
+  .antwoord-wrap{
+    width:100%;
+    display:flex;
+    justify-content:center;            /* centreer het inputveld onder keypad */
+  }
   .antwoord-vak{
     width:90%;
-    margin:0 auto;
     border:2px solid var(--medium-grey); border-radius:12px;
     min-height:50px;
     padding:8px 14px;
@@ -177,7 +184,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* footer is grid-rij, altijd zichtbaar */
+  /* Footer */
   .toets-footer{
     background:#F8F9FA; border-top:1px solid #E9ECEF;
     padding:8px var(--page-padding-x);
@@ -204,7 +211,7 @@
     background:var(--main-blue); color:#fff; border-color:var(--main-blue);
   }
 
-  /* smal scherm, stapelen */
+  /* Smal scherm, stapelen */
   @media (max-width: 900px){
     .fitcontent{ flex-direction:column; }
     .toets-main{ padding:0 16px 72px 16px; }
@@ -332,6 +339,7 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
+  /* helpers */
   function withNoTransform(el, fn){
     const prev = el.style.transform;
     el.style.transform = 'none';
@@ -343,19 +351,19 @@ document.addEventListener('DOMContentLoaded',() => {
     return !!document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
-  /* blauwe balk tien keer zo hoog in fullscreen, in niet fullscreen blijft hij standaard */
+  /* Blauwe balk: in fullscreen 10x zo hoog en 10% smaller in breedte. Niet fullscreen: standaard */
   function updateBlueBar(){
     if(isFullscreen()){
-      brandStrip.classList.add('tall');
+      brandStrip.classList.add('tall','narrow');
     }else{
-      brandStrip.classList.remove('tall');
+      brandStrip.classList.remove('tall','narrow');
     }
   }
 
-  /* schaal rode zone
-     - niet fullscreen circa zeven procent groter
-     - fullscreen 100 procent, tenzij kleiner moet om te passen
-     daarna visueel verticaal centreren met marges */
+  /* Schaal rode zone
+     - Niet fullscreen: ~7% groter
+     - Fullscreen: 100%, tenzij kleiner nodig om te passen
+     Daarna visueel verticaal centreren via marges */
   function fitToRow(){
     if(!main || !fit) return;
 
@@ -369,11 +377,11 @@ document.addEventListener('DOMContentLoaded',() => {
     if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
     const base   = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 1.07;          /* 7 procent groter buiten fullscreen */
+    const factor = isFullscreen() ? 1 : 1.07;          /* 7% groter buiten fullscreen */
     const s = Math.min(base * factor, 1);              /* nooit groter dan passend */
-
     fit.style.transform = `scale(${s})`;
 
+    /* visuele verticale centrering */
     const scaledH = natH * s;
     const offset  = Math.max(0, (availH - scaledH) / 2);
     fit.style.marginTop    = offset + 'px';
