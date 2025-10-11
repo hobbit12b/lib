@@ -19,6 +19,9 @@
     --keypad-gap:10px;
 
     --page-padding-x:24px;
+
+    /* veilige maximale opschaling op laptop */
+    --fit-max-upscale:1.15;
   }
 
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -32,7 +35,7 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding:.8vh;                          /* iets compacter, minder grijze randen */
+    padding:.8vh;
     color:var(--text-color);
   }
 
@@ -44,14 +47,14 @@
     display:flex;
     flex-direction:column;
     min-height:100vh;
-    max-width:min(1700px, 98vw);           /* breder en bijna beeldvullend */
+    max-width:min(1700px, 98vw);      /* smaller grijs aan de zijkant op laptop */
     overflow:hidden;
   }
   @supports (min-height: 100dvh){
     .toets-container{ min-height:100dvh; }
   }
 
-  /* blauwe lijn en vraag */
+  /* boven */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
     height:4px; border-radius:4px; background:var(--main-blue);
@@ -76,11 +79,11 @@
   .toets-main{
     flex:1;
     display:flex;
-    align-items:center;              /* verticaal centreren */
+    align-items:center;            /* verticaal centreren */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
-    overflow:hidden;                 /* bij schalen niets laten uitsteken */
+    overflow:hidden;               /* bij schalen niets laten uitsteken */
   }
   .fitbox{
     flex:1;
@@ -93,7 +96,7 @@
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    transform-origin:top center;     /* mooi schalen rond het midden */
+    transform-origin:top center;
   }
 
   .image-container{
@@ -164,7 +167,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* footer */
+  /* onder */
   .toets-footer{
     position:sticky; bottom:0; z-index:10;
     background:#F8F9FA; border-top:1px solid #E9ECEF;
@@ -192,7 +195,7 @@
     background:var(--main-blue); color:#fff; border-color:var(--main-blue);
   }
 
-  /* smal scherm, kolommen stapelen, schalen blijft actief */
+  /* smal scherm stapelt, schalen blijft actief */
   @media (max-width: 900px){
     .fitcontent{ flex-direction:column; align-items:center; }
     .toets-main{ padding:0 16px 72px 16px; }
@@ -263,7 +266,7 @@
     </div><!-- /fitbox -->
   </main>
 
-  <footer class="toets-footer">
+  <footer class="toets-footer" id="toets-footer">
     <button class="footer-button vorige-button" id="btn-prev">Vorige</button>
     <div class="pagination" role="tablist" aria-label="Pagina navigatie">
       <button class="page-dot active" role="tab" aria-selected="true" aria-label="Pagina 1">1</button>
@@ -314,10 +317,14 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* schaal volledige rode zone op basis van hoogte én breedte */
-  const main = document.getElementById('toets-main');
-  const fit  = document.getElementById('fitcontent');
-  const img  = document.getElementById('opdracht-afbeelding');
+  /* schalen van de volledige rode zone
+     - downscalen bij te weinig ruimte
+     - upscalen op laptop tot max --fit-max-upscale
+     - footer blijft zichtbaar in niet-fullscreen */
+  const main   = document.getElementById('toets-main');
+  const fit    = document.getElementById('fitcontent');
+  const footer = document.getElementById('toets-footer');
+  const img    = document.getElementById('opdracht-afbeelding');
 
   function withNoTransform(el, fn){
     const prev = el.style.transform;
@@ -327,23 +334,45 @@ document.addEventListener('DOMContentLoaded',() => {
     return out;
   }
 
+  function isFullscreen(){
+    return document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
+  }
+
   function fitToBox(){
     if(!main || !fit) return;
 
-    /* beschikbare ruimte binnen de rode rechthoek, exclusief padding */
     const cs = getComputedStyle(main);
     const availW = main.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const availH = main.clientHeight - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
 
-    /* natuurlijke omvang van de inhoud zonder schaal */
+    /* Houd rekening met de footer wanneer venster niet fullscreen is */
+    let availH = main.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if(!isFullscreen() && footer){
+      /* win een beetje extra ruimte zodat de footer nooit ‘knijpt’ */
+      availH = Math.max(0, availH - 4);
+    }
+
     const rect = withNoTransform(fit, ()=> fit.getBoundingClientRect());
     const natW = rect.width;
     const natH = rect.height;
 
-    let s = 1;
-    if(natW>0 && natH>0 && availW>0 && availH>0){
-      s = Math.min(1, availW / natW, availH / natH);  /* nooit vergroten, alleen verkleinen */
+    if(natW<=0 || natH<=0 || availW<=0 || availH<=0){ return; }
+
+    const down = Math.min(availW / natW, availH / natH);   /* factor voor passend maken */
+    let up = 1;
+
+    /* op brede laptops mag iets groter zolang het past */
+    if(window.innerWidth >= 1200){
+      up = Math.min(getComputedStyle(document.documentElement).getPropertyValue('--fit-max-upscale') || 1.15,
+                    availW / natW, availH / natH);
     }
+
+    let s = 1;
+    if(down < 1){
+      s = down;                        /* te weinig ruimte, verkleinen */
+    }else if(up > 1){
+      s = up;                          /* genoeg ruimte, iets vergroten voor betere verhouding */
+    }
+
     fit.style.transform = `scale(${s})`;
   }
 
