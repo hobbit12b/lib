@@ -49,15 +49,15 @@
         display:flex; flex-direction:column; overflow:hidden;
     }
 
-    /* Blauwe balk vol, 80% dunner dan voorheen, zelfde top-positie */
+    /* Blauwe balk vol, dun */
     .brand-strip-wrap{
         padding:10px var(--page-padding-x) 0 var(--page-padding-x);
         background:transparent;
     }
     .brand-strip{
-        height:4px;                    /* was 20px, nu 80% dunner */
+        height:4px;
         border-radius:4px;
-        background:var(--main-blue);   /* geen gradatie meer */
+        background:var(--main-blue);
         box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
@@ -95,7 +95,7 @@
         gap:clamp(16px,3vw,32px);
         padding:0 var(--page-padding-x) 24px var(--page-padding-x);
         min-height:0;
-        align-items:center;           /* verticale centrering van beide kolommen */
+        align-items:center;
     }
 
     .image-container{
@@ -106,10 +106,10 @@
         min-width:0;
     }
     .image-container img{
-        /* 10% kleiner dan voorheen zodat hij niet over de zinnen gaat */
-        width:90%;
-        max-width:90%;
-        max-height:90%;
+        /* nu 80% breed, dus 10% kleiner dan de vorige 90% */
+        width:80%;
+        max-width:80%;
+        max-height:85%;
         object-fit:contain;
         border-radius:10px;
     }
@@ -120,7 +120,7 @@
         display:flex;
         flex-direction:column;
         align-items:center;
-        justify-content:center;        /* groep keypad plus antwoordvak in het midden */
+        justify-content:center;
         gap:12px;
         min-width:0;
     }
@@ -232,12 +232,12 @@
 
 <div class="toets-container">
 
-    <!-- Blauwe balk vol, dunner -->
+    <!-- Blauwe balk -->
     <div class="brand-strip-wrap">
         <div class="brand-strip" aria-hidden="true"></div>
     </div>
 
-    <!-- Vraagtekst, uitgelijnd met de afbeelding links -->
+    <!-- Vraagtekst -->
     <div class="vraag-blok">
         <p id="vraag-tekst" class="vraag-tekst">
             Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.<br>
