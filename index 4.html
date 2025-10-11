@@ -103,13 +103,25 @@
         gap:10px; min-width:0;
     }
 
+    /* schaalbare groep rechts: outer bepaalt de doelhoogte, stack wordt geschaald */
+    .ia-outer{
+        width:100%;
+        max-width:var(--keypad-maxwidth);
+        position:relative;
+        /* hoogte wordt in JS gezet om te matchen met de afbeelding */
+    }
+    .ia-stack{
+        transform-origin:top left;
+        width:100%;
+    }
+
+    /* Keypad drager en inhoud */
     .keypad-area{
         background:var(--light-grey);
         border:2px solid var(--medium-grey);
         border-radius:16px;
         padding:12px;
         width:100%;
-        max-width:var(--keypad-maxwidth);
     }
 
     .keypad{
@@ -134,7 +146,8 @@
     .keypad-button.backspace{ background:var(--red); border-color:var(--red); box-shadow:0 2px 0 rgba(0,0,0,.08); }
     .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
 
-    .antwoord-wrap{ width:100%; max-width:var(--keypad-maxwidth); margin-top:2px; }
+    /* Antwoordvak, exact even breed als .keypad-area */
+    .antwoord-wrap{ width:100%; margin-top:2px; }
     .antwoord-vak{
         width:100%; border:2px solid var(--medium-grey); border-radius:12px;
         min-height:50px;
@@ -173,23 +186,24 @@
     }
 
     /* CHROMEBOOK, NIET SCHERMVULLEND
-       hier regelen we de uitlijning boven en onder, en gelijke breedte */
+       afbeelding 7 procent kleiner dan eerder
+       rechtergroep schaalt zodat top en bottom gelijklopen met de afbeelding */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{
-            align-items:stretch;                /* beide kolommen krijgen gelijke kolomhoogte */
-        }
-        .image-container{ align-items:stretch; } /* kolom zelf wordt leidend voor de hoogte */
+        .toets-main{ align-items:stretch; }
+        .image-container{ align-items:stretch; }
         .image-container img{
             width:auto; max-width:100%;
-            height:97%;                         /* net 3% kleiner zoals gevraagd */
+            height:59%;      /* was ~63 procent, nu ~7 procent kleiner */
             object-fit:contain;
         }
         .interaction-container{
-            justify-content:space-between;      /* keypad boven, antwoordvak onder */
+            justify-content:flex-start;  /* hoogte komt van .ia-outer, die we gelijk zetten aan de afbeelding */
+            align-items:flex-start;
         }
-        /* geen transform, zodat antwoordvak en keypad exact even breed zijn */
-        .keypad-area{ max-width:310px; }        /* iets ruimer als de breedte het toelaat */
-        .antwoord-wrap{ max-width:310px; width:100%; }
+        .ia-outer{
+            max-width:310px;             /* zelfde breedte voor keypad en antwoordvak */
+        }
+        .antwoord-wrap{ max-width:310px; }
     }
 
     /* Stapelen alleen bij smalle breedte */
@@ -203,9 +217,8 @@
         .vraag-blok{ padding:12px 16px 6px 16px; }
         .image-container{ min-height:150px; }
         .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
-        .interaction-container{ justify-content:flex-start; }
-        .keypad-area{ padding:12px; max-width:300px; }
-        .antwoord-wrap{ max-width:300px; }
+        .interaction-container{ justify-content:flex-start; align-items:center; }
+        .ia-outer{ max-width:300px; }
     }
 </style>
 </head>
@@ -230,30 +243,35 @@
             <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
         </div>
 
-        <div class="interaction-container" id="interaction">
-            <div class="keypad-area" id="keypad-area">
-                <div class="keypad">
-                    <button class="keypad-button">1</button>
-                    <button class="keypad-button">2</button>
-                    <button class="keypad-button">3</button>
-                    <button class="keypad-button">4</button>
-                    <button class="keypad-button">5</button>
-                    <button class="keypad-button">6</button>
-                    <button class="keypad-button">7</button>
-                    <button class="keypad-button">8</button>
-                    <button class="keypad-button">9</button>
-                    <button class="keypad-button empty" aria-hidden="true"></button>
-                    <button class="keypad-button">0</button>
-                    <button class="keypad-button backspace" aria-label="Wissen">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+        <div class="interaction-container">
+            <!-- schaalbare groep rechts -->
+            <div class="ia-outer" id="ia-outer">
+                <div class="ia-stack" id="ia-stack">
+                    <div class="keypad-area" id="keypad-area">
+                        <div class="keypad">
+                            <button class="keypad-button">1</button>
+                            <button class="keypad-button">2</button>
+                            <button class="keypad-button">3</button>
+                            <button class="keypad-button">4</button>
+                            <button class="keypad-button">5</button>
+                            <button class="keypad-button">6</button>
+                            <button class="keypad-button">7</button>
+                            <button class="keypad-button">8</button>
+                            <button class="keypad-button">9</button>
+                            <button class="keypad-button empty" aria-hidden="true"></button>
+                            <button class="keypad-button">0</button>
+                            <button class="keypad-button backspace" aria-label="Wissen">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
-            <div class="antwoord-wrap" id="antwoord-wrap">
-                <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
+                    <div class="antwoord-wrap" id="antwoord-wrap">
+                        <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -266,87 +284,4 @@
             <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 3">3</button>
             <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 4">4</button>
             <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 5">5</button>
-        </div>
-        <button class="footer-button volgende-button" id="btn-next">Volgende</button>
-    </footer>
-
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded',() => {
-    const keypadButtons=document.querySelectorAll('.keypad-button');
-    const antwoordVak=document.querySelector('.antwoord-vak');
-    const playButton=document.getElementById('play-vraag-button');
-    const vraagTekst=document.getElementById('vraag-tekst')?.innerHTML.replace('<br>',' ') ?? '';
-
-    /* keypad invoer */
-    keypadButtons.forEach(btn=>{
-        btn.addEventListener('click',()=>{
-            if(btn.classList.contains('backspace')){
-                antwoordVak.value=antwoordVak.value.slice(0,-1);
-            }else if(btn.textContent.trim()!==''){
-                antwoordVak.value+=btn.textContent.trim();
-            }
-            antwoordVak.focus();
-        });
-    });
-    antwoordVak.addEventListener('keydown',e=>{
-        if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
-    });
-
-    /* voorleesfunctie */
-    playButton?.addEventListener('click',()=>{
-        if(!('speechSynthesis' in window)) return;
-        speechSynthesis.cancel();
-        const u=new SpeechSynthesisUtterance(vraagTekst);
-        u.lang='nl-NL';
-        const voices=speechSynthesis.getVoices();
-        let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
-        if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
-        if(v){ u.voice=v; }
-        u.pitch=1.1; u.rate=0.95;
-        speechSynthesis.speak(u);
-    });
-
-    /* CHROMEBOOK, NIET SCHERMVULLEND
-       hoogte van rechterkolom gelijk aan illustratie, antwoordvak even breed als keypad */
-    const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');
-    function syncToIllustration(){
-        const img = document.getElementById('opdracht-afbeelding');
-        const right = document.getElementById('interaction');
-        const keypad = document.getElementById('keypad-area');
-        const answerWrap = document.getElementById('antwoord-wrap');
-
-        if(!img || !right || !keypad || !answerWrap) return;
-
-        if(mqChromebook.matches){
-            // hoogte gelijk maken
-            const imgH = Math.round(img.getBoundingClientRect().height);
-            if(imgH>0){
-                right.style.height = imgH + 'px';                 // keypad boven, antwoord onder
-            }
-            // breedte gelijk maken
-            const kW = Math.round(keypad.getBoundingClientRect().width);
-            if(kW>0){
-                answerWrap.style.maxWidth = kW + 'px';
-                answerWrap.style.width = kW + 'px';
-            }
-        }else{
-            right.style.height = '';
-            answerWrap.style.maxWidth = '';
-            answerWrap.style.width = '';
-        }
-    }
-    // initial, on resize, and when image loads
-    window.addEventListener('resize', syncToIllustration);
-    mqChromebook.addEventListener?.('change', syncToIllustration);
-    const imgEl=document.getElementById('opdracht-afbeelding');
-    if(imgEl && !imgEl.complete){
-        imgEl.addEventListener('load', syncToIllustration, {once:true});
-    }
-    syncToIllustration();
-});
-</script>
-
-</body>
-</html>
+        </di
