@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="nl">
 <head>
 <meta charset="UTF-8" />
@@ -75,23 +75,16 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Hoofdgebied: we centreren één main-groep tussen vraag en footer */
+    /* Main twee kolommen */
     .toets-main{
         flex:1;
-        display:grid;                 /* grid maakt centreren eenvoudig */
-        place-items:center;           /* horizontaal en verticaal */
-        padding:0 var(--page-padding-x);
-        min-height:0;                 /* nodig om binnen flex te kunnen centreren */
-        overflow:auto;                /* bij krapte kun je scrollen, footer blijft staan */
-    }
-
-    /* De main-groep zelf: twee kolommen naast elkaar */
-    .main-group{
         display:flex;
         gap:clamp(16px,3vw,32px);
-        align-items:center;
-        width:100%;
-        max-width:calc(1400px - 2*var(--page-padding-x));
+        padding:0 var(--page-padding-x) 16px var(--page-padding-x);
+        min-height:0;
+        align-items:center;           /* verticaal centreren binnen beschikbare ruimte */
+        justify-content:center;       /* nette plaatsing van de twee kolommen */
+        overflow:visible;
     }
 
     .image-container{
@@ -99,7 +92,9 @@
         display:flex; justify-content:center; align-items:center; min-width:0;
     }
     .image-container img{
-        width:78%; max-width:78%; max-height:82%;
+        width:78%;
+        max-width:78%;
+        max-height:82%;
         object-fit:contain; border-radius:10px;
     }
 
@@ -109,19 +104,19 @@
         gap:10px; min-width:0;
     }
 
-    /* schaalbare rechtergroep: outer bepaalt doelhoogte, stack schaalt */
+    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald */
     .ia-outer{
         width:100%;
         max-width:var(--keypad-maxwidth);
         position:relative;
-        overflow:hidden;
+        overflow:hidden;                 /* niets buiten de groep */
     }
     .ia-stack{
         width:100%;
         transform-origin:top left;
         display:flex;
         flex-direction:column;
-        justify-content:space-between;   /* keypad boven, antwoord onder */
+        justify-content:space-between;   /* keypad raakt de top, antwoord raakt de bodem */
         gap:2px;
     }
 
@@ -191,35 +186,38 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* Speciaal profiel Chromebook niet schermvullend
-       1) Afbeelding net iets groter of kleiner sturen
-       2) Rechtergroep exact even hoog als afbeelding en schalen binnen die hoogte
-       3) Main-groep blijft als geheel verticaal gecentreerd tussen vraag en footer */
+    /* CHROMEBOOK, NIET SCHERMVULLEND
+       centreren binnen de middenruimte, maten blijven gelijk */
     @media (max-height: 760px) and (min-width: 901px){
+        .toets-main{ align-items:center; justify-content:center; }
+        .image-container{ align-items:center; }
         .image-container img{
             width:auto; max-width:100%;
-            height:61%;               /* jouw laatste wens, plus verticale centrering via grid */
+            height:61%;
             object-fit:contain;
         }
-        .main-group{ gap:20px; }
-        .interaction-container{ align-items:flex-start; }
-        .ia-outer{ max-width:300px; }
+        .interaction-container{
+            justify-content:center;
+            align-items:center;
+        }
+        .ia-outer{
+            max-width:300px;
+        }
     }
 
-    /* Stacking alleen bij smalle breedte */
+    /* Stapelen bij smalle breedte, ook hier verticaal centreren in de middenruimte */
     @media (max-width: 900px){
-        .toets-main{ place-items:stretch; }
-        .main-group{
+        .toets-main{
             flex-direction:column;
-            align-items:stretch;
-            padding:0 16px 56px 16px;
-            max-width:none;
+            align-items:center;
+            justify-content:center;      /* verticaal centreren in kolommodus */
+            padding:0 16px 72px 16px;
         }
         .brand-strip-wrap{ padding:10px 16px 0 16px; }
         .vraag-blok{ padding:12px 16px 6px 16px; }
         .image-container{ min-height:150px; }
         .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
-        .interaction-container{ align-items:center; }
+        .interaction-container{ justify-content:center; align-items:center; }
         .ia-outer{ max-width:300px; }
     }
 </style>
@@ -240,40 +238,38 @@
         </button>
     </div>
 
-    <!-- De main-groep wordt door .toets-main verticaal gecentreerd tussen vraag en footer -->
     <main class="toets-main">
-        <div class="main-group">
-            <div class="image-container">
-                <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
-            </div>
+        <div class="image-container">
+            <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
+        </div>
 
-            <div class="interaction-container">
-                <div class="ia-outer" id="ia-outer">
-                    <div class="ia-stack" id="ia-stack">
-                        <div class="keypad-area" id="keypad-area">
-                            <div class="keypad">
-                                <button class="keypad-button">1</button>
-                                <button class="keypad-button">2</button>
-                                <button class="keypad-button">3</button>
-                                <button class="keypad-button">4</button>
-                                <button class="keypad-button">5</button>
-                                <button class="keypad-button">6</button>
-                                <button class="keypad-button">7</button>
-                                <button class="keypad-button">8</button>
-                                <button class="keypad-button">9</button>
-                                <button class="keypad-button empty" aria-hidden="true"></button>
-                                <button class="keypad-button">0</button>
-                                <button class="keypad-button backspace" aria-label="Wissen">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
-                                    </svg>
-                                </button>
-                            </div>
+        <div class="interaction-container">
+            <!-- schaalbare groep rechts -->
+            <div class="ia-outer" id="ia-outer">
+                <div class="ia-stack" id="ia-stack">
+                    <div class="keypad-area" id="keypad-area">
+                        <div class="keypad">
+                            <button class="keypad-button">1</button>
+                            <button class="keypad-button">2</button>
+                            <button class="keypad-button">3</button>
+                            <button class="keypad-button">4</button>
+                            <button class="keypad-button">5</button>
+                            <button class="keypad-button">6</button>
+                            <button class="keypad-button">7</button>
+                            <button class="keypad-button">8</button>
+                            <button class="keypad-button">9</button>
+                            <button class="keypad-button empty" aria-hidden="true"></button>
+                            <button class="keypad-button">0</button>
+                            <button class="keypad-button backspace" aria-label="Wissen">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                                </svg>
+                            </button>
                         </div>
+                    </div>
 
-                        <div class="antwoord-wrap" id="antwoord-wrap">
-                            <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
-                        </div>
+                    <div class="antwoord-wrap" id="antwoord-wrap">
+                        <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
                     </div>
                 </div>
             </div>
@@ -331,7 +327,7 @@ document.addEventListener('DOMContentLoaded',() => {
         speechSynthesis.speak(u);
     });
 
-    /* Chromebook niet schermvullend: rechtergroep exact even hoog als de afbeelding en proportioneel schalen */
+    /* Chromebook niet schermvullend: laat rechtergroep exact even hoog zijn als de illustratie en schaal naar binnen */
     const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');
     const img = document.getElementById('opdracht-afbeelding');
     const iaOuter = document.getElementById('ia-outer');
@@ -355,12 +351,15 @@ document.addEventListener('DOMContentLoaded',() => {
         const imgH = Math.round(img.getBoundingClientRect().height);
         if(imgH<=0) return;
 
+        /* maak de groep net zo hoog als de illustratie */
         iaOuter.style.height = imgH + 'px';
+
+        /* schaal proportioneel zodat alles binnen die hoogte valt */
         const hNat = measureNaturalHeight(iaStack);
         let s = 1;
         if(hNat>0){
-            s = imgH / hNat;
-            if(s>1) s = 1;
+            s = imgH / hNat;       /* exact passend in hoogte */
+            if(s>1) s = 1;         /* nooit opblazen, alleen inkrimpen */
         }
         iaStack.style.transform = `scale(${s})`;
     }
@@ -372,7 +371,7 @@ document.addEventListener('DOMContentLoaded',() => {
     }
     syncToIllustration();
 
-    /* paginanavigatie */
+    /* paginanavigatie zoals eerder */
     const dots=[...document.querySelectorAll('.page-dot')];
     const prev=document.getElementById('btn-prev');
     const next=document.getElementById('btn-next');
