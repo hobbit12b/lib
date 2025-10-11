@@ -75,14 +75,14 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Main twee kolommen */
+    /* Main twee kolommen, verticaal centreren binnen het middenvlak */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
         padding:0 var(--page-padding-x) 16px var(--page-padding-x);
         min-height:0;
-        align-items:center;
+        align-items:center;   /* centraal in de rode rechthoek */
         overflow:visible;
     }
 
@@ -108,14 +108,14 @@
         width:100%;
         max-width:var(--keypad-maxwidth);
         position:relative;
-        overflow:hidden;                 /* niets buiten de groep */
+        overflow:hidden;
     }
     .ia-stack{
         width:100%;
         transform-origin:top left;
         display:flex;
         flex-direction:column;
-        justify-content:space-between;   /* keypad raakt de top, antwoord raakt de bodem */
+        justify-content:space-between;
         gap:2px;
     }
 
@@ -185,14 +185,14 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* CHROMEBOOK, NIET SCHERMVULLEND
-       afbeelding 2 procent groter dan vorige, rechtergroep krijgt exact dezelfde hoogte en schaalt zonodig naar binnen */
+    /* Chromebook, niet schermvullend: gecentreerd houden */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{ align-items:stretch; }
-        .image-container{ align-items:stretch; }
+        .toets-main{ align-items:center; }       /* was: stretch */
+        .image-container{ align-items:center; }  /* was: stretch */
+
         .image-container img{
             width:auto; max-width:100%;
-            height:61%;             /* was 59, nu 2 procent groter */
+            height:61%;
             object-fit:contain;
         }
         .interaction-container{
@@ -200,11 +200,11 @@
             align-items:flex-start;
         }
         .ia-outer{
-            max-width:300px;         /* antwoord even breed als keypad-drager */
+            max-width:300px;
         }
     }
 
-    /* Stapelen alleen bij smalle breedte */
+    /* Stapelen bij smalle breedte */
     @media (max-width: 900px){
         .toets-main{
             flex-direction:column;
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded',() => {
     }
     syncToIllustration();
 
-    /* paginanavigatie zoals eerder */
+    /* paginanavigatie */
     const dots=[...document.querySelectorAll('.page-dot')];
     const prev=document.getElementById('btn-prev');
     const next=document.getElementById('btn-next');
@@ -399,4 +399,3 @@ document.addEventListener('DOMContentLoaded',() => {
 
 </body>
 </html>
-
