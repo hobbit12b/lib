@@ -24,32 +24,39 @@
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{min-height:100%}
     body{
         margin:0;
         font-family:'Poppins',sans-serif;
         background:var(--light-grey);
         display:flex;
         justify-content:center;
-        align-items:center;
+        align-items:stretch;           /* laat container in de hoogte meegroeien */
         padding:1.5vh;
         color:var(--text-color);
     }
 
+    /* Buitenste container: NIET meer ‘height:100%’ + ‘overflow:hidden’ */
     .toets-container{
-        width:100%; height:100%;
-        max-width:1400px; max-height:900px;
+        width:100%;
         background:var(--white);
         border-radius:20px;
         box-shadow:0 10px 40px rgba(0,0,0,.1);
-        display:flex; flex-direction:column; overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        min-height:100vh;              /* kan langer worden; pagina mag scrollen */
+        height:auto;
+        max-width:1400px;
+        /* max-height verwijderd */
+        overflow:visible;              /* niets afknijpen */
+    }
+    /* Gebruik 100dvh als beschikbaar, beter voor OS-UI balken */
+    @supports (height: 100dvh) {
+      .toets-container { min-height:100dvh; }
     }
 
-    /* Blauwe lijn dun en vol */
-    .brand-strip-wrap{
-        padding:10px var(--page-padding-x) 0 var(--page-padding-x);
-        background:transparent;
-    }
+    /* Blauwe lijn bovenin */
+    .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
     .brand-strip{
         height:4px;
         border-radius:4px;
@@ -57,7 +64,7 @@
         box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
-    /* Vraagtekst links uitgelijnd met afbeelding */
+    /* Vraagtekst */
     .vraag-blok{
         display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
         padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -73,15 +80,15 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Hoofdgebied: standaard altijd twee kolommen naast elkaar */
+    /* Hoofdgebied: standaard twee kolommen naast elkaar */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
         padding:0 var(--page-padding-x) 24px var(--page-padding-x);
         min-height:0;
-        align-items:center;          /* verticaal centreren als groep */
-        overflow:auto;               /* liever scrollen dan stapelen bij lage hoogte */
+        align-items:center;
+        overflow:auto;                 /* inhoud kan scrollen als het krap wordt */
     }
 
     .image-container{
@@ -89,7 +96,6 @@
         display:flex; justify-content:center; align-items:center; min-width:0;
     }
     .image-container img{
-        /* bewust kleiner zodat hij nooit over de zinnen valt */
         width:80%; max-width:80%; max-height:85%;
         object-fit:contain; border-radius:10px;
     }
@@ -107,7 +113,6 @@
         padding:14px;
         width:100%; max-width:var(--keypad-maxwidth);
     }
-
     .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--keypad-gap); }
 
     .keypad-button{
@@ -129,6 +134,7 @@
     }
     .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
+    /* Footer */
     .toets-footer{
         background:#F8F9FA; border-top:1px solid #E9ECEF;
         padding:1.2vh var(--page-padding-x);
@@ -152,8 +158,17 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* BELANGRIJK: niet meer stapelen op kleine HOOGTE.
-       We stapelen alleen op kleine BREEDTE (telefoons/kleine tablets). */
+    /* --- Chromebook fix: lage schermhoogte ---
+       Bij bv. 1366x768 niet-fullscreen is de hoogte krap.
+       We verkleinen subtiel en laten scroll toe. */
+    @media (max-height: 760px) and (min-width: 901px){
+        .toets-main{ padding-bottom:16px; }
+        .image-container img{ width:72%; max-width:72%; max-height:78%; }
+        .keypad-area{ transform:scale(.94); transform-origin:top center; }
+        .antwoord-vak{ min-height:52px; }
+    }
+
+    /* Stapelen alleen bij écht smalle breedte (telefonen) */
     @media (max-width: 900px){
         .toets-main{
             flex-direction:column;
@@ -162,9 +177,10 @@
         }
         .brand-strip-wrap{ padding:10px 16px 0 16px; }
         .vraag-blok{ padding:12px 16px 6px 16px; }
+        .image-container{ min-height:150px; }
         .image-container img{ width:100%; max-width:100%; max-height:70%; }
         .interaction-container{ justify-content:flex-start; }
-        .keypad-area{ padding:12px; }
+        .keypad-area{ padding:12px; transform:none; }
     }
 </style>
 </head>
@@ -258,41 +274,4 @@ document.addEventListener('DOMContentLoaded',() => {
         u.lang='nl-NL';
         const voices=speechSynthesis.getVoices();
         let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
-        if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
-        if(v){ u.voice=v; }
-        u.pitch=1.1; u.rate=0.95;
-        speechSynthesis.speak(u);
-    });
-    if(speechSynthesis.onvoiceschanged!==undefined){
-        speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
-    }
-
-    const dots=[...document.querySelectorAll('.page-dot')];
-    const prev=document.getElementById('btn-prev');
-    const next=document.getElementById('btn-next');
-    function setActive(i){
-        dots.forEach((d,idx)=>{
-            const active=idx===i;
-            d.classList.toggle('active',active);
-            d.setAttribute('aria-selected',String(active));
-        });
-    }
-    dots.forEach((d,i)=>{
-        d.addEventListener('click',()=>setActive(i));
-        d.addEventListener('keydown',e=>{
-            if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
-        });
-    });
-    prev.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classList.contains('active'));
-        setActive(Math.max(0,cur-1));
-    });
-    next.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classList.contains('active'));
-        setActive(Math.min(dots.length-1,cur+1));
-    });
-});
-</script>
-
-</body>
-</html>
+        if(!v){ v=voi
