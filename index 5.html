@@ -103,19 +103,20 @@
         gap:10px; min-width:0;
     }
 
-    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald */
+    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald en nu gecentreerd */
     .ia-outer{
         width:100%;
         max-width:var(--keypad-maxwidth);
         position:relative;
-        overflow:hidden;                 /* niets buiten de groep */
+        overflow:hidden;
     }
     .ia-stack{
         width:100%;
+        /* standaard in normale modi blijft deze statisch, in Chromebook-modi zetten we dit via JS op absolute + translate voor echte centrering */
         transform-origin:top left;
         display:flex;
         flex-direction:column;
-        justify-content:space-between;   /* keypad raakt de top, antwoord raakt de bodem */
+        justify-content:space-between;
         gap:2px;
     }
 
@@ -185,14 +186,13 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* CHROMEBOOK, NIET SCHERMVULLEND
-       afbeelding 2 procent groter dan vorige, rechtergroep krijgt exact dezelfde hoogte en schaalt zonodig naar binnen */
+    /* CHROMEBOOK, NIET SCHERMVULLEND: alles blijft in beeld, niets wordt opgeblazen */
     @media (max-height: 760px) and (min-width: 901px){
         .toets-main{ align-items:stretch; }
         .image-container{ align-items:stretch; }
         .image-container img{
             width:auto; max-width:100%;
-            height:61%;             /* was 59, nu 2 procent groter */
+            height:61%; /* iets groter voor balans */
             object-fit:contain;
         }
         .interaction-container{
@@ -200,11 +200,23 @@
             align-items:flex-start;
         }
         .ia-outer{
-            max-width:300px;         /* antwoord even breed als keypad-drager */
+            max-width:300px;
         }
     }
 
-    /* Stapelen alleen bij smalle breedte */
+    /* CHROMEBOOK, SCHERMVULLEND: alles blijft in beeld, subtiel groter waar het kan */
+    @media (min-height: 761px) and (min-width: 901px){
+        .image-container img{
+            width:auto; max-width:100%;
+            height:66%;
+            object-fit:contain;
+        }
+        .ia-outer{
+            max-width:320px; /* heel klein tikje ruimer */
+        }
+    }
+
+    /* Stapelen bij smalle breedte */
     @media (max-width: 900px){
         .toets-main{
             flex-direction:column;
@@ -242,7 +254,7 @@
         </div>
 
         <div class="interaction-container">
-            <!-- schaalbare groep rechts -->
+            <!-- schaalbare groep rechts, wordt exact even hoog als de illustratie en verticaal gecentreerd -->
             <div class="ia-outer" id="ia-outer">
                 <div class="ia-stack" id="ia-stack">
                     <div class="keypad-area" id="keypad-area">
@@ -325,51 +337,84 @@ document.addEventListener('DOMContentLoaded',() => {
         speechSynthesis.speak(u);
     });
 
-    /* Chromebook niet schermvullend: laat rechtergroep exact even hoog zijn als de illustratie en schaal naar binnen */
-    const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');
+    /* Chromebook modi */
+    const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');      // venster
+    const mqChromebookFull = window.matchMedia('(min-height: 761px) and (min-width: 901px)');   // fullscreen
+
     const img = document.getElementById('opdracht-afbeelding');
     const iaOuter = document.getElementById('ia-outer');
     const iaStack = document.getElementById('ia-stack');
 
     function measureNaturalHeight(el){
-        const prev = el.style.transform;
+        const prevTransform = el.style.transform;
+        const prevPosition = el.style.position;
+        const prevTop = el.style.top;
+        const prevLeft = el.style.left;
+
+        // meten zonder schaal en zonder absolute positioning
         el.style.transform = 'none';
+        el.style.position = 'static';
+        el.style.top = '';
+        el.style.left = '';
+
         const h = el.getBoundingClientRect().height;
-        el.style.transform = prev;
+
+        el.style.transform = prevTransform;
+        el.style.position = prevPosition;
+        el.style.top = prevTop;
+        el.style.left = prevLeft;
+
         return h;
     }
 
     function syncToIllustration(){
         if(!img || !iaOuter || !iaStack) return;
-        if(!mqChromebook.matches){
+
+        // buiten Chromebook-modi: reset, laat normale flow
+        if(!(mqChromebook.matches || mqChromebookFull.matches)){
             iaOuter.style.height='';
             iaStack.style.transform='';
+            iaStack.style.position='';
+            iaStack.style.top='';
+            iaStack.style.left='';
             return;
         }
+
         const imgH = Math.round(img.getBoundingClientRect().height);
         if(imgH<=0) return;
 
-        /* maak de groep net zo hoog als de illustratie */
+        // maak de drager exact even hoog als de illustratie
         iaOuter.style.height = imgH + 'px';
 
-        /* schaal proportioneel zodat alles binnen die hoogte valt */
+        // natuurlijke hoogte van de stack
         const hNat = measureNaturalHeight(iaStack);
-        let s = 1;
-        if(hNat>0){
-            s = imgH / hNat;       /* exact passend in hoogte */
-            if(s>1) s = 1;         /* nooit opblazen, alleen inkrimpen */
+        if(hNat<=0) return;
+
+        // schaalfactor: venster, alleen naar binnen. fullscreen, mag een tik groter tot 6 procent
+        let s = imgH / hNat;
+        if(mqChromebookFull.matches){
+            s = Math.min(1.06, s); // subtiel groter, maar nooit groter dan nodig
+        }else{
+            s = Math.min(1, s);    // nooit opblazen in vensterweergave
         }
-        iaStack.style.transform = `scale(${s})`;
+
+        // centreer exact in de rode rechthoek: absolute + translate naar midden, daarna schalen
+        iaStack.style.position = 'absolute';
+        iaStack.style.top = '50%';
+        iaStack.style.left = '50%';
+        iaStack.style.transformOrigin = 'top left';
+        iaStack.style.transform = `translate(-50%,-50%) scale(${s})`;
     }
 
     window.addEventListener('resize', syncToIllustration);
     mqChromebook.addEventListener?.('change', syncToIllustration);
+    mqChromebookFull.addEventListener?.('change', syncToIllustration);
     if(img && !img.complete){
         img.addEventListener('load', syncToIllustration, {once:true});
     }
     syncToIllustration();
 
-    /* paginanavigatie zoals eerder */
+    /* paginanavigatie */
     const dots=[...document.querySelectorAll('.page-dot')];
     const prev=document.getElementById('btn-prev');
     const next=document.getElementById('btn-next');
@@ -399,4 +444,3 @@ document.addEventListener('DOMContentLoaded',() => {
 
 </body>
 </html>
-
