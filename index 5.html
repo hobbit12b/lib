@@ -5,379 +5,398 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Toetsomgeving</title>
 <style>
-  :root{
-    --main-blue:#0D99FF;
-    --light-grey:#F0F2F5;
-    --medium-grey:#E9ECEF;
-    --tile-border:#ECECEC;
-    --tile-shadow:rgba(0,0,0,.06);
-    --text-color:#222;
-    --white:#FFFFFF;
-    --red:#C44444;
+    :root{
+        --main-blue:#0D99FF;
+        --light-grey:#F0F2F5;
+        --medium-grey:#E9ECEF;
+        --tile-border:#ECECEC;
+        --tile-shadow:rgba(0,0,0,.06);
+        --text-color:#222;
+        --white:#FFFFFF;
+        --red:#C44444;
 
-    --keypad-maxwidth:300px;
-    --keypad-gap:10px;
+        --keypad-maxwidth:300px;
+        --keypad-gap:10px;
 
-    --page-padding-x:24px;
-  }
+        --page-padding-x:24px;
+    }
 
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-  *{box-sizing:border-box}
-  html,body{min-height:100%}
-  body{
-    margin:0;
-    font-family:'Poppins',sans-serif;
-    background:var(--light-grey);
-    display:flex;
-    justify-content:center;
-    align-items:stretch;
-    padding:.8vh;                          /* iets compacter, minder grijze randen */
-    color:var(--text-color);
-  }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+        margin:0;
+        font-family:'Poppins',sans-serif;
+        background:var(--light-grey);
+        display:flex;
+        justify-content:center;
+        align-items:stretch;
+        padding:1.5vh;
+        color:var(--text-color);
+    }
 
-  .toets-container{
-    width:100%;
-    background:var(--white);
-    border-radius:20px;
-    box-shadow:0 10px 40px rgba(0,0,0,.1);
-    display:flex;
-    flex-direction:column;
-    min-height:100vh;
-    max-width:min(1700px, 98vw);           /* breder en bijna beeldvullend */
-    overflow:hidden;
-  }
-  @supports (min-height: 100dvh){
-    .toets-container{ min-height:100dvh; }
-  }
+    .toets-container{
+        width:100%;
+        background:var(--white);
+        border-radius:20px;
+        box-shadow:0 10px 40px rgba(0,0,0,.1);
+        display:flex;
+        flex-direction:column;
+        min-height:100vh;
+        height:auto;
+        max-width:1400px;
+        overflow:visible;
+    }
+    @supports (min-height: 100dvh){
+        .toets-container{ min-height:100dvh; }
+    }
 
-  /* blauwe lijn en vraag */
-  .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
-  .brand-strip{
-    height:4px; border-radius:4px; background:var(--main-blue);
-    box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
-  }
-  .vraag-blok{
-    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-    padding:14px var(--page-padding-x) 8px var(--page-padding-x);
-  }
-  .vraag-tekst{
-    font-weight:600; color:#1f2937;
-    font-size:clamp(1.05rem, 2.4vh, 1.3rem);
-    line-height:1.55; margin:0;
-  }
-  .play-button{
-    background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
-    align-self:flex-start; box-shadow:0 2px 0 rgba(13,153,255,.25);
-  }
-  .play-button svg{width:28px;height:28px;fill:#fff}
+    /* Blauwe lijn */
+    .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
+    .brand-strip{
+        height:4px; border-radius:4px; background:var(--main-blue);
+        box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
+    }
 
-  /* rode rechthoek */
-  .toets-main{
-    flex:1;
-    display:flex;
-    align-items:center;              /* verticaal centreren */
-    justify-content:center;
-    padding:0 var(--page-padding-x) 16px var(--page-padding-x);
-    min-height:0;
-    overflow:hidden;                 /* bij schalen niets laten uitsteken */
-  }
-  .fitbox{
-    flex:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:0;
-  }
-  .fitcontent{
-    width:100%;
-    display:flex;
-    gap:clamp(16px,3vw,32px);
-    transform-origin:top center;     /* mooi schalen rond het midden */
-  }
+    /* Vraag */
+    .vraag-blok{
+        display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+        padding:14px var(--page-padding-x) 8px var(--page-padding-x);
+    }
+    .vraag-tekst{
+        font-weight:600; color:#1f2937;
+        font-size:clamp(1.05rem, 2.4vh, 1.3rem);
+        line-height:1.55; margin:0;
+    }
+    .play-button{
+        background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
+        align-self:flex-start; box-shadow:0 2px 0 rgba(13,153,255,.25);
+    }
+    .play-button svg{width:28px;height:28px;fill:#fff}
 
-  .image-container{
-    flex:1.5 1 0;
-    display:flex; justify-content:center; align-items:center; min-width:0;
-  }
-  .image-container img{
-    width:78%;
-    max-width:78%;
-    max-height:82%;
-    object-fit:contain; border-radius:10px;
-  }
+    /* Main twee kolommen */
+    .toets-main{
+        flex:1;
+        display:flex;
+        gap:clamp(16px,3vw,32px);
+        padding:0 var(--page-padding-x) 16px var(--page-padding-x);
+        min-height:0;
+        align-items:center;
+        overflow:visible;
+    }
 
-  .interaction-container{
-    flex:1 1 0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:10px; min-width:0;
-  }
+    .image-container{
+        flex:1.5 1 0;
+        display:flex; justify-content:center; align-items:center; min-width:0;
+    }
+    .image-container img{
+        width:78%;
+        max-width:78%;
+        max-height:82%;
+        object-fit:contain; border-radius:10px;
+    }
 
-  .ia-outer{
-    width:100%;
-    max-width:var(--keypad-maxwidth);
-    position:relative;
-  }
-  .ia-stack{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    gap:2px;
-  }
+    .interaction-container{
+        flex:1 1 0;
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        gap:10px; min-width:0;
+    }
 
-  .keypad-area{
-    background:var(--light-grey);
-    border:2px solid var(--medium-grey);
-    border-radius:16px;
-    padding:12px;
-    width:100%;
-  }
-  .keypad{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:var(--keypad-gap);
-  }
-  .keypad-button{
-    aspect-ratio:1/1;
-    border-radius:14px;
-    background:var(--white);
-    border:2px solid var(--tile-border);
-    box-shadow:0 2px 0 var(--tile-shadow);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:clamp(1.05rem,3.1vh,1.6rem);
-    color:#000; cursor:pointer; user-select:none;
-    transition:transform .05s ease;
-  }
-  .keypad-button:active{ transform:translateY(1px) }
-  .keypad-button.empty{ visibility:hidden }
-  .keypad-button.backspace{ background:var(--red); border-color:var(--red); box-shadow:0 2px 0 rgba(0,0,0,.08); }
-  .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
+    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald */
+    .ia-outer{
+        width:100%;
+        max-width:var(--keypad-maxwidth);
+        position:relative;
+        overflow:hidden;                 /* niets buiten de groep */
+    }
+    .ia-stack{
+        width:100%;
+        transform-origin:top left;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;   /* keypad raakt de top, antwoord raakt de bodem */
+        gap:2px;
+    }
 
-  .antwoord-wrap{ width:100%; }
-  .antwoord-vak{
-    width:100%; border:2px solid var(--medium-grey); border-radius:12px;
-    min-height:50px;
-    padding:8px 14px;
-    font-size:clamp(1rem,2.3vh,1.25rem);
-    background:#fff;
-  }
-  .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
+    .keypad-area{
+        background:var(--light-grey);
+        border:2px solid var(--medium-grey);
+        border-radius:16px;
+        padding:12px;
+        width:100%;
+    }
+    .keypad{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:var(--keypad-gap);
+    }
+    .keypad-button{
+        aspect-ratio:1/1;
+        border-radius:14px;
+        background:var(--white);
+        border:2px solid var(--tile-border);
+        box-shadow:0 2px 0 var(--tile-shadow);
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:clamp(1.05rem,3.1vh,1.6rem);
+        color:#000; cursor:pointer; user-select:none;
+        transition:transform .05s ease;
+    }
+    .keypad-button:active{ transform:translateY(1px) }
+    .keypad-button.empty{ visibility:hidden }
+    .keypad-button.backspace{ background:var(--red); border-color:var(--red); box-shadow:0 2px 0 rgba(0,0,0,.08); }
+    .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
 
-  /* footer */
-  .toets-footer{
-    position:sticky; bottom:0; z-index:10;
-    background:#F8F9FA; border-top:1px solid #E9ECEF;
-    padding:8px var(--page-padding-x);
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .footer-button{
-    padding:10px 18px; border:0; border-radius:25px; cursor:pointer;
-    font-size:clamp(.9rem,2vh,1.05rem); font-weight:500;
-  }
-  .vorige-button{background:#E9ECEF; color:#6D6D6D}
-  .volgende-button{background:var(--main-blue); color:#fff}
+    .antwoord-wrap{ width:100%; }
+    .antwoord-vak{
+        width:100%; border:2px solid var(--medium-grey); border-radius:12px;
+        min-height:50px;
+        padding:8px 14px;
+        font-size:clamp(1rem,2.3vh,1.25rem);
+        background:#fff;
+    }
+    .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
-  .page-dot{
-    width:clamp(38px,5.6vh,50px); height:clamp(38px,5.6vh,50px);
-    border-radius:50%; background:var(--medium-grey); border:2px solid var(--medium-grey);
-    color:#4B4B4B; display:inline-flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:clamp(.9rem,2vh,1.05rem);
-    transition:all .15s ease; cursor:pointer; user-select:none;
-  }
-  .page-dot.active{
-    width:calc(clamp(38px,5.6vh,50px) + 8px);
-    height:calc(clamp(38px,5.6vh,50px) + 8px);
-    background:var(--main-blue); color:#fff; border-color:var(--main-blue);
-  }
+    /* Footer sticky */
+    .toets-footer{
+        position:sticky; bottom:0; z-index:10;
+        background:#F8F9FA; border-top:1px solid #E9ECEF;
+        padding:8px var(--page-padding-x);
+        display:flex; justify-content:space-between; align-items:center;
+    }
+    .footer-button{
+        padding:10px 18px; border:0; border-radius:25px; cursor:pointer;
+        font-size:clamp(.9rem,2vh,1.05rem); font-weight:500;
+    }
+    .vorige-button{background:#E9ECEF; color:#6D6D6D}
+    .volgende-button{background:var(--main-blue); color:#fff}
 
-  /* smal scherm, kolommen stapelen, schalen blijft actief */
-  @media (max-width: 900px){
-    .fitcontent{ flex-direction:column; align-items:center; }
-    .toets-main{ padding:0 16px 72px 16px; }
-    .brand-strip-wrap{ padding:10px 16px 0 16px; }
-    .vraag-blok{ padding:12px 16px 6px 16px; }
-    .image-container{ min-height:150px; }
-    .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
-    .interaction-container{ justify-content:flex-start; align-items:center; }
-    .ia-outer{ max-width:300px; }
-  }
+    .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
+    .page-dot{
+        width:clamp(38px,5.6vh,50px); height:clamp(38px,5.6vh,50px);
+        border-radius:50%; background:var(--medium-grey); border:2px solid var(--medium-grey);
+        color:#4B4B4B; display:inline-flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:clamp(.9rem,2vh,1.05rem);
+        transition:all .15s ease; cursor:pointer; user-select:none;
+    }
+    .page-dot.active{
+        width:calc(clamp(38px,5.6vh,50px) + 8px);
+        height:calc(clamp(38px,5.6vh,50px) + 8px);
+        background:var(--main-blue); color:#fff; border-color:var(--main-blue);
+    }
+
+    /* CHROMEBOOK, NIET SCHERMVULLEND
+       afbeelding 2 procent groter dan vorige, rechtergroep krijgt exact dezelfde hoogte en schaalt zonodig naar binnen */
+    @media (max-height: 760px) and (min-width: 901px){
+        .toets-main{ align-items:stretch; }
+        .image-container{ align-items:stretch; }
+        .image-container img{
+            width:auto; max-width:100%;
+            height:61%;             /* was 59, nu 2 procent groter */
+            object-fit:contain;
+        }
+        .interaction-container{
+            justify-content:flex-start;
+            align-items:flex-start;
+        }
+        .ia-outer{
+            max-width:300px;         /* antwoord even breed als keypad-drager */
+        }
+    }
+
+    /* Stapelen alleen bij smalle breedte */
+    @media (max-width: 900px){
+        .toets-main{
+            flex-direction:column;
+            align-items:stretch;
+            padding:0 16px 72px 16px;
+        }
+        .brand-strip-wrap{ padding:10px 16px 0 16px; }
+        .vraag-blok{ padding:12px 16px 6px 16px; }
+        .image-container{ min-height:150px; }
+        .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
+        .interaction-container{ justify-content:flex-start; align-items:center; }
+        .ia-outer{ max-width:300px; }
+    }
 </style>
 </head>
 <body>
 
 <div class="toets-container">
 
-  <div class="brand-strip-wrap"><div class="brand-strip" aria-hidden="true"></div></div>
+    <div class="brand-strip-wrap"><div class="brand-strip" aria-hidden="true"></div></div>
 
-  <div class="vraag-blok">
-    <p id="vraag-tekst" class="vraag-tekst">
-      Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro<br>
-      Hoeveel euro heeft Sophie in totaal?
-    </p>
-    <button class="play-button" id="play-vraag-button" aria-label="Lees vraag voor">
-      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    </button>
-  </div>
+    <div class="vraag-blok">
+        <p id="vraag-tekst" class="vraag-tekst">
+            Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro<br>
+            Hoeveel euro heeft Sophie in totaal?
+        </p>
+        <button class="play-button" id="play-vraag-button" aria-label="Lees vraag voor">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+    </div>
 
-  <main class="toets-main" id="toets-main">
-    <div class="fitbox">
-      <div class="fitcontent" id="fitcontent">
+    <main class="toets-main">
         <div class="image-container">
-          <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
+            <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
         </div>
 
         <div class="interaction-container">
-          <div class="ia-outer">
-            <div class="ia-stack">
-              <div class="keypad-area">
-                <div class="keypad">
-                  <button class="keypad-button">1</button>
-                  <button class="keypad-button">2</button>
-                  <button class="keypad-button">3</button>
-                  <button class="keypad-button">4</button>
-                  <button class="keypad-button">5</button>
-                  <button class="keypad-button">6</button>
-                  <button class="keypad-button">7</button>
-                  <button class="keypad-button">8</button>
-                  <button class="keypad-button">9</button>
-                  <button class="keypad-button empty" aria-hidden="true"></button>
-                  <button class="keypad-button">0</button>
-                  <button class="keypad-button backspace" aria-label="Wissen">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
-                    </svg>
-                  </button>
+            <!-- schaalbare groep rechts -->
+            <div class="ia-outer" id="ia-outer">
+                <div class="ia-stack" id="ia-stack">
+                    <div class="keypad-area" id="keypad-area">
+                        <div class="keypad">
+                            <button class="keypad-button">1</button>
+                            <button class="keypad-button">2</button>
+                            <button class="keypad-button">3</button>
+                            <button class="keypad-button">4</button>
+                            <button class="keypad-button">5</button>
+                            <button class="keypad-button">6</button>
+                            <button class="keypad-button">7</button>
+                            <button class="keypad-button">8</button>
+                            <button class="keypad-button">9</button>
+                            <button class="keypad-button empty" aria-hidden="true"></button>
+                            <button class="keypad-button">0</button>
+                            <button class="keypad-button backspace" aria-label="Wissen">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="antwoord-wrap" id="antwoord-wrap">
+                        <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
+                    </div>
                 </div>
-              </div>
-
-              <div class="antwoord-wrap">
-                <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
-              </div>
             </div>
-          </div>
         </div>
+    </main>
 
-      </div><!-- /fitcontent -->
-    </div><!-- /fitbox -->
-  </main>
-
-  <footer class="toets-footer">
-    <button class="footer-button vorige-button" id="btn-prev">Vorige</button>
-    <div class="pagination" role="tablist" aria-label="Pagina navigatie">
-      <button class="page-dot active" role="tab" aria-selected="true" aria-label="Pagina 1">1</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 2">2</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 3">3</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 4">4</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 5">5</button>
-    </div>
-    <button class="footer-button volgende-button" id="btn-next">Volgende</button>
-  </footer>
+    <footer class="toets-footer">
+        <button class="footer-button vorige-button" id="btn-prev">Vorige</button>
+        <div class="pagination" role="tablist" aria-label="Pagina navigatie">
+            <button class="page-dot active" role="tab" aria-selected="true" aria-label="Pagina 1">1</button>
+            <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 2">2</button>
+            <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 3">3</button>
+            <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 4">4</button>
+            <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 5">5</button>
+        </div>
+        <button class="footer-button volgende-button" id="btn-next">Volgende</button>
+    </footer>
 
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded',() => {
-  const keypadButtons=document.querySelectorAll('.keypad-button');
-  const antwoordVak=document.querySelector('.antwoord-vak');
-  const playButton=document.getElementById('play-vraag-button');
-  const vraagNode=document.getElementById('vraag-tekst');
-  const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
+    const keypadButtons=document.querySelectorAll('.keypad-button');
+    const antwoordVak=document.querySelector('.antwoord-vak');
+    const playButton=document.getElementById('play-vraag-button');
+    const vraagNode=document.getElementById('vraag-tekst');
+    const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
 
-  /* keypad */
-  keypadButtons.forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      if(btn.classList.contains('backspace')){
-        antwoordVak.value=antwoordVak.value.slice(0,-1);
-      }else if(btn.textContent.trim()!==''){
-        antwoordVak.value+=btn.textContent.trim();
-      }
-      antwoordVak.focus();
+    /* keypad invoer */
+    keypadButtons.forEach(btn=>{
+        btn.addEventListener('click',()=>{
+            if(btn.classList.contains('backspace')){
+                antwoordVak.value=antwoordVak.value.slice(0,-1);
+            }else if(btn.textContent.trim()!==''){
+                antwoordVak.value+=btn.textContent.trim();
+            }
+            antwoordVak.focus();
+        });
     });
-  });
-  antwoordVak.addEventListener('keydown',e=>{
-    if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
-  });
+    antwoordVak.addEventListener('keydown',e=>{
+        if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
+    });
 
-  /* voorleesfunctie */
-  playButton?.addEventListener('click',()=>{
-    if(!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(vraagTekst);
-    u.lang='nl-NL';
-    const voices=speechSynthesis.getVoices();
-    let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
-    if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
-    if(v){ u.voice=v; }
-    u.pitch=1.1; u.rate=0.95;
-    speechSynthesis.speak(u);
-  });
+    /* voorleesfunctie */
+    playButton?.addEventListener('click',()=>{
+        if(!('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const u=new SpeechSynthesisUtterance(vraagTekst);
+        u.lang='nl-NL';
+        const voices=speechSynthesis.getVoices();
+        let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
+        if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
+        if(v){ u.voice=v; }
+        u.pitch=1.1; u.rate=0.95;
+        speechSynthesis.speak(u);
+    });
 
-  /* schaal volledige rode zone op basis van hoogte én breedte */
-  const main = document.getElementById('toets-main');
-  const fit  = document.getElementById('fitcontent');
-  const img  = document.getElementById('opdracht-afbeelding');
+    /* Chromebook niet schermvullend: laat rechtergroep exact even hoog zijn als de illustratie en schaal naar binnen */
+    const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');
+    const img = document.getElementById('opdracht-afbeelding');
+    const iaOuter = document.getElementById('ia-outer');
+    const iaStack = document.getElementById('ia-stack');
 
-  function withNoTransform(el, fn){
-    const prev = el.style.transform;
-    el.style.transform = 'none';
-    const out = fn();
-    el.style.transform = prev;
-    return out;
-  }
-
-  function fitToBox(){
-    if(!main || !fit) return;
-
-    /* beschikbare ruimte binnen de rode rechthoek, exclusief padding */
-    const cs = getComputedStyle(main);
-    const availW = main.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const availH = main.clientHeight - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
-
-    /* natuurlijke omvang van de inhoud zonder schaal */
-    const rect = withNoTransform(fit, ()=> fit.getBoundingClientRect());
-    const natW = rect.width;
-    const natH = rect.height;
-
-    let s = 1;
-    if(natW>0 && natH>0 && availW>0 && availH>0){
-      s = Math.min(1, availW / natW, availH / natH);  /* nooit vergroten, alleen verkleinen */
+    function measureNaturalHeight(el){
+        const prev = el.style.transform;
+        el.style.transform = 'none';
+        const h = el.getBoundingClientRect().height;
+        el.style.transform = prev;
+        return h;
     }
-    fit.style.transform = `scale(${s})`;
-  }
 
-  window.addEventListener('resize', fitToBox, {passive:true});
-  if(img && !img.complete){ img.addEventListener('load', fitToBox, {once:true}); }
-  fitToBox();
+    function syncToIllustration(){
+        if(!img || !iaOuter || !iaStack) return;
+        if(!mqChromebook.matches){
+            iaOuter.style.height='';
+            iaStack.style.transform='';
+            return;
+        }
+        const imgH = Math.round(img.getBoundingClientRect().height);
+        if(imgH<=0) return;
 
-  /* paginanavigatie */
-  const dots=[...document.querySelectorAll('.page-dot')];
-  const prev=document.getElementById('btn-prev');
-  const next=document.getElementById('btn-next');
-  function setActive(i){
-    dots.forEach((d,idx)=>{
-      const active=idx===i;
-      d.classList.toggle('active',active);
-      d.setAttribute('aria-selected',String(active));
+        /* maak de groep net zo hoog als de illustratie */
+        iaOuter.style.height = imgH + 'px';
+
+        /* schaal proportioneel zodat alles binnen die hoogte valt */
+        const hNat = measureNaturalHeight(iaStack);
+        let s = 1;
+        if(hNat>0){
+            s = imgH / hNat;       /* exact passend in hoogte */
+            if(s>1) s = 1;         /* nooit opblazen, alleen inkrimpen */
+        }
+        iaStack.style.transform = `scale(${s})`;
+    }
+
+    window.addEventListener('resize', syncToIllustration);
+    mqChromebook.addEventListener?.('change', syncToIllustration);
+    if(img && !img.complete){
+        img.addEventListener('load', syncToIllustration, {once:true});
+    }
+    syncToIllustration();
+
+    /* paginanavigatie zoals eerder */
+    const dots=[...document.querySelectorAll('.page-dot')];
+    const prev=document.getElementById('btn-prev');
+    const next=document.getElementById('btn-next');
+    function setActive(i){
+        dots.forEach((d,idx)=>{
+            const active=idx===i;
+            d.classList.toggle('active',active);
+            d.setAttribute('aria-selected',String(active));
+        });
+    }
+    dots.forEach((d,i)=>{
+        d.addEventListener('click',()=>setActive(i));
+        d.addEventListener('keydown',e=>{
+            if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
+        });
     });
-  }
-  dots.forEach((d,i)=>{
-    d.addEventListener('click',()=>setActive(i));
-    d.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
+    prev.addEventListener('click',()=>{
+        const cur=dots.findIndex(d=>d.classList.contains('active'));
+        setActive(Math.max(0,cur-1));
     });
-  });
-  prev.addEventListener('click',()=>{
-    const cur=dots.findIndex(d=>d.classList.contains('active'));
-    setActive(Math.max(0,cur-1));
-  });
-  next.addEventListener('click',()=>{
-    const cur=dots.findIndex(d=>d.classList.contains('active'));
-    setActive(Math.min(dots.length-1,cur+1));
-  });
+    next.addEventListener('click',()=>{
+        const cur=dots.findIndex(d=>d.classList.contains('active'));
+        setActive(Math.min(dots.length-1,cur+1));
+    });
 });
 </script>
 
 </body>
 </html>
+
