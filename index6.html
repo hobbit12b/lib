@@ -32,12 +32,12 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding-inline:.8vh;
+    padding-inline:.8vh;     /* geen verticale padding, zo past de footer altijd */
     padding-block:0;
     color:var(--text-color);
   }
 
-  /* kaart als grid: blauwe lijn, vraag, rode zone, footer */
+  /* Kaart in grid: blauwe balk, vraag, rode zone, footer */
   .toets-container{
     width:100%;
     background:var(--white);
@@ -45,7 +45,7 @@
     box-shadow:0 10px 40px rgba(0,0,0,.1);
     display:grid;
     grid-template-rows:auto auto 1fr auto;
-    height:100vh;
+    height:100vh;                           /* footer blijft zichtbaar */
     max-width:min(1700px, 98vw);
     overflow:visible;
   }
@@ -53,12 +53,20 @@
     .toets-container{ height:100dvh; }
   }
 
+  /* Blauwe balk boven */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
-    height:4px; border-radius:4px; background:var(--main-blue);
+    height:4px;                             /* standaard hoogte */
+    border-radius:4px;
+    background:var(--main-blue);
     box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
+    transition:height .18s ease;
+  }
+  .brand-strip.tall{
+    height:40px;                            /* 10 x standaard hoogte in fullscreen */
   }
 
+  /* Vraag */
   .vraag-blok{
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
     padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -73,10 +81,10 @@
   }
   .play-button svg{width:28px;height:28px;fill:#fff}
 
-  /* RODE RECHTHOEK, schaalt en centreert visueel */
+  /* Rode zone, schaalt en centreert */
   .toets-main{
     display:flex;
-    align-items:flex-start;             /* we centreren visueel met marges, niet met flex */
+    align-items:flex-start;                 /* visueel centreren doen we met marges */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
@@ -93,16 +101,18 @@
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    align-items:stretch;                /* kolommen even hoog */
+    align-items:stretch;                    /* kolommen even hoog */
     transform-origin:top center;
-    /* deze marges worden door JS gezet voor exacte verticale centrering */
-    margin-top:0;
+    margin-top:0;                           /* door script gezet voor exact midden */
     margin-bottom:0;
   }
 
   .image-container{
     flex:1.5 1 0;
-    display:flex; justify-content:center; align-items:center; min-width:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;                     /* afbeelding midden in kolom */
+    min-width:0;
   }
   .image-container img{
     width:78%;
@@ -113,7 +123,10 @@
 
   .interaction-container{
     flex:1 1 0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;                 /* keypad en antwoordblok als één middenblok */
     gap:10px; min-width:0;
   }
 
@@ -122,7 +135,7 @@
     width:100%;
     display:flex;
     flex-direction:column;
-    justify-content:flex-start;
+    justify-content:flex-start;             /* niet uitrekken */
     align-items:stretch;
     gap:10px;
   }
@@ -163,7 +176,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* footer is grid-rij, dus altijd zichtbaar */
+  /* Footer is grid-rij, dus zichtbaar */
   .toets-footer{
     background:#F8F9FA; border-top:1px solid #E9ECEF;
     padding:8px var(--page-padding-x);
@@ -190,7 +203,7 @@
     background:var(--main-blue); color:#fff; border-color:var(--main-blue);
   }
 
-  /* smal scherm, stapelen */
+  /* Smal scherm, stapelen */
   @media (max-width: 900px){
     .fitcontent{ flex-direction:column; }
     .toets-main{ padding:0 16px 72px 16px; }
@@ -207,7 +220,9 @@
 
 <div class="toets-container">
 
-  <div class="brand-strip-wrap"><div class="brand-strip" aria-hidden="true"></div></div>
+  <div class="brand-strip-wrap">
+    <div class="brand-strip" id="brand-strip" aria-hidden="true"></div>
+  </div>
 
   <div class="vraag-blok">
     <p id="vraag-tekst" class="vraag-tekst">
@@ -282,6 +297,10 @@ document.addEventListener('DOMContentLoaded',() => {
   const playButton=document.getElementById('play-vraag-button');
   const vraagNode=document.getElementById('vraag-tekst');
   const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
+  const fit  = document.getElementById('fitcontent');
+  const main = document.getElementById('toets-main');
+  const img  = document.getElementById('opdracht-afbeelding');
+  const brandStrip = document.getElementById('brand-strip');
 
   /* keypad */
   keypadButtons.forEach(btn=>{
@@ -312,11 +331,7 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* schaal en centreer visueel, ook bij transform */
-  const main = document.getElementById('toets-main');
-  const fit  = document.getElementById('fitcontent');
-  const img  = document.getElementById('opdracht-afbeelding');
-
+  /* helpers */
   function withNoTransform(el, fn){
     const prev = el.style.transform;
     el.style.transform = 'none';
@@ -324,11 +339,25 @@ document.addEventListener('DOMContentLoaded',() => {
     el.style.transform = prev;
     return out;
   }
-
   function isFullscreen(){
     return !!document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
+  /* Blauwe balk regels
+     - In fullscreen 10 x zo hoog
+     - Op laptop óók 10 x zo hoog, maar alleen als het venster fullscreen is (zoals gevraagd blijft hij in niet fullscreen gelijk) */
+  function updateBlueBar(){
+    if(isFullscreen()){
+      brandStrip.classList.add('tall');
+    }else{
+      brandStrip.classList.remove('tall');
+    }
+  }
+
+  /* Schaal de rode zone
+     - Niet fullscreen: ongeveer 7 procent groter
+     - Fullscreen: 100 procent, tenzij kleiner nodig om te passen
+     Daarnaast centreren we visueel tussen vraag en footer met dynamische marges */
   function fitToRow(){
     if(!main || !fit) return;
 
@@ -341,25 +370,29 @@ document.addEventListener('DOMContentLoaded',() => {
     const natH = rect.height;
     if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
-    /* basis schaal en extra 10 procent kleiner buiten fullscreen */
     const base   = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 0.9;
-    const s = base * factor;
+    const factor = isFullscreen() ? 1 : 1.07;      /* 7 procent groter buiten fullscreen */
+    const s = Math.min(base * factor, 1);          /* nooit groter dan passend */
 
-    /* pas schaal toe */
     fit.style.transform = `scale(${s})`;
 
-    /* visueel verticaal centreren op basis van de geschaalde hoogte */
+    /* visuele verticale centrering met marges, rekening houdend met schaal */
     const scaledH = natH * s;
     const offset  = Math.max(0, (availH - scaledH) / 2);
     fit.style.marginTop    = offset + 'px';
     fit.style.marginBottom = offset + 'px';
   }
 
-  window.addEventListener('resize', fitToRow, {passive:true});
-  if(img && !img.complete){ img.addEventListener('load', fitToRow, {once:true}); }
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitToRow); }
-  fitToRow();
+  function refresh(){
+    updateBlueBar();
+    fitToRow();
+  }
+
+  window.addEventListener('resize', refresh, {passive:true});
+  document.addEventListener('fullscreenchange', refresh);
+  if(img && !img.complete){ img.addEventListener('load', refresh, {once:true}); }
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(refresh); }
+  refresh();
 
   /* paginanavigatie */
   const dots=[...document.querySelectorAll('.page-dot')];
