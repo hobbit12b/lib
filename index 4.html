@@ -20,7 +20,7 @@
         --keypad-maxwidth:320px;
         --keypad-gap:10px;
 
-        /* uniforme horizontale binnenmarge zodat vraagtekst exact met de afbeelding uitlijnt */
+        /* uniforme horizontale binnenmarge */
         --page-padding-x:24px;
     }
 
@@ -49,19 +49,19 @@
         display:flex; flex-direction:column; overflow:hidden;
     }
 
-    /* Bovenbalk met verticale gradatie blauw naar wit */
+    /* Blauwe balk vol, 80% dunner dan voorheen, zelfde top-positie */
     .brand-strip-wrap{
         padding:10px var(--page-padding-x) 0 var(--page-padding-x);
         background:transparent;
     }
     .brand-strip{
-        height:20px;
-        border-radius:12px;
-        background:linear-gradient(180deg, var(--main-blue) 0%, var(--main-blue-dark) 35%, #ffffff 100%);
-        box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 3px 8px rgba(13,153,255,.22);
+        height:4px;                    /* was 20px, nu 80% dunner */
+        border-radius:4px;
+        background:var(--main-blue);   /* geen gradatie meer */
+        box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
-    /* Vraagblok, tekst lijnt links met de afbeelding via dezelfde padding */
+    /* Vraagblok, tekst lijnt links met de afbeelding */
     .vraag-blok{
         display:flex;
         align-items:flex-start;
@@ -75,6 +75,7 @@
         font-size:clamp(1.05rem, 2.4vh, 1.3rem);
         line-height:1.55;
         margin:0;
+        max-width:100%;
     }
     .play-button{
         background:var(--main-blue);
@@ -101,12 +102,16 @@
         flex:1.5;
         display:flex;
         justify-content:center;
-        align-items:center;           /* afbeelding zelf in het midden */
+        align-items:center;
         min-width:0;
     }
     .image-container img{
-        max-width:100%; max-height:100%;
-        object-fit:contain; border-radius:10px;
+        /* 10% kleiner dan voorheen zodat hij niet over de zinnen gaat */
+        width:90%;
+        max-width:90%;
+        max-height:90%;
+        object-fit:contain;
+        border-radius:10px;
     }
 
     /* Rechterkolom als groep, centreren als geheel */
@@ -214,11 +219,12 @@
             flex-direction:column;
             overflow-y:auto;
             padding:0 16px 16px 16px;
-            align-items:stretch;         /* in smal formaat stapelt het onder elkaar */
+            align-items:stretch;
         }
         .image-container{min-height:150px}
         .interaction-container{justify-content:flex-start}
         .keypad-area{padding:12px}
+        .image-container img{width:100%; max-width:100%; max-height:70%}
     }
 </style>
 </head>
@@ -226,12 +232,12 @@
 
 <div class="toets-container">
 
-    <!-- Blauwe balk met verticale gradatie -->
+    <!-- Blauwe balk vol, dunner -->
     <div class="brand-strip-wrap">
         <div class="brand-strip" aria-hidden="true"></div>
     </div>
 
-    <!-- Vraagtekst, exact uitgelijnd met de afbeelding links -->
+    <!-- Vraagtekst, uitgelijnd met de afbeelding links -->
     <div class="vraag-blok">
         <p id="vraag-tekst" class="vraag-tekst">
             Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.<br>
@@ -248,7 +254,7 @@
         </div>
 
         <div class="interaction-container">
-            <!-- Groep: keypad en antwoordvak, samen verticaal gecentreerd -->
+            <!-- Groep keypad -->
             <div class="keypad-area">
                 <div class="keypad">
                     <button class="keypad-button">1</button>
@@ -270,6 +276,7 @@
                 </div>
             </div>
 
+            <!-- Antwoordvak -->
             <div class="antwoord-wrap">
                 <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
             </div>
@@ -350,7 +357,7 @@ document.addEventListener('DOMContentLoaded',() => {
         setActive(Math.max(0,cur-1));
     });
     next.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classContains('active'));
+        const cur=dots.findIndex(d=>d.classList.contains('active'));
         setActive(Math.min(dots.length-1,cur+1));
     });
 });
