@@ -15,10 +15,11 @@
     --white:#FFFFFF;
     --red:#C44444;
 
-    --keypad-maxwidth:300px;          /* basisbreedte keypad */
+    --keypad-maxwidth:300px;  /* basisbreedte keypad */
     --keypad-gap:10px;
-
     --page-padding-x:24px;
+
+    --brand-h:4px;            /* basis hoogte blauwe balk */
   }
 
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -56,17 +57,14 @@
   /* Blauwe balk */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
-    height:4px;                       /* standaard hoogte */
+    height:var(--brand-h);
     border-radius:4px;
     background:var(--main-blue);
     box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
-    transition:height .18s ease,width .18s ease;
+    transition:height .18s ease;
   }
-  .brand-strip.tall{ height:40px; }   /* 10x zo hoog in fullscreen */
-  .brand-strip.narrow{
-    width:90%;                        /* in fullscreen 10% smaller in breedte */
-    margin-inline:auto;
-  }
+  /* In fullscreen 10 procent minder hoog dan 10x, dus 9x de basishoogte */
+  .brand-strip.tall{ height:calc(var(--brand-h) * 9); }
 
   /* Vraag */
   .vraag-blok{
@@ -77,7 +75,7 @@
     font-weight:600; color:#1f2937;
     font-size:clamp(1.05rem, 2.4vh, 1.3rem);
     line-height:1.55; margin:0;
-    padding-left:1.25em;              /* beide regels inspringen, dus ook de 2e */
+    padding-left:1.25em;  /* beide regels licht ingesprongen */
   }
   .play-button{
     background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
@@ -87,7 +85,7 @@
   /* Rode zone, schaalt en centreert visueel */
   .toets-main{
     display:flex;
-    align-items:flex-start;            /* verticale centrering via marges (JS) */
+    align-items:flex-start; /* centreren via marges in JS */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
@@ -104,7 +102,7 @@
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    align-items:stretch;               /* kolommen even hoog */
+    align-items:stretch; /* kolommen even hoog */
     transform-origin:top center;
     margin-top:0;
     margin-bottom:0;
@@ -172,7 +170,7 @@
   .antwoord-wrap{
     width:100%;
     display:flex;
-    justify-content:center;            /* centreer het inputveld onder keypad */
+    justify-content:center;
   }
   .antwoord-vak{
     width:90%;
@@ -305,6 +303,7 @@ document.addEventListener('DOMContentLoaded',() => {
   const playButton=document.getElementById('play-vraag-button');
   const vraagNode=document.getElementById('vraag-tekst');
   const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
+
   const fit  = document.getElementById('fitcontent');
   const main = document.getElementById('toets-main');
   const img  = document.getElementById('opdracht-afbeelding');
@@ -351,19 +350,19 @@ document.addEventListener('DOMContentLoaded',() => {
     return !!document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
-  /* Blauwe balk: in fullscreen 10x zo hoog en 10% smaller in breedte. Niet fullscreen: standaard */
+  /* Blauwe balk: in fullscreen 10% minder hoog dan 10x, in niet fullscreen standaard */
   function updateBlueBar(){
     if(isFullscreen()){
-      brandStrip.classList.add('tall','narrow');
+      brandStrip.classList.add('tall');
     }else{
-      brandStrip.classList.remove('tall','narrow');
+      brandStrip.classList.remove('tall');
     }
   }
 
   /* Schaal rode zone
      - Niet fullscreen: ~7% groter
-     - Fullscreen: 100%, tenzij kleiner nodig om te passen
-     Daarna visueel verticaal centreren via marges */
+     - Fullscreen: 100% of kleiner indien nodig
+     Daarna visueel verticaal centreren met marges */
   function fitToRow(){
     if(!main || !fit) return;
 
@@ -377,8 +376,9 @@ document.addEventListener('DOMContentLoaded',() => {
     if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
     const base   = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 1.07;          /* 7% groter buiten fullscreen */
-    const s = Math.min(base * factor, 1);              /* nooit groter dan passend */
+    const factor = isFullscreen() ? 1 : 1.07;  /* buiten fullscreen 7% groter */
+    const s = Math.min(base * factor, 1);      /* nooit groter dan passend */
+
     fit.style.transform = `scale(${s})`;
 
     /* visuele verticale centrering */
