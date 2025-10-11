@@ -32,7 +32,7 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding:1.5vh;
+    padding:.8vh;                          /* iets compacter, minder grijze randen */
     color:var(--text-color);
   }
 
@@ -44,7 +44,8 @@
     display:flex;
     flex-direction:column;
     min-height:100vh;
-    max-width:1400px;
+    max-width:min(1700px, 98vw);           /* breder en bijna beeldvullend */
+    overflow:hidden;
   }
   @supports (min-height: 100dvh){
     .toets-container{ min-height:100dvh; }
@@ -75,11 +76,11 @@
   .toets-main{
     flex:1;
     display:flex;
-    align-items:center;            /* verticaal centreren */
-    justify-content:center;        /* horizontaal centreren van de schaalgroep */
+    align-items:center;              /* verticaal centreren */
+    justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
-    overflow:hidden;               /* voorkomen dat er iets buiten valt bij schalen */
+    overflow:hidden;                 /* bij schalen niets laten uitsteken */
   }
   .fitbox{
     flex:1;
@@ -89,11 +90,10 @@
     min-height:0;
   }
   .fitcontent{
-    /* hier staat de oorspronkelijke layout van het middenvlak */
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    transform-origin:top center;   /* belangrijk voor nette schaal */
+    transform-origin:top center;     /* mooi schalen rond het midden */
   }
 
   .image-container{
@@ -192,7 +192,7 @@
     background:var(--main-blue); color:#fff; border-color:var(--main-blue);
   }
 
-  /* smalle breedte, kolommen stapelen, schalen blijft actief waar nodig */
+  /* smal scherm, kolommen stapelen, schalen blijft actief */
   @media (max-width: 900px){
     .fitcontent{ flex-direction:column; align-items:center; }
     .toets-main{ padding:0 16px 72px 16px; }
@@ -222,7 +222,7 @@
   </div>
 
   <main class="toets-main" id="toets-main">
-    <div class="fitbox" id="fitbox">
+    <div class="fitbox">
       <div class="fitcontent" id="fitcontent">
         <div class="image-container">
           <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
@@ -258,6 +258,7 @@
             </div>
           </div>
         </div>
+
       </div><!-- /fitcontent -->
     </div><!-- /fitbox -->
   </main>
@@ -313,36 +314,42 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* schaal de volledige rode rechthoek zodat alles past in de beschikbare hoogte */
+  /* schaal volledige rode zone op basis van hoogte én breedte */
   const main = document.getElementById('toets-main');
-  const fit = document.getElementById('fitcontent');
-  const img = document.getElementById('opdracht-afbeelding');
+  const fit  = document.getElementById('fitcontent');
+  const img  = document.getElementById('opdracht-afbeelding');
 
-  function naturalHeight(el){
+  function withNoTransform(el, fn){
     const prev = el.style.transform;
     el.style.transform = 'none';
-    const h = el.getBoundingClientRect().height;
+    const out = fn();
     el.style.transform = prev;
-    return h;
+    return out;
   }
 
-  function fitToHeight(){
+  function fitToBox(){
     if(!main || !fit) return;
-    // beschikbare hoogte binnen de rode zone
-    const avail = main.clientHeight;
-    // natuurlijke hoogte van de ongeschaalde inhoud
-    const hNat = naturalHeight(fit);
+
+    /* beschikbare ruimte binnen de rode rechthoek, exclusief padding */
+    const cs = getComputedStyle(main);
+    const availW = main.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const availH = main.clientHeight - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+
+    /* natuurlijke omvang van de inhoud zonder schaal */
+    const rect = withNoTransform(fit, ()=> fit.getBoundingClientRect());
+    const natW = rect.width;
+    const natH = rect.height;
+
     let s = 1;
-    if(hNat > 0 && avail > 0){
-      s = Math.min(1, avail / hNat);   // nooit vergroten, alleen verkleinen
+    if(natW>0 && natH>0 && availW>0 && availH>0){
+      s = Math.min(1, availW / natW, availH / natH);  /* nooit vergroten, alleen verkleinen */
     }
     fit.style.transform = `scale(${s})`;
   }
 
-  window.addEventListener('resize', fitToHeight);
-  if(img && !img.complete){ img.addEventListener('load', fitToHeight, {once:true}); }
-  // eerste run
-  fitToHeight();
+  window.addEventListener('resize', fitToBox, {passive:true});
+  if(img && !img.complete){ img.addEventListener('load', fitToBox, {once:true}); }
+  fitToBox();
 
   /* paginanavigatie */
   const dots=[...document.querySelectorAll('.page-dot')];
