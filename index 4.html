@@ -52,12 +52,14 @@
         .toets-container{ min-height:100dvh; }
     }
 
+    /* Blauwe lijn */
     .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
     .brand-strip{
         height:4px; border-radius:4px; background:var(--main-blue);
         box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
+    /* Vraag */
     .vraag-blok{
         display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
         padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -73,6 +75,7 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
+    /* Hoofdgebied, standaard twee kolommen */
     .toets-main{
         flex:1;
         display:flex;
@@ -105,8 +108,8 @@
         border:2px solid var(--medium-grey);
         border-radius:16px;
         padding:12px;
-        width:100%; max-width:var(--keypad-maxwidth);
-        transform-origin:top center;
+        width:100%;
+        max-width:var(--keypad-maxwidth);
     }
 
     .keypad{
@@ -141,6 +144,7 @@
     }
     .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
+    /* Footer sticky */
     .toets-footer{
         position:sticky; bottom:0; z-index:10;
         background:#F8F9FA; border-top:1px solid #E9ECEF;
@@ -168,18 +172,24 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* Chromebook venster niet schermvullend
-       Afbeelding 3 procent kleiner dan het vorige profiel
-       Toetsenbord met grijs vlak 7 procent groter */
+    /* CHROMEBOOK, NIET SCHERMVULLEND
+       hier regelen we de uitlijning boven en onder, en gelijke breedte */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{ padding-bottom:8px; }
-        .image-container img{ width:63%; max-width:63%; max-height:76%; }  /* was 66 procent */
-        .keypad-area{ max-width:270px; transform:scale(.96); }             /* was .90, nu ongeveer 7% groter */
-        .keypad{ gap:8px; }
-        .keypad-button{ border-radius:12px; font-size:clamp(.95rem,2.8vh,1.35rem); }
-        .antwoord-vak{ min-height:46px; padding:7px 12px; font-size:clamp(.95rem,2.1vh,1.15rem); }
-        .toets-footer{ padding:6px var(--page-padding-x); }
-        .page-dot{ transform:scale(.9); }
+        .toets-main{
+            align-items:stretch;                /* beide kolommen krijgen gelijke kolomhoogte */
+        }
+        .image-container{ align-items:stretch; } /* kolom zelf wordt leidend voor de hoogte */
+        .image-container img{
+            width:auto; max-width:100%;
+            height:97%;                         /* net 3% kleiner zoals gevraagd */
+            object-fit:contain;
+        }
+        .interaction-container{
+            justify-content:space-between;      /* keypad boven, antwoordvak onder */
+        }
+        /* geen transform, zodat antwoordvak en keypad exact even breed zijn */
+        .keypad-area{ max-width:310px; }        /* iets ruimer als de breedte het toelaat */
+        .antwoord-wrap{ max-width:310px; width:100%; }
     }
 
     /* Stapelen alleen bij smalle breedte */
@@ -192,9 +202,10 @@
         .brand-strip-wrap{ padding:10px 16px 0 16px; }
         .vraag-blok{ padding:12px 16px 6px 16px; }
         .image-container{ min-height:150px; }
-        .image-container img{ width:100%; max-width:100%; max-height:70%; }
+        .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
         .interaction-container{ justify-content:flex-start; }
-        .keypad-area{ padding:12px; transform:none; max-width:300px; }
+        .keypad-area{ padding:12px; max-width:300px; }
+        .antwoord-wrap{ max-width:300px; }
     }
 </style>
 </head>
@@ -216,11 +227,11 @@
 
     <main class="toets-main">
         <div class="image-container">
-            <img src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
+            <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
         </div>
 
-        <div class="interaction-container">
-            <div class="keypad-area">
+        <div class="interaction-container" id="interaction">
+            <div class="keypad-area" id="keypad-area">
                 <div class="keypad">
                     <button class="keypad-button">1</button>
                     <button class="keypad-button">2</button>
@@ -241,7 +252,7 @@
                 </div>
             </div>
 
-            <div class="antwoord-wrap">
+            <div class="antwoord-wrap" id="antwoord-wrap">
                 <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
             </div>
         </div>
@@ -266,8 +277,9 @@ document.addEventListener('DOMContentLoaded',() => {
     const keypadButtons=document.querySelectorAll('.keypad-button');
     const antwoordVak=document.querySelector('.antwoord-vak');
     const playButton=document.getElementById('play-vraag-button');
-    const vraagTekst=document.getElementById('vraag-tekst').innerHTML.replace('<br>',' ');
+    const vraagTekst=document.getElementById('vraag-tekst')?.innerHTML.replace('<br>',' ') ?? '';
 
+    /* keypad invoer */
     keypadButtons.forEach(btn=>{
         btn.addEventListener('click',()=>{
             if(btn.classList.contains('backspace')){
@@ -282,7 +294,9 @@ document.addEventListener('DOMContentLoaded',() => {
         if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
     });
 
-    playButton.addEventListener('click',()=>{
+    /* voorleesfunctie */
+    playButton?.addEventListener('click',()=>{
+        if(!('speechSynthesis' in window)) return;
         speechSynthesis.cancel();
         const u=new SpeechSynthesisUtterance(vraagTekst);
         u.lang='nl-NL';
@@ -293,34 +307,44 @@ document.addEventListener('DOMContentLoaded',() => {
         u.pitch=1.1; u.rate=0.95;
         speechSynthesis.speak(u);
     });
-    if(speechSynthesis.onvoiceschanged!==undefined){
-        speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
-    }
 
-    const dots=[...document.querySelectorAll('.page-dot')];
-    const prev=document.getElementById('btn-prev');
-    const next=document.getElementById('btn-next');
-    function setActive(i){
-        dots.forEach((d,idx)=>{
-            const active=idx===i;
-            d.classList.toggle('active',active);
-            d.setAttribute('aria-selected',String(active));
-        });
+    /* CHROMEBOOK, NIET SCHERMVULLEND
+       hoogte van rechterkolom gelijk aan illustratie, antwoordvak even breed als keypad */
+    const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');
+    function syncToIllustration(){
+        const img = document.getElementById('opdracht-afbeelding');
+        const right = document.getElementById('interaction');
+        const keypad = document.getElementById('keypad-area');
+        const answerWrap = document.getElementById('antwoord-wrap');
+
+        if(!img || !right || !keypad || !answerWrap) return;
+
+        if(mqChromebook.matches){
+            // hoogte gelijk maken
+            const imgH = Math.round(img.getBoundingClientRect().height);
+            if(imgH>0){
+                right.style.height = imgH + 'px';                 // keypad boven, antwoord onder
+            }
+            // breedte gelijk maken
+            const kW = Math.round(keypad.getBoundingClientRect().width);
+            if(kW>0){
+                answerWrap.style.maxWidth = kW + 'px';
+                answerWrap.style.width = kW + 'px';
+            }
+        }else{
+            right.style.height = '';
+            answerWrap.style.maxWidth = '';
+            answerWrap.style.width = '';
+        }
     }
-    dots.forEach((d,i)=>{
-        d.addEventListener('click',()=>setActive(i));
-        d.addEventListener('keydown',e=>{
-            if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
-        });
-    });
-    prev.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classList.contains('active'));
-        setActive(Math.max(0,cur-1));
-    });
-    next.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classList.contains('active'));
-        setActive(Math.min(dots.length-1,cur+1));
-    });
+    // initial, on resize, and when image loads
+    window.addEventListener('resize', syncToIllustration);
+    mqChromebook.addEventListener?.('change', syncToIllustration);
+    const imgEl=document.getElementById('opdracht-afbeelding');
+    if(imgEl && !imgEl.complete){
+        imgEl.addEventListener('load', syncToIllustration, {once:true});
+    }
+    syncToIllustration();
 });
 </script>
 
