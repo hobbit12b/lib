@@ -32,11 +32,13 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding:.8vh;
+    /* geen verticale padding, zo past alles exact in de viewport */
+    padding-inline:.8vh;
+    padding-block:0;
     color:var(--text-color);
   }
 
-  /* Kaart in grid: bovenlijn, vraag, midden, footer */
+  /* Kaart met grid: blauwe lijn, vraag, rode zone, footer */
   .toets-container{
     width:100%;
     background:var(--white);
@@ -44,15 +46,15 @@
     box-shadow:0 10px 40px rgba(0,0,0,.1);
     display:grid;
     grid-template-rows:auto auto 1fr auto;
-    min-height:100vh;
+    height:100vh;                   /* precies vensterhoogte, footer blijft zichtbaar */
     max-width:min(1700px, 98vw);
     overflow:visible;
   }
-  @supports (min-height: 100dvh){
-    .toets-container{ min-height:100dvh; }
+  @supports (min-height:100dvh){
+    .toets-container{ height:100dvh; }
   }
 
-  /* Boven */
+  /* Bovenste blauwe lijn en vraag */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
     height:4px; border-radius:4px; background:var(--main-blue);
@@ -72,14 +74,14 @@
   }
   .play-button svg{width:28px;height:28px;fill:#fff}
 
-  /* Rode zone */
+  /* RODE RECHTHOEK, schaalbaar en gecentreerd */
   .toets-main{
     display:flex;
     align-items:center;                 /* verticaal midden */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
-    overflow:hidden;                    /* bij schalen niets laten uitsteken */
+    overflow:hidden;
   }
   .fitbox{
     flex:1;
@@ -87,13 +89,12 @@
     align-items:center;
     justify-content:center;
     min-height:0;
-    /* hoogte wordt dynamisch gezet in JS op natH * s */
   }
   .fitcontent{
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    align-items:center;                 /* beide kolommen op één middenlijn */
+    align-items:center;                 /* links en rechts dezelfde middenlijn */
     transform-origin:top center;
   }
 
@@ -119,7 +120,7 @@
     width:100%;
     display:flex;
     flex-direction:column;
-    justify-content:flex-start;         /* geen space-between, stapel compact */
+    justify-content:flex-start;         /* niet uitrekken naar onder */
     align-items:stretch;
     gap:10px;
   }
@@ -145,7 +146,9 @@
     display:flex; align-items:center; justify-content:center;
     font-weight:700; font-size:clamp(1.05rem,3.1vh,1.6rem);
     color:#000; cursor:pointer; user-select:none;
+    transition:transform .05s ease;
   }
+  .keypad-button:active{ transform:translateY(1px) }
   .keypad-button.empty{ visibility:hidden }
   .keypad-button.backspace{ background:var(--red); border-color:var(--red); }
   .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
@@ -160,7 +163,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* Footer onderaan, eigen grid-rij, dus altijd zichtbaar */
+  /* Footer, onderdeel van het grid, dus altijd zichtbaar */
   .toets-footer{
     background:#F8F9FA; border-top:1px solid #E9ECEF;
     padding:8px var(--page-padding-x);
@@ -217,7 +220,7 @@
   </div>
 
   <main class="toets-main" id="toets-main">
-    <div class="fitbox" id="fitbox">
+    <div class="fitbox">
       <div class="fitcontent" id="fitcontent">
         <div class="image-container">
           <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
@@ -280,7 +283,7 @@ document.addEventListener('DOMContentLoaded',() => {
   const vraagNode=document.getElementById('vraag-tekst');
   const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
 
-  /* keypad invoer */
+  /* keypad */
   keypadButtons.forEach(btn=>{
     btn.addEventListener('click',()=>{
       if(btn.classList.contains('backspace')){
@@ -309,11 +312,10 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* Schaal rode zone én geef de rij de geschaalde hoogte, zodat footer zichtbaar blijft */
-  const main    = document.getElementById('toets-main');
-  const fitbox  = document.getElementById('fitbox');
-  const fit     = document.getElementById('fitcontent');
-  const img     = document.getElementById('opdracht-afbeelding');
+  /* Schaal de volledige rode zone zodat deze in de grid-rij past */
+  const main = document.getElementById('toets-main');
+  const fit  = document.getElementById('fitcontent');
+  const img  = document.getElementById('opdracht-afbeelding');
 
   function withNoTransform(el, fn){
     const prev = el.style.transform;
@@ -324,7 +326,7 @@ document.addEventListener('DOMContentLoaded',() => {
   }
 
   function fitToRow(){
-    if(!main || !fit || !fitbox) return;
+    if(!main || !fit) return;
 
     const cs = getComputedStyle(main);
     const availW = main.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
@@ -334,18 +336,10 @@ document.addEventListener('DOMContentLoaded',() => {
     const natW = rect.width;
     const natH = rect.height;
 
-    if(natW<=0 || natH<=0 || availW<=0 || availH<=0){ return; }
+    if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
-    const s = Math.min(1, availW / natW, availH / natH);  /* alleen verkleinen indien nodig */
-
+    const s = Math.min(1, availW / natW, availH / natH);  /* nooit vergroten */
     fit.style.transform = `scale(${s})`;
-
-    /* cruciaal, reserveer de geschaalde hoogte in de layout, zodat de footer niet wordt weggeduwd */
-    if(s < 1){
-      fitbox.style.height = Math.ceil(natH * s) + 'px';
-    }else{
-      fitbox.style.height = '';  /* terug naar natuurlijke hoogte */
-    }
   }
 
   window.addEventListener('resize', fitToRow, {passive:true});
@@ -378,7 +372,6 @@ document.addEventListener('DOMContentLoaded',() => {
     const cur=dots.findIndex(d=>d.classList.contains('active'));
     setActive(Math.min(dots.length-1,cur+1));
   });
-});
 </script>
 
 </body>
