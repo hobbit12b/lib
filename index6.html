@@ -32,12 +32,12 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding-inline:.8vh;     /* geen verticale padding, footer past altijd */
+    padding-inline:.8vh;
     padding-block:0;
     color:var(--text-color);
   }
 
-  /* Kaart in grid: blauwe lijn, vraag, rode zone, footer */
+  /* kaart als grid: blauwe lijn, vraag, rode zone, footer */
   .toets-container{
     width:100%;
     background:var(--white);
@@ -45,7 +45,7 @@
     box-shadow:0 10px 40px rgba(0,0,0,.1);
     display:grid;
     grid-template-rows:auto auto 1fr auto;
-    height:100vh;                           /* footer altijd zichtbaar */
+    height:100vh;
     max-width:min(1700px, 98vw);
     overflow:visible;
   }
@@ -53,12 +53,12 @@
     .toets-container{ height:100dvh; }
   }
 
-  /* bovenkant */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
     height:4px; border-radius:4px; background:var(--main-blue);
     box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
   }
+
   .vraag-blok{
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
     padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -73,10 +73,10 @@
   }
   .play-button svg{width:28px;height:28px;fill:#fff}
 
-  /* RODE RECHTHOEK, schaalt en centreert */
+  /* RODE RECHTHOEK, schaalt en centreert visueel */
   .toets-main{
     display:flex;
-    align-items:center;                 /* verticaal midden */
+    align-items:flex-start;             /* we centreren visueel met marges, niet met flex */
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
@@ -85,7 +85,7 @@
   .fitbox{
     flex:1;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
     min-height:0;
   }
@@ -95,14 +95,14 @@
     gap:clamp(16px,3vw,32px);
     align-items:stretch;                /* kolommen even hoog */
     transform-origin:top center;
+    /* deze marges worden door JS gezet voor exacte verticale centrering */
+    margin-top:0;
+    margin-bottom:0;
   }
 
   .image-container{
     flex:1.5 1 0;
-    display:flex;
-    justify-content:center;
-    align-items:center;                 /* afbeelding midden in kolom */
-    min-width:0;
+    display:flex; justify-content:center; align-items:center; min-width:0;
   }
   .image-container img{
     width:78%;
@@ -113,10 +113,7 @@
 
   .interaction-container{
     flex:1 1 0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;             /* keypad + antwoordvak als blok in het midden */
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; min-width:0;
   }
 
@@ -125,7 +122,7 @@
     width:100%;
     display:flex;
     flex-direction:column;
-    justify-content:flex-start;         /* niet uitrekken naar onder */
+    justify-content:flex-start;
     align-items:stretch;
     gap:10px;
   }
@@ -166,7 +163,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* footer, als grid-rij dus altijd zichtbaar */
+  /* footer is grid-rij, dus altijd zichtbaar */
   .toets-footer{
     background:#F8F9FA; border-top:1px solid #E9ECEF;
     padding:8px var(--page-padding-x);
@@ -195,7 +192,7 @@
 
   /* smal scherm, stapelen */
   @media (max-width: 900px){
-    .fitcontent{ flex-direction:column; align-items:center; }
+    .fitcontent{ flex-direction:column; }
     .toets-main{ padding:0 16px 72px 16px; }
     .brand-strip-wrap{ padding:10px 16px 0 16px; }
     .vraag-blok{ padding:12px 16px 6px 16px; }
@@ -315,9 +312,7 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* schalen
-     niet beeldschermvullend, circa 10 procent kleiner
-     beeldschermvullend, 100 procent of kleiner indien nodig */
+  /* schaal en centreer visueel, ook bij transform */
   const main = document.getElementById('toets-main');
   const fit  = document.getElementById('fitcontent');
   const img  = document.getElementById('opdracht-afbeelding');
@@ -346,11 +341,19 @@ document.addEventListener('DOMContentLoaded',() => {
     const natH = rect.height;
     if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
-    const base = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 0.9;     /* ongeveer 10 procent kleiner buiten fullscreen */
+    /* basis schaal en extra 10 procent kleiner buiten fullscreen */
+    const base   = Math.min(1, availW / natW, availH / natH);
+    const factor = isFullscreen() ? 1 : 0.9;
     const s = base * factor;
 
+    /* pas schaal toe */
     fit.style.transform = `scale(${s})`;
+
+    /* visueel verticaal centreren op basis van de geschaalde hoogte */
+    const scaledH = natH * s;
+    const offset  = Math.max(0, (availH - scaledH) / 2);
+    fit.style.marginTop    = offset + 'px';
+    fit.style.marginBottom = offset + 'px';
   }
 
   window.addEventListener('resize', fitToRow, {passive:true});
