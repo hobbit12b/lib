@@ -15,7 +15,8 @@
         --white:#FFFFFF;
         --red:#C44444;
 
-        --keypad-maxwidth:320px;
+        /* compacter dan voorheen */
+        --keypad-maxwidth:300px;
         --keypad-gap:10px;
 
         --page-padding-x:24px;
@@ -31,12 +32,12 @@
         background:var(--light-grey);
         display:flex;
         justify-content:center;
-        align-items:stretch;           /* laat container in de hoogte meegroeien */
+        align-items:stretch;
         padding:1.5vh;
         color:var(--text-color);
     }
 
-    /* Buitenste container: NIET meer ‘height:100%’ + ‘overflow:hidden’ */
+    /* Buitenste container mag in hoogte groeien en knipt niets af */
     .toets-container{
         width:100%;
         background:var(--white);
@@ -44,23 +45,19 @@
         box-shadow:0 10px 40px rgba(0,0,0,.1);
         display:flex;
         flex-direction:column;
-        min-height:100vh;              /* kan langer worden; pagina mag scrollen */
+        min-height:100vh;
         height:auto;
         max-width:1400px;
-        /* max-height verwijderd */
-        overflow:visible;              /* niets afknijpen */
+        overflow:visible;
     }
-    /* Gebruik 100dvh als beschikbaar, beter voor OS-UI balken */
-    @supports (height: 100dvh) {
-      .toets-container { min-height:100dvh; }
+    @supports (min-height: 100dvh){
+        .toets-container{ min-height:100dvh; }
     }
 
-    /* Blauwe lijn bovenin */
+    /* Blauwe lijn */
     .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
     .brand-strip{
-        height:4px;
-        border-radius:4px;
-        background:var(--main-blue);
+        height:4px; border-radius:4px; background:var(--main-blue);
         box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     }
 
@@ -80,15 +77,15 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Hoofdgebied: standaard twee kolommen naast elkaar */
+    /* Hoofdgebied: twee kolommen naast elkaar */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
-        padding:0 var(--page-padding-x) 24px var(--page-padding-x);
+        padding:0 var(--page-padding-x) 16px var(--page-padding-x);
         min-height:0;
         align-items:center;
-        overflow:auto;                 /* inhoud kan scrollen als het krap wordt */
+        overflow:visible;
     }
 
     .image-container{
@@ -96,91 +93,115 @@
         display:flex; justify-content:center; align-items:center; min-width:0;
     }
     .image-container img{
-        width:80%; max-width:80%; max-height:85%;
+        width:78%;            /* al compacter om ruimte te winnen */
+        max-width:78%;
+        max-height:82%;
         object-fit:contain; border-radius:10px;
     }
 
     .interaction-container{
         flex:1 1 0;
         display:flex; flex-direction:column; align-items:center; justify-content:center;
-        gap:12px; min-width:0;
+        gap:10px; min-width:0;
     }
 
+    /* Drager achter het keypad, compacter */
     .keypad-area{
         background:var(--light-grey);
         border:2px solid var(--medium-grey);
-        border-radius:18px;
-        padding:14px;
+        border-radius:16px;
+        padding:12px;                     /* was 14px */
         width:100%; max-width:var(--keypad-maxwidth);
     }
-    .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--keypad-gap); }
 
+    /* Grid 3x4 met minder ruimte */
+    .keypad{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:var(--keypad-gap);            /* 10px */
+    }
+
+    /* Tegels kleiner */
     .keypad-button{
-        aspect-ratio:1/1; border-radius:16px; background:var(--white); border:2px solid var(--tile-border);
+        aspect-ratio:1/1;
+        border-radius:14px;               /* was 16px */
+        background:var(--white);
+        border:2px solid var(--tile-border);
         box-shadow:0 2px 0 var(--tile-shadow);
         display:flex; align-items:center; justify-content:center;
-        font-weight:700; font-size:clamp(1.2rem,3.4vh,1.8rem);
-        color:#000; cursor:pointer; user-select:none; transition:transform .05s ease;
+        font-weight:700; font-size:clamp(1.05rem,3.1vh,1.6rem);  /* kleiner lettertype */
+        color:#000; cursor:pointer; user-select:none;
+        transition:transform .05s ease;
     }
     .keypad-button:active{ transform:translateY(1px) }
     .keypad-button.empty{ visibility:hidden }
     .keypad-button.backspace{ background:var(--red); border-color:var(--red); box-shadow:0 2px 0 rgba(0,0,0,.08); }
-    .keypad-button.backspace svg{ width:46%; height:46%; fill:#fff; }
+    .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
 
-    .antwoord-wrap{ width:100%; max-width:var(--keypad-maxwidth); margin-top:6px; }
+    /* Antwoordvak dichter op het toetsenbord */
+    .antwoord-wrap{ width:100%; max-width:var(--keypad-maxwidth); margin-top:2px; } /* was 6px */
     .antwoord-vak{
-        width:100%; border:2px solid var(--medium-grey); border-radius:12px; min-height:56px;
-        padding:10px 16px; font-size:clamp(1.1rem,2.6vh,1.4rem); background:#fff;
+        width:100%; border:2px solid var(--medium-grey); border-radius:12px;
+        min-height:50px;                  /* was 56px */
+        padding:8px 14px;                 /* was 10px 16px */
+        font-size:clamp(1rem,2.3vh,1.25rem);
+        background:#fff;
     }
     .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-    /* Footer */
+    /* Sticky footer zodat Vorige en Volgende altijd zichtbaar blijven */
     .toets-footer{
+        position:sticky; bottom:0; z-index:10;
         background:#F8F9FA; border-top:1px solid #E9ECEF;
-        padding:1.2vh var(--page-padding-x);
+        padding:8px var(--page-padding-x);   /* compacter */
         display:flex; justify-content:space-between; align-items:center;
     }
-    .footer-button{ padding:1.2vh 2.2vw; border:0; border-radius:25px; cursor:pointer;
-        font-size:clamp(.9rem,2vh,1.05rem); font-weight:500; }
+    .footer-button{
+        padding:10px 18px; border:0; border-radius:25px; cursor:pointer;
+        font-size:clamp(.9rem,2vh,1.05rem); font-weight:500;
+    }
     .vorige-button{background:#E9ECEF; color:#6D6D6D}
     .volgende-button{background:var(--main-blue); color:#fff}
 
     .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
     .page-dot{
-        width:clamp(42px,6.2vh,56px); height:clamp(42px,6.2vh,56px);
+        width:clamp(38px,5.6vh,50px); height:clamp(38px,5.6vh,50px);  /* iets kleiner */
         border-radius:50%; background:var(--medium-grey); border:2px solid var(--medium-grey);
         color:#4B4B4B; display:inline-flex; align-items:center; justify-content:center;
-        font-weight:700; font-size:clamp(.95rem,2.2vh,1.15rem); transition:all .15s ease; cursor:pointer; user-select:none;
+        font-weight:700; font-size:clamp(.9rem,2vh,1.05rem);
+        transition:all .15s ease; cursor:pointer; user-select:none;
     }
     .page-dot.active{
-        width:calc(clamp(42px,6.2vh,56px) + 8px);
-        height:calc(clamp(42px,6.2vh,56px) + 8px);
+        width:calc(clamp(38px,5.6vh,50px) + 8px);
+        height:calc(clamp(38px,5.6vh,50px) + 8px);
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* --- Chromebook fix: lage schermhoogte ---
-       Bij bv. 1366x768 niet-fullscreen is de hoogte krap.
-       We verkleinen subtiel en laten scroll toe. */
+    /* Chromebook optimalisatie bij beperkte hoogte: nog compacter schalen */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{ padding-bottom:16px; }
-        .image-container img{ width:72%; max-width:72%; max-height:78%; }
-        .keypad-area{ transform:scale(.94); transform-origin:top center; }
-        .antwoord-vak{ min-height:52px; }
+        .toets-main{ padding-bottom:8px; }
+        .image-container img{ width:70%; max-width:70%; max-height:76%; }
+        .keypad-area{ padding:10px; max-width:290px; }
+        .keypad{ gap:8px; }
+        .keypad-button{ border-radius:12px; font-size:clamp(.95rem,2.8vh,1.35rem); }
+        .antwoord-vak{ min-height:46px; padding:7px 12px; font-size:clamp(.95rem,2.1vh,1.15rem); }
+        .toets-footer{ padding:6px var(--page-padding-x); }
+        .page-dot{ transform:scale(.9); }
     }
 
-    /* Stapelen alleen bij écht smalle breedte (telefonen) */
+    /* Stapelen alleen bij smalle breedte, niet bij lage hoogte */
     @media (max-width: 900px){
         .toets-main{
             flex-direction:column;
             align-items:stretch;
-            padding:0 16px 16px 16px;
+            padding:0 16px 72px 16px;  /* extra ruimte boven sticky footer */
         }
         .brand-strip-wrap{ padding:10px 16px 0 16px; }
         .vraag-blok{ padding:12px 16px 6px 16px; }
         .image-container{ min-height:150px; }
         .image-container img{ width:100%; max-width:100%; max-height:70%; }
         .interaction-container{ justify-content:flex-start; }
-        .keypad-area{ padding:12px; transform:none; }
+        .keypad-area{ padding:12px; }
     }
 </style>
 </head>
@@ -274,4 +295,41 @@ document.addEventListener('DOMContentLoaded',() => {
         u.lang='nl-NL';
         const voices=speechSynthesis.getVoices();
         let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
-        if(!v){ v=voi
+        if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
+        if(v){ u.voice=v; }
+        u.pitch=1.1; u.rate=0.95;
+        speechSynthesis.speak(u);
+    });
+    if(speechSynthesis.onvoiceschanged!==undefined){
+        speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+    }
+
+    const dots=[...document.querySelectorAll('.page-dot')];
+    const prev=document.getElementById('btn-prev');
+    const next=document.getElementById('btn-next');
+    function setActive(i){
+        dots.forEach((d,idx)=>{
+            const active=idx===i;
+            d.classList.toggle('active',active);
+            d.setAttribute('aria-selected',String(active));
+        });
+    }
+    dots.forEach((d,i)=>{
+        d.addEventListener('click',()=>setActive(i));
+        d.addEventListener('keydown',e=>{
+            if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
+        });
+    });
+    prev.addEventListener('click',()=>{
+        const cur=dots.findIndex(d=>d.classList.contains('active'));
+        setActive(Math.max(0,cur-1));
+    });
+    next.addEventListener('click',()=>{
+        const cur=dots.findIndex(d=>d.classList.contains('active'));
+        setActive(Math.min(dots.length-1,cur+1));
+    });
+});
+</script>
+
+</body>
+</html>
