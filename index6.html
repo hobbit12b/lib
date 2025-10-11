@@ -88,7 +88,10 @@
 
     .image-container{
         flex:1.5 1 0;
-        display:flex; justify-content:center; align-items:center; min-width:0;
+        display:flex;
+        justify-content:center;
+        align-items:center;   /* altijd verticaal gecentreerd */
+        min-width:0;
     }
     .image-container img{
         width:78%;
@@ -103,7 +106,7 @@
         gap:10px; min-width:0;
     }
 
-    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald en nu gecentreerd */
+    /* schaalbare rechtergroep: outer krijgt exacte doelhoogte, stack wordt geschaald en gecentreerd */
     .ia-outer{
         width:100%;
         max-width:var(--keypad-maxwidth);
@@ -112,7 +115,6 @@
     }
     .ia-stack{
         width:100%;
-        /* standaard in normale modi blijft deze statisch, in Chromebook-modi zetten we dit via JS op absolute + translate voor echte centrering */
         transform-origin:top left;
         display:flex;
         flex-direction:column;
@@ -186,34 +188,39 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* CHROMEBOOK, NIET SCHERMVULLEND: alles blijft in beeld, niets wordt opgeblazen */
+    /* CHROMEBOOK, NIET SCHERMVULLEND: alles blijft in beeld, afbeelding gecentreerd */
     @media (max-height: 760px) and (min-width: 901px){
-        .toets-main{ align-items:stretch; }
-        .image-container{ align-items:stretch; }
+        .toets-main{ align-items:center; } /* geen stretch, zo blijft verticaal centreren intact */
+        .image-container{
+            display:flex;
+            align-items:center;      /* verticaal centreren */
+            justify-content:center;  /* horizontaal centreren */
+        }
         .image-container img{
             width:auto; max-width:100%;
-            height:61%; /* iets groter voor balans */
+            height:61%;
             object-fit:contain;
         }
         .interaction-container{
             justify-content:flex-start;
             align-items:flex-start;
         }
-        .ia-outer{
-            max-width:300px;
-        }
+        .ia-outer{ max-width:300px; }
     }
 
-    /* CHROMEBOOK, SCHERMVULLEND: alles blijft in beeld, subtiel groter waar het kan */
+    /* CHROMEBOOK, SCHERMVULLEND: alles blijft in beeld, afbeelding gecentreerd en iets groter */
     @media (min-height: 761px) and (min-width: 901px){
+        .image-container{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
         .image-container img{
             width:auto; max-width:100%;
             height:66%;
             object-fit:contain;
         }
-        .ia-outer{
-            max-width:320px; /* heel klein tikje ruimer */
-        }
+        .ia-outer{ max-width:320px; }
     }
 
     /* Stapelen bij smalle breedte */
@@ -254,7 +261,7 @@
         </div>
 
         <div class="interaction-container">
-            <!-- schaalbare groep rechts, wordt exact even hoog als de illustratie en verticaal gecentreerd -->
+            <!-- schaalbare groep rechts, exact even hoog als de illustratie en verticaal gecentreerd -->
             <div class="ia-outer" id="ia-outer">
                 <div class="ia-stack" id="ia-stack">
                     <div class="keypad-area" id="keypad-area">
@@ -272,7 +279,7 @@
                             <button class="keypad-button">0</button>
                             <button class="keypad-button backspace" aria-label="Wissen">
                                 <svg viewBox="0 0 24 24">
-                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
+                                    <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a 2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
                                 </svg>
                             </button>
                         </div>
@@ -337,7 +344,7 @@ document.addEventListener('DOMContentLoaded',() => {
         speechSynthesis.speak(u);
     });
 
-    /* Chromebook modi */
+    /* Chromebook modi, rechter stack schalen en centreren binnen dezelfde hoogte als de illustratie */
     const mqChromebook = window.matchMedia('(max-height: 760px) and (min-width: 901px)');      // venster
     const mqChromebookFull = window.matchMedia('(min-height: 761px) and (min-width: 901px)');   // fullscreen
 
@@ -351,7 +358,6 @@ document.addEventListener('DOMContentLoaded',() => {
         const prevTop = el.style.top;
         const prevLeft = el.style.left;
 
-        // meten zonder schaal en zonder absolute positioning
         el.style.transform = 'none';
         el.style.position = 'static';
         el.style.top = '';
@@ -370,7 +376,6 @@ document.addEventListener('DOMContentLoaded',() => {
     function syncToIllustration(){
         if(!img || !iaOuter || !iaStack) return;
 
-        // buiten Chromebook-modi: reset, laat normale flow
         if(!(mqChromebook.matches || mqChromebookFull.matches)){
             iaOuter.style.height='';
             iaStack.style.transform='';
@@ -383,22 +388,18 @@ document.addEventListener('DOMContentLoaded',() => {
         const imgH = Math.round(img.getBoundingClientRect().height);
         if(imgH<=0) return;
 
-        // maak de drager exact even hoog als de illustratie
         iaOuter.style.height = imgH + 'px';
 
-        // natuurlijke hoogte van de stack
         const hNat = measureNaturalHeight(iaStack);
         if(hNat<=0) return;
 
-        // schaalfactor: venster, alleen naar binnen. fullscreen, mag een tik groter tot 6 procent
         let s = imgH / hNat;
         if(mqChromebookFull.matches){
-            s = Math.min(1.06, s); // subtiel groter, maar nooit groter dan nodig
+            s = Math.min(1.06, s);
         }else{
-            s = Math.min(1, s);    // nooit opblazen in vensterweergave
+            s = Math.min(1, s);
         }
 
-        // centreer exact in de rode rechthoek: absolute + translate naar midden, daarna schalen
         iaStack.style.position = 'absolute';
         iaStack.style.top = '50%';
         iaStack.style.left = '50%';
