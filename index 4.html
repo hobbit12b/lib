@@ -7,7 +7,7 @@
     <style>
         :root {
             --main-blue: #0D99FF;
-            --light-grey: #F0F2F5;
+            --light-grey: #F0F2F5; /* Kleur voor de achtergrond EN de nieuwe box */
             --medium-grey: #D9D9D9;
             --dark-grey: #6D6D6D;
             --text-color: #333;
@@ -32,15 +32,15 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            padding: 2vh;
+            padding: 1.5vh; /* Kleinere padding voor een groter toets-vlak */
         }
 
         /* --- Toets Container --- */
         .toets-container {
             width: 100%;
             height: 100%;
-            max-width: 1200px;
-            max-height: 850px;
+            max-width: 1400px; /* Grotere max-width voor laptops */
+            max-height: 900px; /* Grotere max-height */
             background-color: var(--white);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -58,134 +58,85 @@
             justify-content: space-between;
             align-items: center;
             font-size: clamp(1rem, 2.2vh, 1.4rem);
-            font-weight: 700; /* Tekst is nu vetgedrukt */
+            font-weight: 700;
             line-height: 1.4;
         }
 
         .play-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 10px;
-            flex-shrink: 0; /* Voorkomt dat knop krimpt */
+            background: none; border: none; cursor: pointer; padding: 0 10px; flex-shrink: 0;
         }
-
-        .play-button svg {
-            width: clamp(30px, 4.5vh, 45px);
-            height: clamp(30px, 4.5vh, 45px);
-        }
+        .play-button svg { width: clamp(30px, 4.5vh, 45px); height: clamp(30px, 4.5vh, 45px); }
 
         /* --- Main Content --- */
         .toets-main {
-            flex-grow: 1;
-            display: flex;
-            padding: clamp(15px, 3vh, 30px);
-            gap: clamp(15px, 3vw, 30px);
-            min-height: 0;
+            flex-grow: 1; display: flex; padding: clamp(15px, 3vh, 30px); gap: clamp(15px, 3vw, 30px); min-height: 0;
         }
-
         .image-container {
-            flex: 1.5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 0;
+            flex: 1.5; display: flex; justify-content: center; align-items: center; min-width: 0;
         }
-
         .image-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 10px;
+            max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px;
+        }
+        .interaction-container {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        .interaction-container {
-            flex: 1;
+        /* --- NIEUW: Grijze box rondom keypad en antwoordvak --- */
+        .keypad-area {
+            background-color: var(--light-grey);
+            padding: clamp(20px, 3vh, 30px);
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
             gap: clamp(15px, 2.5vh, 25px);
+            width: 100%;
+            max-width: 340px;
         }
 
         /* --- Keypad --- */
         .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: clamp(10px, 2vw, 20px);
-            width: 100%;
-            max-width: 320px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(10px, 1.5vw, 15px);
         }
-
         .keypad-button {
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            border: 2px solid var(--medium-grey);
-            background-color: var(--white);
-            font-size: clamp(1.5rem, 5vh, 2.5rem);
-            font-weight: 700;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--medium-grey); background-color: var(--white);
+            font-size: clamp(1.4rem, 4vh, 2.2rem); font-weight: 700; color: var(--text-color); cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
         }
-        
         .keypad-button.empty { visibility: hidden; }
         .keypad-button.backspace { background-color: var(--red); border-color: var(--red); }
         .keypad-button.backspace svg { width: 40%; height: 40%; fill: var(--white); }
         
         /* --- Antwoordvak (input) --- */
         .antwoord-vak {
-            width: 100%;
-            max-width: 320px;
-            border: 2px solid var(--medium-grey);
-            border-radius: 12px;
-            min-height: clamp(50px, 8vh, 70px);
-            padding: 10px 20px;
-            font-size: clamp(1.5rem, 4vh, 2.2rem);
-            text-align: left;
+            width: 100%; border: 2px solid var(--medium-grey); border-radius: 12px;
+            min-height: clamp(50px, 8vh, 70px); padding: 10px 20px;
+            font-size: clamp(1.5rem, 4vh, 2.2rem); text-align: left;
         }
         .antwoord-vak:focus { outline: 2px solid var(--main-blue); border-color: var(--main-blue); }
         
         /* --- Footer --- */
         .toets-footer {
-            background-color: #F8F9FA;
-            border-top: 1px solid #E9ECEF;
-            padding: 1.5vh 3vw;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #F8F9FA; border-top: 1px solid #E9ECEF; padding: 1.5vh 3vw;
+            display: flex; justify-content: space-between; align-items: center;
         }
-
         .footer-button {
-            padding: 1.5vh 2.5vw;
-            border: none;
-            border-radius: 25px;
-            font-size: clamp(0.9rem, 2vh, 1.1rem);
-            font-weight: 500;
-            cursor: pointer;
+            padding: 1.5vh 2.5vw; border: none; border-radius: 25px;
+            font-size: clamp(0.9rem, 2vh, 1.1rem); font-weight: 500; cursor: pointer;
         }
-
         .vorige-button { background-color: #E9ECEF; color: var(--dark-grey); }
         .volgende-button { background-color: var(--main-blue); color: var(--white); }
-        
         .pagination { display: flex; gap: 10px; }
         .pagination-dot { width: 1.5vh; height: 1.5vh; border-radius: 50%; background-color: var(--medium-grey); }
         .pagination-dot.active { background-color: var(--main-blue); }
         
-        /* --- RESPONSIVE FIX voor Chromebook en andere schermen --- */
-        @media (max-width: 768px), (max-height: 600px) {
-            .toets-main {
-                flex-direction: column;
-                overflow-y: auto;
-            }
-            .image-container {
-                min-height: 150px; /* Geeft de afbeelding een minimumgrootte */
-            }
+        /* --- Responsive Fix --- */
+        @media (max-width: 768px) and (orientation: portrait), (max-height: 650px) {
+            body { padding: 0; }
+            .toets-container { border-radius: 0; }
+            .toets-main { flex-direction: column; overflow-y: auto; }
+            .image-container { min-height: 150px; }
+            .keypad-area { padding: 15px; }
         }
-
     </style>
 </head>
 <body>
@@ -204,23 +155,25 @@
                 <img src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt">
             </div>
             <div class="interaction-container">
-                <div class="keypad">
-                    <button class="keypad-button">1</button>
-                    <button class="keypad-button">2</button>
-                    <button class="keypad-button">3</button>
-                    <button class="keypad-button">4</button>
-                    <button class="keypad-button">5</button>
-                    <button class="keypad-button">6</button>
-                    <button class="keypad-button">7</button>
-                    <button class="keypad-button">8</button>
-                    <button class="keypad-button">9</button>
-                    <button class="keypad-button empty"></button>
-                    <button class="keypad-button">0</button>
-                    <button class="keypad-button backspace" aria-label="Wissen">
-                        <svg viewBox="0 0 24 24"><path d="M22 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H9V5h11v14zM18 9l-1.41-1.41L13 11.17 9.41 7.59 8 9l3.59 3.59L8 16.17 9.41 17.59 13 14.83l3.59 3.59L18 16.17 14.41 12.59 18 9z" transform="scale(0.9) translate(1, 1)"/></svg>
-                    </button>
+                <div class="keypad-area">
+                    <div class="keypad">
+                        <button class="keypad-button">1</button>
+                        <button class="keypad-button">2</button>
+                        <button class="keypad-button">3</button>
+                        <button class="keypad-button">4</button>
+                        <button class="keypad-button">5</button>
+                        <button class="keypad-button">6</button>
+                        <button class="keypad-button">7</button>
+                        <button class="keypad-button">8</button>
+                        <button class="keypad-button">9</button>
+                        <button class="keypad-button empty"></button>
+                        <button class="keypad-button">0</button>
+                        <button class="keypad-button backspace" aria-label="Wissen">
+                            <svg viewBox="0 0 24 24"><path d="M22 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H9V5h11v14zM18 9l-1.41-1.41L13 11.17 9.41 7.59 8 9l3.59 3.59L8 16.17 9.41 17.59 13 14.83l3.59 3.59L18 16.17 14.41 12.59 18 9z" transform="scale(0.9) translate(1, 1)"/></svg>
+                        </button>
+                    </div>
+                    <input type="text" class="antwoord-vak" placeholder="Antwoordvak" autofocus inputmode="numeric">
                 </div>
-                <input type="text" class="antwoord-vak" placeholder="Antwoordvak" autofocus inputmode="numeric">
             </div>
         </main>
         
@@ -243,7 +196,6 @@
             const keypadButtons = document.querySelectorAll('.keypad-button');
             const antwoordVak = document.querySelector('.antwoord-vak');
             const playButton = document.getElementById('play-vraag-button');
-            // We halen de tekst op en vervangen de <br> tag met een spatie voor de voorleesfunctie
             const vraagTekst = document.getElementById('vraag-tekst').innerHTML.replace('<br>', ' ');
 
             keypadButtons.forEach(button => {
@@ -270,11 +222,7 @@
                 
                 let voices = speechSynthesis.getVoices();
                 let femaleVoice = voices.find(voice => voice.lang === 'nl-NL' && /female|vrouw|ellen|xander/i.test(voice.name));
-                
-                if (!femaleVoice) {
-                    femaleVoice = voices.find(voice => voice.lang === 'nl-NL');
-                }
-
+                if (!femaleVoice) { femaleVoice = voices.find(voice => voice.lang === 'nl-NL'); }
                 if (femaleVoice) { utterance.voice = femaleVoice; }
                 
                 utterance.pitch = 1.1;
