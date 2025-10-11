@@ -32,12 +32,12 @@
     display:flex;
     justify-content:center;
     align-items:stretch;
-    padding-inline:.8vh;     /* geen verticale padding, zo past de footer altijd */
+    padding-inline:.8vh;
     padding-block:0;
     color:var(--text-color);
   }
 
-  /* Kaart in grid: blauwe balk, vraag, rode zone, footer */
+  /* kaart als grid: blauwe balk, vraag, rode zone, footer */
   .toets-container{
     width:100%;
     background:var(--white);
@@ -45,7 +45,7 @@
     box-shadow:0 10px 40px rgba(0,0,0,.1);
     display:grid;
     grid-template-rows:auto auto 1fr auto;
-    height:100vh;                           /* footer blijft zichtbaar */
+    height:100vh;
     max-width:min(1700px, 98vw);
     overflow:visible;
   }
@@ -53,20 +53,18 @@
     .toets-container{ height:100dvh; }
   }
 
-  /* Blauwe balk boven */
+  /* blauwe balk boven */
   .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
   .brand-strip{
-    height:4px;                             /* standaard hoogte */
+    height:4px;
     border-radius:4px;
     background:var(--main-blue);
     box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
     transition:height .18s ease;
   }
-  .brand-strip.tall{
-    height:40px;                            /* 10 x standaard hoogte in fullscreen */
-  }
+  .brand-strip.tall{ height:40px; } /* 10x in fullscreen */
 
-  /* Vraag */
+  /* vraag */
   .vraag-blok{
     display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
     padding:14px var(--page-padding-x) 8px var(--page-padding-x);
@@ -75,16 +73,17 @@
     font-weight:600; color:#1f2937;
     font-size:clamp(1.05rem, 2.4vh, 1.3rem);
     line-height:1.55; margin:0;
+    text-indent:1.25em;          /* lichte inspringing van de eerste regel */
   }
   .play-button{
     background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
   }
   .play-button svg{width:28px;height:28px;fill:#fff}
 
-  /* Rode zone, schaalt en centreert */
+  /* rode zone, schaalt en centreert visueel */
   .toets-main{
     display:flex;
-    align-items:flex-start;                 /* visueel centreren doen we met marges */
+    align-items:flex-start;
     justify-content:center;
     padding:0 var(--page-padding-x) 16px var(--page-padding-x);
     min-height:0;
@@ -101,18 +100,15 @@
     width:100%;
     display:flex;
     gap:clamp(16px,3vw,32px);
-    align-items:stretch;                    /* kolommen even hoog */
+    align-items:stretch;      /* kolommen even hoog */
     transform-origin:top center;
-    margin-top:0;                           /* door script gezet voor exact midden */
+    margin-top:0;
     margin-bottom:0;
   }
 
   .image-container{
     flex:1.5 1 0;
-    display:flex;
-    justify-content:center;
-    align-items:center;                     /* afbeelding midden in kolom */
-    min-width:0;
+    display:flex; justify-content:center; align-items:center; min-width:0;
   }
   .image-container img{
     width:78%;
@@ -123,19 +119,21 @@
 
   .interaction-container{
     flex:1 1 0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;                 /* keypad en antwoordblok als één middenblok */
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; min-width:0;
   }
 
-  .ia-outer{ width:100%; max-width:var(--keypad-maxwidth); position:relative; }
+  /* toetsenbord drager vijf procent smaller dan de oude max breedte */
+  .ia-outer{
+    width:100%;
+    max-width:calc(var(--keypad-maxwidth) * 0.95);
+    position:relative;
+  }
   .ia-stack{
     width:100%;
     display:flex;
     flex-direction:column;
-    justify-content:flex-start;             /* niet uitrekken */
+    justify-content:flex-start;
     align-items:stretch;
     gap:10px;
   }
@@ -166,9 +164,12 @@
   .keypad-button.backspace{ background:var(--red); border-color:var(--red); }
   .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
 
+  /* antwoordvak tien procent smaller dan zijn drager */
   .antwoord-wrap{ width:100%; }
   .antwoord-vak{
-    width:100%; border:2px solid var(--medium-grey); border-radius:12px;
+    width:90%;
+    margin:0 auto;
+    border:2px solid var(--medium-grey); border-radius:12px;
     min-height:50px;
     padding:8px 14px;
     font-size:clamp(1rem,2.3vh,1.25rem);
@@ -176,7 +177,7 @@
   }
   .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
 
-  /* Footer is grid-rij, dus zichtbaar */
+  /* footer is grid-rij, altijd zichtbaar */
   .toets-footer{
     background:#F8F9FA; border-top:1px solid #E9ECEF;
     padding:8px var(--page-padding-x);
@@ -203,7 +204,7 @@
     background:var(--main-blue); color:#fff; border-color:var(--main-blue);
   }
 
-  /* Smal scherm, stapelen */
+  /* smal scherm, stapelen */
   @media (max-width: 900px){
     .fitcontent{ flex-direction:column; }
     .toets-main{ padding:0 16px 72px 16px; }
@@ -212,7 +213,7 @@
     .image-container{ min-height:150px; }
     .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
     .interaction-container{ justify-content:flex-start; align-items:center; }
-    .ia-outer{ max-width:300px; }
+    .ia-outer{ max-width:calc(300px * 0.95); }
   }
 </style>
 </head>
@@ -331,7 +332,6 @@ document.addEventListener('DOMContentLoaded',() => {
     speechSynthesis.speak(u);
   });
 
-  /* helpers */
   function withNoTransform(el, fn){
     const prev = el.style.transform;
     el.style.transform = 'none';
@@ -343,9 +343,7 @@ document.addEventListener('DOMContentLoaded',() => {
     return !!document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
-  /* Blauwe balk regels
-     - In fullscreen 10 x zo hoog
-     - Op laptop óók 10 x zo hoog, maar alleen als het venster fullscreen is (zoals gevraagd blijft hij in niet fullscreen gelijk) */
+  /* blauwe balk tien keer zo hoog in fullscreen, in niet fullscreen blijft hij standaard */
   function updateBlueBar(){
     if(isFullscreen()){
       brandStrip.classList.add('tall');
@@ -354,10 +352,10 @@ document.addEventListener('DOMContentLoaded',() => {
     }
   }
 
-  /* Schaal de rode zone
-     - Niet fullscreen: ongeveer 7 procent groter
-     - Fullscreen: 100 procent, tenzij kleiner nodig om te passen
-     Daarnaast centreren we visueel tussen vraag en footer met dynamische marges */
+  /* schaal rode zone
+     - niet fullscreen circa zeven procent groter
+     - fullscreen 100 procent, tenzij kleiner moet om te passen
+     daarna visueel verticaal centreren met marges */
   function fitToRow(){
     if(!main || !fit) return;
 
@@ -371,12 +369,11 @@ document.addEventListener('DOMContentLoaded',() => {
     if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
 
     const base   = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 1.07;      /* 7 procent groter buiten fullscreen */
-    const s = Math.min(base * factor, 1);          /* nooit groter dan passend */
+    const factor = isFullscreen() ? 1 : 1.07;          /* 7 procent groter buiten fullscreen */
+    const s = Math.min(base * factor, 1);              /* nooit groter dan passend */
 
     fit.style.transform = `scale(${s})`;
 
-    /* visuele verticale centrering met marges, rekening houdend met schaal */
     const scaledH = natH * s;
     const offset  = Math.max(0, (availH - scaledH) / 2);
     fit.style.marginTop    = offset + 'px';
