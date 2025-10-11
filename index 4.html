@@ -8,17 +8,20 @@
     :root{
         --main-blue:#0D99FF;
         --main-blue-dark:#0B86E0;
-        --light-grey:#F0F2F5;          /* drager achter keypad */
-        --medium-grey:#E9ECEF;         /* randkleur antwoordvak en paginacirkels */
-        --tile-border:#ECECEC;         /* rand tegels */
-        --tile-shadow:rgba(0,0,0,.06); /* schaduw tegels */
+        --light-grey:#F0F2F5;
+        --medium-grey:#E9ECEF;
+        --tile-border:#ECECEC;
+        --tile-shadow:rgba(0,0,0,.06);
         --text-color:#222;
         --white:#FFFFFF;
         --red:#C44444;
 
-        /* compacter keypad */
+        /* compact keypad */
         --keypad-maxwidth:320px;
         --keypad-gap:10px;
+
+        /* uniforme horizontale binnenmarge zodat vraagtekst exact met de afbeelding uitlijnt */
+        --page-padding-x:24px;
     }
 
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -36,7 +39,7 @@
         color:var(--text-color);
     }
 
-    /* Container */
+    /* Buitenste container */
     .toets-container{
         width:100%; height:100%;
         max-width:1400px; max-height:900px;
@@ -46,29 +49,29 @@
         display:flex; flex-direction:column; overflow:hidden;
     }
 
-    /* Bovenste blauwe balk zoals voorbeeld */
+    /* Bovenbalk met verticale gradatie blauw naar wit */
     .brand-strip-wrap{
-        padding:10px 12px 0 12px;      /* lucht rondom de strip */
+        padding:10px var(--page-padding-x) 0 var(--page-padding-x);
         background:transparent;
     }
     .brand-strip{
-        height:18px;
+        height:20px;
         border-radius:12px;
-        background:linear-gradient(180deg,var(--main-blue) 0%, var(--main-blue-dark) 100%);
-        box-shadow:0 3px 8px rgba(13,153,255,.25) inset, 0 1px 0 rgba(255,255,255,.35);
+        background:linear-gradient(180deg, var(--main-blue) 0%, var(--main-blue-dark) 35%, #ffffff 100%);
+        box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 3px 8px rgba(13,153,255,.22);
     }
 
-    /* Vraagblok: witte achtergrond, donkere tekst, meer opmaak zoals screenshot */
+    /* Vraagblok, tekst lijnt links met de afbeelding via dezelfde padding */
     .vraag-blok{
         display:flex;
         align-items:flex-start;
         justify-content:space-between;
         gap:12px;
-        padding:14px 24px 8px 24px;
+        padding:14px var(--page-padding-x) 8px var(--page-padding-x);
     }
     .vraag-tekst{
         font-weight:600;
-        color:#1f2937;                 /* donkergrijs, geen puur zwart */
+        color:#1f2937;
         font-size:clamp(1.05rem, 2.4vh, 1.3rem);
         line-height:1.55;
         margin:0;
@@ -84,20 +87,21 @@
     }
     .play-button svg{width:28px;height:28px;fill:#fff}
 
-    /* Main */
+    /* Hoofdgebied, beide kolommen verticaal gecentreerd */
     .toets-main{
         flex:1;
         display:flex;
         gap:clamp(16px,3vw,32px);
-        padding:0 24px 24px 24px;       /* vraagblok nam al wat ruimte in */
+        padding:0 var(--page-padding-x) 24px var(--page-padding-x);
         min-height:0;
-        align-items:stretch;            /* beide kolommen delen dezelfde bodlijn */
+        align-items:center;           /* verticale centrering van beide kolommen */
     }
+
     .image-container{
         flex:1.5;
         display:flex;
         justify-content:center;
-        align-items:flex-end;           /* onderkant illustratie op bodlijn */
+        align-items:center;           /* afbeelding zelf in het midden */
         min-width:0;
     }
     .image-container img{
@@ -105,34 +109,34 @@
         object-fit:contain; border-radius:10px;
     }
 
-    /* Rechterkolom, zorgt dat antwoordvak onderaan gelijk loopt */
+    /* Rechterkolom als groep, centreren als geheel */
     .interaction-container{
         flex:1;
         display:flex;
         flex-direction:column;
         align-items:center;
-        justify-content:flex-end;       /* onderkant van deze kolom uitlijnen met afbeelding */
+        justify-content:center;        /* groep keypad plus antwoordvak in het midden */
         gap:12px;
         min-width:0;
     }
 
-    /* Drager achter keypad */
+    /* Drager achter het keypad */
     .keypad-area{
         background:var(--light-grey);
         border:2px solid var(--medium-grey);
         border-radius:18px;
-        padding:14px;                   /* compacter */
+        padding:14px;
         width:100%; max-width:var(--keypad-maxwidth);
     }
 
-    /* Grid 3x4 */
+    /* Grid 3 bij 4 */
     .keypad{
         display:grid;
         grid-template-columns:repeat(3,1fr);
         gap:var(--keypad-gap);
     }
 
-    /* Tegels, iets kleiner dan voorheen */
+    /* Toetsen */
     .keypad-button{
         aspect-ratio:1/1;
         border-radius:16px;
@@ -147,7 +151,6 @@
     .keypad-button:active{ transform:translateY(1px) }
     .keypad-button.empty{ visibility:hidden }
 
-    /* Rode terugknop rechts onderin, wit icoon */
     .keypad-button.backspace{
         background:var(--red);
         border-color:var(--red);
@@ -155,11 +158,11 @@
     }
     .keypad-button.backspace svg{width:46%; height:46%; fill:#fff}
 
-    /* Antwoordvak direct onder keypad, onderrand op dezelfde lijn als illustratie */
+    /* Antwoordvak onder het keypad */
     .antwoord-wrap{
         width:100%;
         max-width:var(--keypad-maxwidth);
-        margin-top:6px;  /* dicht onder keypad */
+        margin-top:6px;
     }
     .antwoord-vak{
         width:100%;
@@ -175,7 +178,8 @@
     /* Footer met genummerde cirkels */
     .toets-footer{
         background:#F8F9FA; border-top:1px solid #E9ECEF;
-        padding:1.2vh 24px; display:flex; justify-content:space-between; align-items:center;
+        padding:1.2vh var(--page-padding-x);
+        display:flex; justify-content:space-between; align-items:center;
     }
     .footer-button{
         padding:1.2vh 2.2vw; border:0; border-radius:25px; cursor:pointer;
@@ -184,7 +188,6 @@
     .vorige-button{background:#E9ECEF; color:#6D6D6D}
     .volgende-button{background:var(--main-blue); color:#fff}
 
-    /* Paginacirkels, dezelfde grijstint als antwoordvakrand */
     .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
     .page-dot{
         width:clamp(42px,6.2vh,56px); height:clamp(42px,6.2vh,56px);
@@ -205,10 +208,16 @@
     @media (max-width:768px) and (orientation:portrait),(max-height:650px){
         body{padding:0}
         .toets-container{border-radius:0}
-        .brand-strip-wrap{padding:10px 10px 0 10px}
+        .brand-strip-wrap{padding:10px 16px 0 16px}
         .vraag-blok{padding:12px 16px 6px 16px}
-        .toets-main{flex-direction:column; overflow-y:auto; padding:0 16px 16px 16px}
-        .image-container{min-height:150px; align-items:flex-end}
+        .toets-main{
+            flex-direction:column;
+            overflow-y:auto;
+            padding:0 16px 16px 16px;
+            align-items:stretch;         /* in smal formaat stapelt het onder elkaar */
+        }
+        .image-container{min-height:150px}
+        .interaction-container{justify-content:flex-start}
         .keypad-area{padding:12px}
     }
 </style>
@@ -217,12 +226,12 @@
 
 <div class="toets-container">
 
-    <!-- Smalle blauwe balk -->
+    <!-- Blauwe balk met verticale gradatie -->
     <div class="brand-strip-wrap">
         <div class="brand-strip" aria-hidden="true"></div>
     </div>
 
-    <!-- Vraag in donkere tekst, naast een compacte playbutton -->
+    <!-- Vraagtekst, exact uitgelijnd met de afbeelding links -->
     <div class="vraag-blok">
         <p id="vraag-tekst" class="vraag-tekst">
             Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.<br>
@@ -239,7 +248,7 @@
         </div>
 
         <div class="interaction-container">
-            <!-- Drager + keypad -->
+            <!-- Groep: keypad en antwoordvak, samen verticaal gecentreerd -->
             <div class="keypad-area">
                 <div class="keypad">
                     <button class="keypad-button">1</button>
@@ -261,7 +270,6 @@
                 </div>
             </div>
 
-            <!-- Antwoordvak onderaan, lijnt met onderkant illustratie -->
             <div class="antwoord-wrap">
                 <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
             </div>
@@ -289,7 +297,7 @@ document.addEventListener('DOMContentLoaded',() => {
     const playButton=document.getElementById('play-vraag-button');
     const vraagTekst=document.getElementById('vraag-tekst').innerHTML.replace('<br>',' ');
 
-    /* keypad invoer */
+    /* invoer via keypad */
     keypadButtons.forEach(btn=>{
         btn.addEventListener('click',()=>{
             if(btn.classList.contains('backspace')){
@@ -304,7 +312,7 @@ document.addEventListener('DOMContentLoaded',() => {
         if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
     });
 
-    /* voorlezen van de vraag */
+    /* voorleesfunctie */
     playButton.addEventListener('click',()=>{
         speechSynthesis.cancel();
         const u=new SpeechSynthesisUtterance(vraagTekst);
@@ -342,7 +350,7 @@ document.addEventListener('DOMContentLoaded',() => {
         setActive(Math.max(0,cur-1));
     });
     next.addEventListener('click',()=>{
-        const cur=dots.findIndex(d=>d.classList.contains('active'));
+        const cur=dots.findIndex(d=>d.classContains('active'));
         setActive(Math.min(dots.length-1,cur+1));
     });
 });
