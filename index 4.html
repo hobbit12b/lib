@@ -168,12 +168,13 @@
         background:var(--main-blue); color:#fff; border-color:var(--main-blue);
     }
 
-    /* Chromebook venster, niet schermvullend
-       Afbeelding nog ± 4% kleiner, keypadgroep 10% kleiner */
+    /* Chromebook venster niet schermvullend
+       Afbeelding 3 procent kleiner dan het vorige profiel
+       Toetsenbord met grijs vlak 7 procent groter */
     @media (max-height: 760px) and (min-width: 901px){
         .toets-main{ padding-bottom:8px; }
-        .image-container img{ width:66%; max-width:66%; max-height:76%; }  /* was 70, nu 66 */
-        .keypad-area{ max-width:270px; transform:scale(.90); }             /* 10% kleiner */
+        .image-container img{ width:63%; max-width:63%; max-height:76%; }  /* was 66 procent */
+        .keypad-area{ max-width:270px; transform:scale(.96); }             /* was .90, nu ongeveer 7% groter */
         .keypad{ gap:8px; }
         .keypad-button{ border-radius:12px; font-size:clamp(.95rem,2.8vh,1.35rem); }
         .antwoord-vak{ min-height:46px; padding:7px 12px; font-size:clamp(.95rem,2.1vh,1.15rem); }
