@@ -5,25 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Toetsomgeving</title>
   <style>
-    /* BASIS voor Chromebook en gewone laptops, blijft ongewijzigd */
+    /* BASIS, dit is je Chromebook look, hier verander ik niets fundamenteels */
     :root{
       --kleur-topbar: #1677ff;
       --kleur-achtergrond: #f2f3f5;
       --kleur-paneel: #fff;
       --kleur-tekst: #111;
-      --kleur-sub: #5b5b5b;
 
       --radius: 16px;
       --schaduw: 0 6px 24px rgba(0,0,0,.06);
 
-      --topbar-hoogte: 56px;
-      --container-maxbreedte: 1120px;
-      --container-padding: 18px 24px 28px;
+      --topbar-hoogte: 56px;                    /* slanke balk */
+      --container-max: 1120px;                  /* breedte van de kaart */
+      --container-pad: 18px 24px 28px;
 
       --vraag-font: clamp(1rem, 1.4vw, 1.125rem);
-      --vraag-marge-top: .5rem;
+      --vraag-margin-top: .5rem;
 
-      --illustratie-max: 540px;
+      --grid-rechts-breedte: 360px;             /* kolom voor keypad */
+      --illustratie-max: 540px;                 /* breedte plaatje binnen de kaart */
 
       --pad-key: 64px;
       --pad-gap: 12px;
@@ -31,281 +31,171 @@
 
       --ant-font: clamp(1rem, 1.6vw, 1.25rem);
       --ant-hoogte: 44px;
-
-      --paginering-font: .95rem;
     }
 
-    /* DIGIBORD modus: gericht op jouw tweede screenshot */
+    /* DIGIBORD of grote laptop, benadert jouw gewenste weergave */
     .digibord{
-      /* de balk is duidelijker maar niet overdreven hoog */
-      --topbar-hoogte: 88px;
+      --topbar-hoogte: 72px;                    /* duidelijk, maar niet te groot */
+      --vraag-font: clamp(1.05rem, 1.2vw, 1.25rem);
+      --vraag-margin-top: .9rem;
 
-      /* meer lucht voor de vraag, iets groter lettertype */
-      --vraag-font: clamp(1.05rem, 1.15vw, 1.25rem);
-      --vraag-marge-top: .9rem;
+      --grid-rechts-breedte: 400px;
+      --illustratie-max: 660px;                 /* groot beeld links */
 
-      /* grotere illustratie binnen de kaart, geen scale truc */
-      --illustratie-max: 620px;
+      --pad-key: 84px;                          /* royale toetsen */
+      --pad-gap: 16px;
+      --pad-font: clamp(1.25rem, 1.5vw, 1.9rem);
 
-      /* keypad compacter dan vorige versie maar goed bedienbaar */
-      --pad-key: 72px;
-      --pad-gap: 14px;
-      --pad-font: clamp(1.25rem, 1.6vw, 1.75rem);
-
-      --ant-font: clamp(1.05rem, 1.2vw, 1.35rem);
-      --ant-hoogte: 50px;
+      --ant-font: clamp(1.05rem, 1.1vw, 1.35rem);
+      --ant-hoogte: 52px;
     }
 
-    html, body{
-      height: 100%;
-      margin: 0;
-      background: var(--kleur-achtergrond);
-      color: var(--kleur-tekst);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
+    html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color: var(--kleur-tekst); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-    .topbar{
-      background: var(--kleur-topbar);
-      height: var(--topbar-hoogte);
-      min-height: var(--topbar-hoogte);
-      width: 100%;
-    }
+    /* blauwe balk */
+    .topbar{ background: var(--kleur-topbar); height: var(--topbar-hoogte); min-height: var(--topbar-hoogte); width: 100%; }
 
-    .pagina{
-      min-height: calc(100% - var(--topbar-hoogte));
-      display: grid;
-      grid-template-rows: 1fr auto;
-    }
+    .pagina{ min-height: calc(100% - var(--topbar-hoogte)); display: grid; grid-template-rows: 1fr auto; }
 
+    /* de witte kaart met inhoud, matcht jouw tweede beeld */
     .kaart{
-      max-width: var(--container-maxbreedte);
+      max-width: var(--container-max);
       margin: 18px auto 0;
       background: var(--kleur-paneel);
       border-radius: var(--radius);
       box-shadow: var(--schaduw);
-      padding: var(--container-padding);
+      padding: var(--container-pad);
     }
 
-    /* kopregel met vraag en play knop rechts */
-    .vraagrij{
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: start;
-      gap: 16px;
-    }
+    /* vraagregel met kleine play rechtsboven */
+    .vraagrij{ display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 12px; }
+    .vraag{ margin: var(--vraag-margin-top) 0 8px 0; font-size: var(--vraag-font); font-weight: 800; line-height: 1.4; }
+    .vraag-play{ width: 40px; height: 40px; border-radius: 10px; background: #eaf2ff; border: 0; display: grid; place-items: center; cursor: pointer; }
 
-    .vraag{
-      margin: var(--vraag-marge-top) 0 8px 0;
-      font-size: var(--vraag-font);
-      line-height: 1.45;
-      font-weight: 700;
-    }
+    /* hoofdgrid, links beeld, rechts keypad, zoals jouw voorbeeld */
+    .werkveld{ display: grid; grid-template-columns: 1fr var(--grid-rechts-breedte); gap: 28px; align-items: start; }
 
-    .play{
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: #eaf2ff;
-      border: 0;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-    }
+    .illustratie-wrap{ background: #fff; border-radius: 14px; box-shadow: var(--schaduw); padding: 12px; }
+    .illustratie{ display: block; width: 100%; max-width: var(--illustratie-max); height: auto; border-radius: 10px; user-select: none; -webkit-user-drag: none; position: relative; }
 
-    .werkveld{
-      display: grid;
-      grid-template-columns: 1fr 360px; /* ruimte voor keypad zoals in screenshot */
-      gap: 28px;
-      align-items: start;
-    }
+    /* play knopje op de afbeelding, optioneel */
+    .img-play{ position: absolute; right: 16px; bottom: 16px; width: 46px; height: 46px; border: 0; border-radius: 10px; background: #eaf2ff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
 
-    .illustratie-wrap{
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: var(--schaduw);
-      padding: 12px;
-    }
+    /* rechterkolom met keypad en antwoord */
+    .pad-wrap{ background: #fbfbfc; border: 2px solid #e7e7ea; border-radius: 18px; padding: 18px; }
+    .pad{ display: grid; grid-template-columns: repeat(3, var(--pad-key)); gap: var(--pad-gap); justify-content: center; }
 
-    .illustratie{
-      display: block;
-      width: 100%;
-      max-width: var(--illustratie-max);
-      height: auto;
-      border-radius: 10px;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .pad-wrap{
-      background: #fbfbfc;
-      border: 2px solid #e7e7ea;
-      border-radius: 18px;
-      padding: 18px;
-    }
-
-    .pad{
-      display: grid;
-      grid-template-columns: repeat(3, var(--pad-key));
-      gap: var(--pad-gap);
-      justify-content: center;
-    }
     .toets{
-      width: var(--pad-key);
-      height: var(--pad-key);
-      display: grid;
-      place-items: center;
-      background: #f5f6f8;
-      border: 1px solid #d9dce3;
-      border-radius: 18px;
-      font-size: var(--pad-font);
-      font-weight: 700;
-      cursor: pointer;
-      user-select: none;
-      transition: transform .05s ease, background .1s;
-      touch-action: manipulation;
+      width: var(--pad-key); height: var(--pad-key);
+      display: grid; place-items: center;
+      background: #f5f6f8; border: 1px solid #d9dce3;
+      border-radius: 20px; font-weight: 800; font-size: var(--pad-font);
+      cursor: pointer; user-select: none; transition: transform .05s ease, background .1s; touch-action: manipulation;
     }
     .toets:active{ transform: scale(.98); background: #eceff4; }
 
-    .toets--enter{
-      grid-column: 3;
-      grid-row: 4;
-      background: #c0392b;
-      color: #fff;
-      border: 0;
-    }
+    /* nul midden onder, enter rechts onder, visueel zoals jouw voorbeeld */
+    .toets--nul{ grid-column: 2; }
+    .toets--enter{ grid-column: 3; grid-row: 4; background: #c0392b; color: #fff; border: 0; }
     .toets--enter:active{ filter: brightness(.95); }
 
-    /* nul onderaan in het midden zoals bij jou */
-    .toets--nul{ grid-column: 2; }
-
-    /* antwoordveld onder het keypad, altijd zichtbaar */
-    .antwoordblok{
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: 1fr;
-    }
+    .antwoordblok{ margin-top: 14px; }
     .antwoord{
-      height: var(--ant-hoogte);
+      width: 100%; height: var(--ant-hoogte);
       font-size: var(--ant-font);
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #d9dce3;
-      background: #fff;
+      padding: 10px 12px; border-radius: 12px; border: 1px solid #d9dce3; background: #fff; box-sizing: border-box;
     }
 
-    /* onderbalk met navigatie links en pagina rechts */
-    .onderbalk{
-      max-width: var(--container-maxbreedte);
-      margin: 12px auto 18px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-    }
-    .navbtn{
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: 0;
-      background: #e9ecf4;
-      color: #0f1a2a;
-      font-size: var(--paginering-font);
-      cursor: pointer;
-    }
-    .paginering{
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .page{
-      width: 36px;
-      height: 36px;
-      border-radius: 18px;
-      background: #eee;
-      display: grid;
-      place-items: center;
-      font-weight: 600;
-      color: #222;
-    }
-    .page--actief{
-      background: #1677ff;
-      color: #fff;
-    }
+    /* onderbalk met navigatie en paginering */
+    .onderbalk{ max-width: var(--container-max); margin: 12px auto 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .navbtn{ padding: 10px 14px; border-radius: 12px; border: 0; background: #e9ecf4; color: #0f1a2a; font-size: .95rem; cursor: pointer; }
+    .paginering{ display: flex; gap: 10px; align-items: center; }
+    .page{ width: 40px; height: 40px; border-radius: 20px; background: #eee; display: grid; place-items: center; font-weight: 700; color: #222; }
+    .page--actief{ background: #1677ff; color: #fff; }
+    .btn-volgende{ background:#1677ff; color:#fff; }
 
-    /* safety net: als hoogte beperkt is, maak keypad iets compacter zodat het antwoordvak niet wegvalt */
+    /* safeguard bij iets lagere schermhoogte, zodat antwoordvak zichtbaar blijft */
     @media (max-height: 800px) and (min-width: 1200px){
       .digibord{
-        --pad-key: 66px;
-        --pad-gap: 12px;
-        --ant-hoogte: 46px;
+        --pad-key: 78px;
+        --pad-gap: 14px;
+        --ant-hoogte: 48px;
       }
     }
   </style>
 </head>
 <body>
+  <!-- slanke blauwe balk -->
   <div class="topbar" role="presentation"></div>
 
   <div class="pagina">
+    <!-- hoofdkaart, exact de look van jouw voorbeeld -->
     <div class="kaart">
       <div class="vraagrij">
         <div class="vraag">
           Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.  
           Hoeveel euro heeft Sophie in totaal
         </div>
-        <button class="play" aria-label="Speel vraag af">▶</button>
+        <button class="vraag-play" aria-label="Speel vraag af">▶</button>
       </div>
 
       <div class="werkveld">
+        <!-- afbeelding links -->
         <figure class="illustratie-wrap">
-          <img class="illustratie" src="images/sophie.png" alt="Sophie met geld op tafel" />
+          <div style="position:relative; display:inline-block;">
+            <img class="illustratie" src="01%20geld.jpg" alt="Sophie met geld op tafel" />
+            <button class="img-play" aria-label="Speel audio bij afbeelding">▶</button>
+          </div>
         </figure>
 
-        <aside class="pad-zij">
-          <div class="pad-wrap">
-            <div class="pad" id="pad">
-              <button class="toets" data-key="1">1</button>
-              <button class="toets" data-key="2">2</button>
-              <button class="toets" data-key="3">3</button>
-              <button class="toets" data-key="4">4</button>
-              <button class="toets" data-key="5">5</button>
-              <button class="toets" data-key="6">6</button>
-              <button class="toets" data-key="7">7</button>
-              <button class="toets" data-key="8">8</button>
-              <button class="toets" data-key="9">9</button>
-              <button class="toets toets--nul" data-key="0">0</button>
-              <button class="toets toets--enter" data-key="enter" title="Invoeren">⏎</button>
-            </div>
+        <!-- keypad rechts -->
+        <aside class="pad-wrap" aria-label="Numeriek toetsenbord">
+          <div class="pad" id="pad">
+            <button class="toets" data-key="1">1</button>
+            <button class="toets" data-key="2">2</button>
+            <button class="toets" data-key="3">3</button>
+            <button class="toets" data-key="4">4</button>
+            <button class="toets" data-key="5">5</button>
+            <button class="toets" data-key="6">6</button>
+            <button class="toets" data-key="7">7</button>
+            <button class="toets" data-key="8">8</button>
+            <button class="toets" data-key="9">9</button>
+            <button class="toets toets--nul" data-key="0">0</button>
+            <button class="toets toets--enter" data-key="enter" title="Invoeren">⏎</button>
+          </div>
 
-            <div class="antwoordblok">
-              <input id="antwoord" class="antwoord" inputmode="numeric" placeholder="Antwoordvak" aria-label="Antwoord" />
-            </div>
+          <div class="antwoordblok">
+            <input id="antwoord" class="antwoord" inputmode="numeric" placeholder="Antwoordvak" aria-label="Antwoord" />
           </div>
         </aside>
       </div>
     </div>
 
+    <!-- onderbalk met navigatie en paginering -->
     <div class="onderbalk">
-      <div>
-        <button class="navbtn">Vorige</button>
-      </div>
+      <div><button class="navbtn">Vorige</button></div>
       <div class="paginering">
         <div class="page page--actief">1</div>
         <div class="page">2</div>
         <div class="page">3</div>
         <div class="page">4</div>
         <div class="page">5</div>
-        <button class="navbtn" style="background:#1677ff;color:#fff">Volgende</button>
+        <button class="navbtn btn-volgende">Volgende</button>
       </div>
     </div>
   </div>
 
   <script>
-    /* Detectie voor digibord of grote laptop. Chromebook blijft onaangeroerd. */
+    /* Digibord detectie: alleen op grote schermen, of via ?board=1 forceren.
+       Chromebook blijft bij de basiswaarden en verandert dus niet. */
     (function () {
+      function urlHasBoardFlag(){
+        return new URLSearchParams(location.search).get('board') === '1';
+      }
       function toggleDigibord() {
         const w = window.innerWidth;
         const h = window.innerHeight;
-        // Richten op schermen die jouw tweede screenshot benaderen
-        const groot = (w >= 1366 && h >= 768) || (Math.max(w,h) >= 1400);
+        const groot = urlHasBoardFlag() || ((w >= 1366 && h >= 768) && Math.max(w, h) >= 1400);
         document.documentElement.classList.toggle('digibord', groot);
       }
       toggleDigibord();
@@ -322,7 +212,7 @@
         if(!btn) return;
         const key = btn.getAttribute('data-key');
         if(key === 'enter'){
-          // hier zou je controle kunnen doen
+          // hier kan je nakijken of het antwoord klopt
           input.blur();
           return;
         }
@@ -332,7 +222,7 @@
         }
       });
 
-      // hardware toetsenbord toegestaan
+      // hardware toetsenbord is ook geldig
       document.addEventListener('keydown', function(e){
         if(e.key >= '0' && e.key <= '9'){
           input.value += e.key;
