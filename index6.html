@@ -5,36 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Toetsomgeving</title>
   <style>
-    /* Basis variabelen voor Chromebook en normale schermen */
+    /* BASIS voor Chromebook en gewone laptops, blijft ongewijzigd */
     :root{
-      --topbar-hoogte: 48px;
-      --vraag-marge-boven: 0.75rem;
-      --illustratie-schaal: 1;
-      --toetsenbord-schaal: 1;
-      --toetsenbord-gap: 10px;
-      --toetsen-voetmarge: 8px;
-      --toetsen-grootte: 64px;
       --kleur-topbar: #1677ff;
-      --kleur-achtergrond: #f7f8fa;
-      --kleur-paneel: #ffffff;
-      --kleur-tekst: #222;
-      --kleur-toets: #f3f4f6;
-      --kleur-toets-border: #d1d5db;
-      --kleur-toets-actief: #e5e7eb;
-      --kleur-toets-accent: #ef4444;
-      --radius: 14px;
-      --schaduw: 0 4px 18px rgba(0,0,0,.06);
+      --kleur-achtergrond: #f2f3f5;
+      --kleur-paneel: #fff;
+      --kleur-tekst: #111;
+      --kleur-sub: #5b5b5b;
+
+      --radius: 16px;
+      --schaduw: 0 6px 24px rgba(0,0,0,.06);
+
+      --topbar-hoogte: 56px;
+      --container-maxbreedte: 1120px;
+      --container-padding: 18px 24px 28px;
+
+      --vraag-font: clamp(1rem, 1.4vw, 1.125rem);
+      --vraag-marge-top: .5rem;
+
+      --illustratie-max: 540px;
+
+      --pad-key: 64px;
+      --pad-gap: 12px;
+      --pad-font: clamp(1.1rem, 2vw, 1.6rem);
+
+      --ant-font: clamp(1rem, 1.6vw, 1.25rem);
+      --ant-hoogte: 44px;
+
+      --paginering-font: .95rem;
     }
 
-    /* Digibord modus via class op <html> (script onderaan) */
+    /* DIGIBORD modus: gericht op jouw tweede screenshot */
     .digibord{
-      --topbar-hoogte: calc(48px * 8);   /* acht keer zo dik */
-      --vraag-marge-boven: 1.25rem;      /* vraag iets omlaag */
-      --illustratie-schaal: 1.35;        /* groter beeld */
-      --toetsenbord-schaal: 1.5;         /* groter keypad */
-      --toetsenbord-gap: 14px;
-      --toetsen-voetmarge: 14px;
-      --toetsen-grootte: 88px;           /* royale targets voor aanraking */
+      /* de balk is duidelijker maar niet overdreven hoog */
+      --topbar-hoogte: 88px;
+
+      /* meer lucht voor de vraag, iets groter lettertype */
+      --vraag-font: clamp(1.05rem, 1.15vw, 1.25rem);
+      --vraag-marge-top: .9rem;
+
+      /* grotere illustratie binnen de kaart, geen scale truc */
+      --illustratie-max: 620px;
+
+      /* keypad compacter dan vorige versie maar goed bedienbaar */
+      --pad-key: 72px;
+      --pad-gap: 14px;
+      --pad-font: clamp(1.25rem, 1.6vw, 1.75rem);
+
+      --ant-font: clamp(1.05rem, 1.2vw, 1.35rem);
+      --ant-hoogte: 50px;
     }
 
     html, body{
@@ -45,7 +64,6 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* Bovenste blauwe balk */
     .topbar{
       background: var(--kleur-topbar);
       height: var(--topbar-hoogte);
@@ -53,197 +71,248 @@
       width: 100%;
     }
 
-    /* Pagina container */
     .pagina{
+      min-height: calc(100% - var(--topbar-hoogte));
       display: grid;
-      grid-template-rows: auto 1fr;
-      height: calc(100% - var(--topbar-hoogte));
+      grid-template-rows: 1fr auto;
     }
 
-    /* Inhoud */
-    .inhoud{
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 18px 18px 28px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-auto-rows: min-content;
-      gap: 28px;
-    }
-
-    /* Vraag */
-    .vraag{
-      grid-column: 1 / -1;
-      font-size: clamp(1rem, 1.4vw, 1.25rem);
-      line-height: 1.4;
-      margin-top: var(--vraag-marge-boven);
+    .kaart{
+      max-width: var(--container-maxbreedte);
+      margin: 18px auto 0;
       background: var(--kleur-paneel);
-      padding: 14px 18px;
       border-radius: var(--radius);
       box-shadow: var(--schaduw);
+      padding: var(--container-padding);
     }
 
-    /* Werkruimte met afbeelding links en keypad rechts */
-    .werkveld{
+    /* kopregel met vraag en play knop rechts */
+    .vraagrij{
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 36px;
+      align-items: start;
+      gap: 16px;
+    }
+
+    .vraag{
+      margin: var(--vraag-marge-top) 0 8px 0;
+      font-size: var(--vraag-font);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .play{
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #eaf2ff;
+      border: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .werkveld{
+      display: grid;
+      grid-template-columns: 1fr 360px; /* ruimte voor keypad zoals in screenshot */
+      gap: 28px;
       align-items: start;
     }
 
-    /* Illustratieblok */
     .illustratie-wrap{
-      background: var(--kleur-paneel);
-      border-radius: var(--radius);
+      background: #fff;
+      border-radius: 14px;
       box-shadow: var(--schaduw);
-      padding: 18px;
-      transform: scale(var(--illustratie-schaal));
-      transform-origin: top left;
-      max-width: 720px;
+      padding: 12px;
     }
 
     .illustratie{
-      width: 100%;
-      height: auto;
       display: block;
+      width: 100%;
+      max-width: var(--illustratie-max);
+      height: auto;
       border-radius: 10px;
       user-select: none;
       -webkit-user-drag: none;
     }
 
-    /* Toetsenbordblok */
-    .toetsenbord-wrap{
-      background: var(--kleur-paneel);
-      border-radius: var(--radius);
-      box-shadow: var(--schaduw);
+    .pad-wrap{
+      background: #fbfbfc;
+      border: 2px solid #e7e7ea;
+      border-radius: 18px;
       padding: 18px;
-      transform: scale(var(--toetsenbord-schaal));
-      transform-origin: top right;
     }
 
-    .toetsenbord{
+    .pad{
       display: grid;
-      grid-template-columns: repeat(3, var(--toetsen-grootte));
-      gap: var(--toetsenbord-gap);
+      grid-template-columns: repeat(3, var(--pad-key));
+      gap: var(--pad-gap);
       justify-content: center;
     }
-
     .toets{
-      width: var(--toetsen-grootte);
-      height: var(--toetsen-grootte);
+      width: var(--pad-key);
+      height: var(--pad-key);
       display: grid;
       place-items: center;
-      background: var(--kleur-toets);
-      border: 1px solid var(--kleur-toets-border);
-      border-radius: 12px;
-      font-size: clamp(1.25rem, 2.2vw, 2rem);
+      background: #f5f6f8;
+      border: 1px solid #d9dce3;
+      border-radius: 18px;
+      font-size: var(--pad-font);
+      font-weight: 700;
       cursor: pointer;
       user-select: none;
-      transition: transform .06s ease;
+      transition: transform .05s ease, background .1s;
       touch-action: manipulation;
     }
-    .toets:active{ transform: scale(.98); background: var(--kleur-toets-actief); }
+    .toets:active{ transform: scale(.98); background: #eceff4; }
 
-    .toets--accent{
-      background: var(--kleur-toets-accent);
-      color: #fff;
-      border-color: transparent;
-    }
-    .toets--accent:active{ filter: brightness(.95); }
-
-    /* Antwoordvak onder keypad */
-    .antwoord{
-      margin-top: var(--toetsen-voetmarge);
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .antwoord input{
-      font-size: clamp(1.125rem, 1.6vw, 1.5rem);
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--kleur-toets-border);
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .volgende{
-      font-size: clamp(1rem, 1.4vw, 1.125rem);
-      padding: 12px 16px;
-      border-radius: 10px;
-      background: var(--kleur-topbar);
+    .toets--enter{
+      grid-column: 3;
+      grid-row: 4;
+      background: #c0392b;
       color: #fff;
       border: 0;
-      cursor: pointer;
+    }
+    .toets--enter:active{ filter: brightness(.95); }
+
+    /* nul onderaan in het midden zoals bij jou */
+    .toets--nul{ grid-column: 2; }
+
+    /* antwoordveld onder het keypad, altijd zichtbaar */
+    .antwoordblok{
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .antwoord{
+      height: var(--ant-hoogte);
+      font-size: var(--ant-font);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #d9dce3;
+      background: #fff;
     }
 
-    /* Extra lucht en grotere gap bij zeer brede schermen */
-    @media (min-width: 1600px){
-      .inhoud{ gap: 34px; }
-      .werkveld{ gap: 44px; }
+    /* onderbalk met navigatie links en pagina rechts */
+    .onderbalk{
+      max-width: var(--container-maxbreedte);
+      margin: 12px auto 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .navbtn{
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 0;
+      background: #e9ecf4;
+      color: #0f1a2a;
+      font-size: var(--paginering-font);
+      cursor: pointer;
+    }
+    .paginering{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .page{
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      background: #eee;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      color: #222;
+    }
+    .page--actief{
+      background: #1677ff;
+      color: #fff;
+    }
+
+    /* safety net: als hoogte beperkt is, maak keypad iets compacter zodat het antwoordvak niet wegvalt */
+    @media (max-height: 800px) and (min-width: 1200px){
+      .digibord{
+        --pad-key: 66px;
+        --pad-gap: 12px;
+        --ant-hoogte: 46px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Blauwe balk bovenin -->
   <div class="topbar" role="presentation"></div>
 
   <div class="pagina">
-    <main class="inhoud" aria-label="Toetsomgeving">
-      <!-- Vraagtekst -->
-      <section class="vraag" aria-live="polite">
-        Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal
-      </section>
+    <div class="kaart">
+      <div class="vraagrij">
+        <div class="vraag">
+          Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro.  
+          Hoeveel euro heeft Sophie in totaal
+        </div>
+        <button class="play" aria-label="Speel vraag af">▶</button>
+      </div>
 
-      <!-- Werkveld -->
-      <section class="werkveld">
-        <!-- Illustratie links -->
+      <div class="werkveld">
         <figure class="illustratie-wrap">
-          <img class="illustratie" src="01%20geld.jpg" alt="Sophie met een biljet van tien euro en drie munten op tafel" />
+          <img class="illustratie" src="images/sophie.png" alt="Sophie met geld op tafel" />
         </figure>
 
-        <!-- Toetsenbord rechts -->
-        <aside class="toetsenbord-wrap" aria-label="Numeriek toetsenbord">
-          <div class="toetsenbord" id="pad">
-            <button class="toets" data-key="1">1</button>
-            <button class="toets" data-key="2">2</button>
-            <button class="toets" data-key="3">3</button>
-            <button class="toets" data-key="4">4</button>
-            <button class="toets" data-key="5">5</button>
-            <button class="toets" data-key="6">6</button>
-            <button class="toets" data-key="7">7</button>
-            <button class="toets" data-key="8">8</button>
-            <button class="toets" data-key="9">9</button>
-            <button class="toets" data-key="0" style="grid-column: 2">0</button>
-            <button class="toets toets--accent" data-key="back" title="Backspace">⌫</button>
-            <button class="toets toets--accent" data-key="clear" title="Wissen">C</button>
-          </div>
+        <aside class="pad-zij">
+          <div class="pad-wrap">
+            <div class="pad" id="pad">
+              <button class="toets" data-key="1">1</button>
+              <button class="toets" data-key="2">2</button>
+              <button class="toets" data-key="3">3</button>
+              <button class="toets" data-key="4">4</button>
+              <button class="toets" data-key="5">5</button>
+              <button class="toets" data-key="6">6</button>
+              <button class="toets" data-key="7">7</button>
+              <button class="toets" data-key="8">8</button>
+              <button class="toets" data-key="9">9</button>
+              <button class="toets toets--nul" data-key="0">0</button>
+              <button class="toets toets--enter" data-key="enter" title="Invoeren">⏎</button>
+            </div>
 
-          <div class="antwoord">
-            <input id="antwoord" inputmode="numeric" autocomplete="off" placeholder="Antwoord" aria-label="Antwoord" />
-            <button class="volgende" id="volgende">Volgende</button>
+            <div class="antwoordblok">
+              <input id="antwoord" class="antwoord" inputmode="numeric" placeholder="Antwoordvak" aria-label="Antwoord" />
+            </div>
           </div>
         </aside>
-      </section>
-    </main>
+      </div>
+    </div>
+
+    <div class="onderbalk">
+      <div>
+        <button class="navbtn">Vorige</button>
+      </div>
+      <div class="paginering">
+        <div class="page page--actief">1</div>
+        <div class="page">2</div>
+        <div class="page">3</div>
+        <div class="page">4</div>
+        <div class="page">5</div>
+        <button class="navbtn" style="background:#1677ff;color:#fff">Volgende</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    /* Digibord detectie: zet class op <html> bij grote schermen */
+    /* Detectie voor digibord of grote laptop. Chromebook blijft onaangeroerd. */
     (function () {
       function toggleDigibord() {
         const w = window.innerWidth;
         const h = window.innerHeight;
-        const grootScherm = Math.max(w, h) >= 1600 && Math.min(w, h) >= 900;
-        document.documentElement.classList.toggle('digibord', grootScherm);
+        // Richten op schermen die jouw tweede screenshot benaderen
+        const groot = (w >= 1366 && h >= 768) || (Math.max(w,h) >= 1400);
+        document.documentElement.classList.toggle('digibord', groot);
       }
       toggleDigibord();
       window.addEventListener('resize', toggleDigibord);
     })();
 
-    /* Toetsenbord functionaliteit */
+    /* Toetsenbord logica */
     (function () {
       const pad = document.getElementById('pad');
       const input = document.getElementById('antwoord');
@@ -252,34 +321,26 @@
         const btn = e.target.closest('.toets');
         if(!btn) return;
         const key = btn.getAttribute('data-key');
-        if(key === 'back'){
-          input.value = input.value.slice(0, -1);
-          return;
-        }
-        if(key === 'clear'){
-          input.value = '';
+        if(key === 'enter'){
+          // hier zou je controle kunnen doen
+          input.blur();
           return;
         }
         if(/^\d$/.test(key)){
           input.value += key;
+          input.focus();
         }
-        input.focus();
       });
 
-      // laat ook hardware toetsenbord toe
+      // hardware toetsenbord toegestaan
       document.addEventListener('keydown', function(e){
         if(e.key >= '0' && e.key <= '9'){
           input.value += e.key;
           e.preventDefault();
-        }else if(e.key === 'Backspace'){
-          input.value = input.value.slice(0, -1);
+        }else if(e.key === 'Enter'){
+          input.blur();
           e.preventDefault();
         }
-      });
-
-      document.getElementById('volgende').addEventListener('click', function(){
-        // hier kun je je eigen logica toevoegen
-        alert('Ingevoerde antwoord: ' + (input.value || '(leeg)'));
       });
     })();
   </script>
