@@ -1,431 +1,287 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Toetsomgeving</title>
-<style>
-  :root{
-    --main-blue:#0D99FF;
-    --light-grey:#F0F2F5;
-    --medium-grey:#E9ECEF;
-    --tile-border:#ECECEC;
-    --tile-shadow:rgba(0,0,0,.06);
-    --text-color:#222;
-    --white:#FFFFFF;
-    --red:#C44444;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toetsomgeving</title>
+  <style>
+    /* Basis variabelen voor Chromebook en normale schermen */
+    :root{
+      --topbar-hoogte: 48px;
+      --vraag-marge-boven: 0.75rem;
+      --illustratie-schaal: 1;
+      --toetsenbord-schaal: 1;
+      --toetsenbord-gap: 10px;
+      --toetsen-voetmarge: 8px;
+      --toetsen-grootte: 64px;
+      --kleur-topbar: #1677ff;
+      --kleur-achtergrond: #f7f8fa;
+      --kleur-paneel: #ffffff;
+      --kleur-tekst: #222;
+      --kleur-toets: #f3f4f6;
+      --kleur-toets-border: #d1d5db;
+      --kleur-toets-actief: #e5e7eb;
+      --kleur-toets-accent: #ef4444;
+      --radius: 14px;
+      --schaduw: 0 4px 18px rgba(0,0,0,.06);
+    }
 
-    --keypad-maxwidth:300px;  /* basisbreedte keypad */
-    --keypad-gap:10px;
-    --page-padding-x:24px;
+    /* Digibord modus via class op <html> (script onderaan) */
+    .digibord{
+      --topbar-hoogte: calc(48px * 8);   /* acht keer zo dik */
+      --vraag-marge-boven: 1.25rem;      /* vraag iets omlaag */
+      --illustratie-schaal: 1.35;        /* groter beeld */
+      --toetsenbord-schaal: 1.5;         /* groter keypad */
+      --toetsenbord-gap: 14px;
+      --toetsen-voetmarge: 14px;
+      --toetsen-grootte: 88px;           /* royale targets voor aanraking */
+    }
 
-    --brand-h:4px;            /* basis hoogte blauwe balk */
-  }
+    html, body{
+      height: 100%;
+      margin: 0;
+      background: var(--kleur-achtergrond);
+      color: var(--kleur-tekst);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
 
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    /* Bovenste blauwe balk */
+    .topbar{
+      background: var(--kleur-topbar);
+      height: var(--topbar-hoogte);
+      min-height: var(--topbar-hoogte);
+      width: 100%;
+    }
 
-  *{box-sizing:border-box}
-  html,body{min-height:100%}
-  body{
-    margin:0;
-    font-family:'Poppins',sans-serif;
-    background:var(--light-grey);
-    display:flex;
-    justify-content:center;
-    align-items:stretch;
-    padding-inline:.8vh;
-    padding-block:0;
-    color:var(--text-color);
-  }
+    /* Pagina container */
+    .pagina{
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: calc(100% - var(--topbar-hoogte));
+    }
 
-  /* Kaart in grid: blauwe balk, vraag, rode zone, footer */
-  .toets-container{
-    width:100%;
-    background:var(--white);
-    border-radius:20px;
-    box-shadow:0 10px 40px rgba(0,0,0,.1);
-    display:grid;
-    grid-template-rows:auto auto 1fr auto;
-    height:100vh;
-    max-width:min(1700px, 98vw);
-    overflow:visible;
-  }
-  @supports (min-height:100dvh){
-    .toets-container{ height:100dvh; }
-  }
+    /* Inhoud */
+    .inhoud{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 18px 28px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-auto-rows: min-content;
+      gap: 28px;
+    }
 
-  /* Blauwe balk */
-  .brand-strip-wrap{ padding:10px var(--page-padding-x) 0 var(--page-padding-x); }
-  .brand-strip{
-    height:var(--brand-h);
-    border-radius:4px;
-    background:var(--main-blue);
-    box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
-    transition:height .18s ease;
-  }
-  /* In fullscreen 10 procent minder hoog dan 10x, dus 9x de basishoogte */
-  .brand-strip.tall{ height:calc(var(--brand-h) * 9); }
+    /* Vraag */
+    .vraag{
+      grid-column: 1 / -1;
+      font-size: clamp(1rem, 1.4vw, 1.25rem);
+      line-height: 1.4;
+      margin-top: var(--vraag-marge-boven);
+      background: var(--kleur-paneel);
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--schaduw);
+    }
 
-  /* Vraag */
-  .vraag-blok{
-    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-    padding:14px var(--page-padding-x) 8px var(--page-padding-x);
-  }
-  .vraag-tekst{
-    font-weight:600; color:#1f2937;
-    font-size:clamp(1.05rem, 2.4vh, 1.3rem);
-    line-height:1.55; margin:0;
-    padding-left:1.25em;  /* beide regels licht ingesprongen */
-  }
-  .play-button{
-    background:var(--main-blue); border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
-  }
-  .play-button svg{width:28px;height:28px;fill:#fff}
+    /* Werkruimte met afbeelding links en keypad rechts */
+    .werkveld{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 36px;
+      align-items: start;
+    }
 
-  /* Rode zone, schaalt en centreert visueel */
-  .toets-main{
-    display:flex;
-    align-items:flex-start; /* centreren via marges in JS */
-    justify-content:center;
-    padding:0 var(--page-padding-x) 16px var(--page-padding-x);
-    min-height:0;
-    overflow:hidden;
-  }
-  .fitbox{
-    flex:1;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    min-height:0;
-  }
-  .fitcontent{
-    width:100%;
-    display:flex;
-    gap:clamp(16px,3vw,32px);
-    align-items:stretch; /* kolommen even hoog */
-    transform-origin:top center;
-    margin-top:0;
-    margin-bottom:0;
-  }
+    /* Illustratieblok */
+    .illustratie-wrap{
+      background: var(--kleur-paneel);
+      border-radius: var(--radius);
+      box-shadow: var(--schaduw);
+      padding: 18px;
+      transform: scale(var(--illustratie-schaal));
+      transform-origin: top left;
+      max-width: 720px;
+    }
 
-  .image-container{
-    flex:1.5 1 0;
-    display:flex; justify-content:center; align-items:center; min-width:0;
-  }
-  .image-container img{
-    width:78%;
-    max-width:78%;
-    max-height:82%;
-    object-fit:contain; border-radius:10px;
-  }
+    .illustratie{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
 
-  .interaction-container{
-    flex:1 1 0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:10px; min-width:0;
-  }
+    /* Toetsenbordblok */
+    .toetsenbord-wrap{
+      background: var(--kleur-paneel);
+      border-radius: var(--radius);
+      box-shadow: var(--schaduw);
+      padding: 18px;
+      transform: scale(var(--toetsenbord-schaal));
+      transform-origin: top right;
+    }
 
-  /* Toetsenbord 5% kleiner via dragerbreedte */
-  .ia-outer{
-    width:100%;
-    max-width:calc(var(--keypad-maxwidth) * 0.95);
-    position:relative;
-  }
-  .ia-stack{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
-    align-items:stretch;
-    gap:10px;
-  }
+    .toetsenbord{
+      display: grid;
+      grid-template-columns: repeat(3, var(--toetsen-grootte));
+      gap: var(--toetsenbord-gap);
+      justify-content: center;
+    }
 
-  .keypad-area{
-    background:var(--light-grey);
-    border:2px solid var(--medium-grey);
-    border-radius:16px;
-    padding:12px;
-    width:100%;
-  }
-  .keypad{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:var(--keypad-gap);
-  }
-  .keypad-button{
-    aspect-ratio:1/1;
-    border-radius:14px;
-    background:var(--white);
-    border:2px solid var(--tile-border);
-    box-shadow:0 2px 0 var(--tile-shadow);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:clamp(1.05rem,3.1vh,1.6rem);
-    color:#000; cursor:pointer; user-select:none;
-  }
-  .keypad-button.empty{ visibility:hidden }
-  .keypad-button.backspace{ background:var(--red); border-color:var(--red); }
-  .keypad-button.backspace svg{ width:44%; height:44%; fill:#fff; }
+    .toets{
+      width: var(--toetsen-grootte);
+      height: var(--toetsen-grootte);
+      display: grid;
+      place-items: center;
+      background: var(--kleur-toets);
+      border: 1px solid var(--kleur-toets-border);
+      border-radius: 12px;
+      font-size: clamp(1.25rem, 2.2vw, 2rem);
+      cursor: pointer;
+      user-select: none;
+      transition: transform .06s ease;
+      touch-action: manipulation;
+    }
+    .toets:active{ transform: scale(.98); background: var(--kleur-toets-actief); }
 
-  /* Antwoordvak 10% smaller en horizontaal gecentreerd onder keypad */
-  .antwoord-wrap{
-    width:100%;
-    display:flex;
-    justify-content:center;
-  }
-  .antwoord-vak{
-    width:90%;
-    border:2px solid var(--medium-grey); border-radius:12px;
-    min-height:50px;
-    padding:8px 14px;
-    font-size:clamp(1rem,2.3vh,1.25rem);
-    background:#fff;
-  }
-  .antwoord-vak:focus{ outline:2px solid var(--main-blue); border-color:var(--main-blue); }
+    .toets--accent{
+      background: var(--kleur-toets-accent);
+      color: #fff;
+      border-color: transparent;
+    }
+    .toets--accent:active{ filter: brightness(.95); }
 
-  /* Footer */
-  .toets-footer{
-    background:#F8F9FA; border-top:1px solid #E9ECEF;
-    padding:8px var(--page-padding-x);
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .footer-button{
-    padding:10px 18px; border:0; border-radius:25px; cursor:pointer;
-    font-size:clamp(.9rem,2vh,1.05rem); font-weight:500;
-  }
-  .vorige-button{background:#E9ECEF; color:#6D6D6D}
-  .volgende-button{background:var(--main-blue); color:#fff}
+    /* Antwoordvak onder keypad */
+    .antwoord{
+      margin-top: var(--toetsen-voetmarge);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
 
-  .pagination{display:flex; align-items:center; gap:clamp(8px,1.2vw,14px)}
-  .page-dot{
-    width:clamp(38px,5.6vh,50px); height:clamp(38px,5.6vh,50px);
-    border-radius:50%; background:var(--medium-grey); border:2px solid var(--medium-grey);
-    color:#4B4B4B; display:inline-flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:clamp(.9rem,2vh,1.05rem);
-    transition:all .15s ease; cursor:pointer; user-select:none;
-  }
-  .page-dot.active{
-    width:calc(clamp(38px,5.6vh,50px) + 8px);
-    height:calc(clamp(38px,5.6vh,50px) + 8px);
-    background:var(--main-blue); color:#fff; border-color:var(--main-blue);
-  }
+    .antwoord input{
+      font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--kleur-toets-border);
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-  /* Smal scherm, stapelen */
-  @media (max-width: 900px){
-    .fitcontent{ flex-direction:column; }
-    .toets-main{ padding:0 16px 72px 16px; }
-    .brand-strip-wrap{ padding:10px 16px 0 16px; }
-    .vraag-blok{ padding:12px 16px 6px 16px; }
-    .image-container{ min-height:150px; }
-    .image-container img{ width:100%; max-width:100%; max-height:70%; height:auto; }
-    .interaction-container{ justify-content:flex-start; align-items:center; }
-    .ia-outer{ max-width:calc(300px * 0.95); }
-  }
-</style>
+    .volgende{
+      font-size: clamp(1rem, 1.4vw, 1.125rem);
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: var(--kleur-topbar);
+      color: #fff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    /* Extra lucht en grotere gap bij zeer brede schermen */
+    @media (min-width: 1600px){
+      .inhoud{ gap: 34px; }
+      .werkveld{ gap: 44px; }
+    }
+  </style>
 </head>
 <body>
+  <!-- Blauwe balk bovenin -->
+  <div class="topbar" role="presentation"></div>
 
-<div class="toets-container">
+  <div class="pagina">
+    <main class="inhoud" aria-label="Toetsomgeving">
+      <!-- Vraagtekst -->
+      <section class="vraag" aria-live="polite">
+        Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal
+      </section>
 
-  <div class="brand-strip-wrap">
-    <div class="brand-strip" id="brand-strip" aria-hidden="true"></div>
-  </div>
+      <!-- Werkveld -->
+      <section class="werkveld">
+        <!-- Illustratie links -->
+        <figure class="illustratie-wrap">
+          <img class="illustratie" src="images/sophie.png" alt="Sophie met een biljet van tien euro en drie munten op tafel" />
+        </figure>
 
-  <div class="vraag-blok">
-    <p id="vraag-tekst" class="vraag-tekst">
-      Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro<br>
-      Hoeveel euro heeft Sophie in totaal?
-    </p>
-    <button class="play-button" id="play-vraag-button" aria-label="Lees vraag voor">
-      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    </button>
-  </div>
-
-  <main class="toets-main" id="toets-main">
-    <div class="fitbox">
-      <div class="fitcontent" id="fitcontent">
-        <div class="image-container">
-          <img id="opdracht-afbeelding" src="01 geld.jpg" alt="Sophie met een 10 euro biljet, twee 2 euro munten en een 1 euro munt"/>
-        </div>
-
-        <div class="interaction-container">
-          <div class="ia-outer">
-            <div class="ia-stack">
-              <div class="keypad-area">
-                <div class="keypad">
-                  <button class="keypad-button">1</button>
-                  <button class="keypad-button">2</button>
-                  <button class="keypad-button">3</button>
-                  <button class="keypad-button">4</button>
-                  <button class="keypad-button">5</button>
-                  <button class="keypad-button">6</button>
-                  <button class="keypad-button">7</button>
-                  <button class="keypad-button">8</button>
-                  <button class="keypad-button">9</button>
-                  <button class="keypad-button empty" aria-hidden="true"></button>
-                  <button class="keypad-button">0</button>
-                  <button class="keypad-button backspace" aria-label="Wissen">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M19 7H9L5 12l4 5h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.41 8.41L14.17 14l1.42-1.41L14.17 11l1.42-1.41L17 11.17l1.41-1.58L19.83 11l-1.42 1.41L19.83 14l-1.42 1.41L17 13.83l-1.41 1.58Z"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <div class="antwoord-wrap">
-                <input type="text" class="antwoord-vak" placeholder="Antwoordvak" inputmode="numeric" />
-              </div>
-            </div>
+        <!-- Toetsenbord rechts -->
+        <aside class="toetsenbord-wrap" aria-label="Numeriek toetsenbord">
+          <div class="toetsenbord" id="pad">
+            <button class="toets" data-key="1">1</button>
+            <button class="toets" data-key="2">2</button>
+            <button class="toets" data-key="3">3</button>
+            <button class="toets" data-key="4">4</button>
+            <button class="toets" data-key="5">5</button>
+            <button class="toets" data-key="6">6</button>
+            <button class="toets" data-key="7">7</button>
+            <button class="toets" data-key="8">8</button>
+            <button class="toets" data-key="9">9</button>
+            <button class="toets" data-key="0" style="grid-column: 2">0</button>
+            <button class="toets toets--accent" data-key="back" title="Backspace">⌫</button>
+            <button class="toets toets--accent" data-key="clear" title="Wissen">C</button>
           </div>
-        </div>
 
-      </div><!-- /fitcontent -->
-    </div><!-- /fitbox -->
-  </main>
+          <div class="antwoord">
+            <input id="antwoord" inputmode="numeric" autocomplete="off" placeholder="Antwoord" aria-label="Antwoord" />
+            <button class="volgende" id="volgende">Volgende</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
 
-  <footer class="toets-footer" id="toets-footer">
-    <button class="footer-button vorige-button" id="btn-prev">Vorige</button>
-    <div class="pagination" role="tablist" aria-label="Pagina navigatie">
-      <button class="page-dot active" role="tab" aria-selected="true" aria-label="Pagina 1">1</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 2">2</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 3">3</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 4">4</button>
-      <button class="page-dot" role="tab" aria-selected="false" aria-label="Pagina 5">5</button>
-    </div>
-    <button class="footer-button volgende-button" id="btn-next">Volgende</button>
-  </footer>
-
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded',() => {
-  const keypadButtons=document.querySelectorAll('.keypad-button');
-  const antwoordVak=document.querySelector('.antwoord-vak');
-  const playButton=document.getElementById('play-vraag-button');
-  const vraagNode=document.getElementById('vraag-tekst');
-  const vraagTekst=vraagNode ? vraagNode.innerHTML.replace('<br>',' ') : '';
-
-  const fit  = document.getElementById('fitcontent');
-  const main = document.getElementById('toets-main');
-  const img  = document.getElementById('opdracht-afbeelding');
-  const brandStrip = document.getElementById('brand-strip');
-
-  /* keypad */
-  keypadButtons.forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      if(btn.classList.contains('backspace')){
-        antwoordVak.value=antwoordVak.value.slice(0,-1);
-      }else if(btn.textContent.trim()!==''){
-        antwoordVak.value+=btn.textContent.trim();
+  <script>
+    /* Digibord detectie: zet class op <html> bij grote schermen */
+    (function () {
+      function toggleDigibord() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const grootScherm = Math.max(w, h) >= 1600 && Math.min(w, h) >= 900;
+        document.documentElement.classList.toggle('digibord', grootScherm);
       }
-      antwoordVak.focus();
-    });
-  });
-  antwoordVak.addEventListener('keydown',e=>{
-    if(!/^[0-9]$/.test(e.key)&&e.key.length===1){ e.preventDefault(); }
-  });
+      toggleDigibord();
+      window.addEventListener('resize', toggleDigibord);
+    })();
 
-  /* voorleesfunctie */
-  playButton?.addEventListener('click',()=>{
-    if(!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(vraagTekst);
-    u.lang='nl-NL';
-    const voices=speechSynthesis.getVoices();
-    let v=voices.find(x=>x.lang==='nl-NL'&&/female|vrouw|ellen|xander/i.test(x.name));
-    if(!v){ v=voices.find(x=>x.lang==='nl-NL'); }
-    if(v){ u.voice=v; }
-    u.pitch=1.1; u.rate=0.95;
-    speechSynthesis.speak(u);
-  });
+    /* Toetsenbord functionaliteit */
+    (function () {
+      const pad = document.getElementById('pad');
+      const input = document.getElementById('antwoord');
 
-  /* helpers */
-  function withNoTransform(el, fn){
-    const prev = el.style.transform;
-    el.style.transform = 'none';
-    const out = fn();
-    el.style.transform = prev;
-    return out;
-  }
-  function isFullscreen(){
-    return !!document.fullscreenElement || window.matchMedia('(display-mode: fullscreen)').matches;
-  }
+      pad.addEventListener('click', function(e){
+        const btn = e.target.closest('.toets');
+        if(!btn) return;
+        const key = btn.getAttribute('data-key');
+        if(key === 'back'){
+          input.value = input.value.slice(0, -1);
+          return;
+        }
+        if(key === 'clear'){
+          input.value = '';
+          return;
+        }
+        if(/^\d$/.test(key)){
+          input.value += key;
+        }
+        input.focus();
+      });
 
-  /* Blauwe balk: in fullscreen 10% minder hoog dan 10x, in niet fullscreen standaard */
-  function updateBlueBar(){
-    if(isFullscreen()){
-      brandStrip.classList.add('tall');
-    }else{
-      brandStrip.classList.remove('tall');
-    }
-  }
+      // laat ook hardware toetsenbord toe
+      document.addEventListener('keydown', function(e){
+        if(e.key >= '0' && e.key <= '9'){
+          input.value += e.key;
+          e.preventDefault();
+        }else if(e.key === 'Backspace'){
+          input.value = input.value.slice(0, -1);
+          e.preventDefault();
+        }
+      });
 
-  /* Schaal rode zone
-     - Niet fullscreen: ~7% groter
-     - Fullscreen: 100% of kleiner indien nodig
-     Daarna visueel verticaal centreren met marges */
-  function fitToRow(){
-    if(!main || !fit) return;
-
-    const cs = getComputedStyle(main);
-    const availW = main.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const availH = main.clientHeight - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
-
-    const rect = withNoTransform(fit, ()=> fit.getBoundingClientRect());
-    const natW = rect.width;
-    const natH = rect.height;
-    if(natW<=0 || natH<=0 || availW<=0 || availH<=0) return;
-
-    const base   = Math.min(1, availW / natW, availH / natH);
-    const factor = isFullscreen() ? 1 : 1.07;  /* buiten fullscreen 7% groter */
-    const s = Math.min(base * factor, 1);      /* nooit groter dan passend */
-
-    fit.style.transform = `scale(${s})`;
-
-    /* visuele verticale centrering */
-    const scaledH = natH * s;
-    const offset  = Math.max(0, (availH - scaledH) / 2);
-    fit.style.marginTop    = offset + 'px';
-    fit.style.marginBottom = offset + 'px';
-  }
-
-  function refresh(){
-    updateBlueBar();
-    fitToRow();
-  }
-
-  window.addEventListener('resize', refresh, {passive:true});
-  document.addEventListener('fullscreenchange', refresh);
-  if(img && !img.complete){ img.addEventListener('load', refresh, {once:true}); }
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(refresh); }
-  refresh();
-
-  /* paginanavigatie */
-  const dots=[...document.querySelectorAll('.page-dot')];
-  const prev=document.getElementById('btn-prev');
-  const next=document.getElementById('btn-next');
-  function setActive(i){
-    dots.forEach((d,idx)=>{
-      const active=idx===i;
-      d.classList.toggle('active',active);
-      d.setAttribute('aria-selected',String(active));
-    });
-  }
-  dots.forEach((d,i)=>{
-    d.addEventListener('click',()=>setActive(i));
-    d.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setActive(i); }
-    });
-  });
-  prev.addEventListener('click',()=>{
-    const cur=dots.findIndex(d=>d.classList.contains('active'));
-    setActive(Math.max(0,cur-1));
-  });
-  next.addEventListener('click',()=>{
-    const cur=dots.findIndex(d=>d.classList.contains('active'));
-    setActive(Math.min(dots.length-1,cur+1));
-  });
-});
-</script>
-
+      document.getElementById('volgende').addEventListener('click', function(){
+        // hier kun je je eigen logica toevoegen
+        alert('Ingevoerde antwoord: ' + (input.value || '(leeg)'));
+      });
+    })();
+  </script>
 </body>
 </html>
