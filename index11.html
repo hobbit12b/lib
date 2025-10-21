@@ -13,14 +13,16 @@
       --radius: 16px;
       --schaduw: 0 6px 24px rgba(0,0,0,.06);
       --topbar-hoogte: 56px;
-      --kaart-max: 1120px;
-      --kaart-pad: 18px 24px 28px;
+
+      /* breder werken op desktop */
+      --kaart-max: clamp(980px, 92vw, 1400px);
+      --kaart-pad: clamp(12px, 2vw, 28px);
 
       --vraag-font: clamp(1.2rem, 2.2vw, 1.6rem);
       --vraag-mt: .5rem;
 
-      --kolom-rechts: 360px;
-      --illustratie-max: 540px;
+      /* adaptieve rechterkolom */
+      --kolom-rechts: min(380px, 28vw);
 
       --pad-key: 64px;
       --pad-gap: 12px;
@@ -47,6 +49,7 @@
 
     .kaart{
       max-width: var(--kaart-max);
+      width: 100%;
       margin: 18px auto 0;
       background: var(--kleur-paneel);
       border-radius: var(--radius);
@@ -87,43 +90,51 @@
     .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
     .spraakknoop img{ display: block; width: 28px; height: 28px; }
 
+    /* hoofdwerkveld, naast elkaar op desktop */
     .werkveld{
       display: grid;
       grid-template-columns: 1fr var(--kolom-rechts);
-      gap: 28px;
-      align-items: start;
+      gap: clamp(16px, 2vw, 28px);
+      align-items: start; /* cruciaal, geen verticale centrering meer */
     }
 
+    /* illustratiekolom benut volledige breedte */
     .illustratie-wrap{
       background: #fff;
       border-radius: 14px;
       box-shadow: var(--schaduw);
       padding: 12px;
-      width: fit-content;
+      width: 100%;
       max-width: 100%;
     }
 
-    /* Container met vaste (dynamische) hoogte; afbeelding past erin zonder croppen */
+    /* container waarin de afbeelding schaalt */
     .illustratie-box{
-      width: min(var(--illustratie-max), 100%);
-      height: 300px;           /* wordt door JS overschreven */
+      width: 100%;
+      height: 300px; /* wordt door JS gezet */
       border-radius: 10px;
       overflow: hidden;
       background: #fff;
     }
+
+    /* afbeelding schaalt, geen crop */
     .illustratie{
       width: 100%;
       height: 100%;
-      object-fit: contain;     /* volledige afbeelding tonen */
+      object-fit: contain;
       object-position: center;
       display: block;
     }
 
+    /* toetsenbordkaart, sticky zodat het nooit over de afbeelding valt */
     .pad-wrap{
       background: #fbfbfc;
       border: 2px solid #e7e7ea;
       border-radius: 18px;
       padding: 18px;
+      align-self: start;
+      position: sticky;
+      top: clamp(10px, 2vh, 24px);
     }
 
     .pad{
@@ -214,29 +225,31 @@
     .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
     .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; }
 
+    /* compacte stand voor middensegment laptops */
     @media (max-width: 1366px), (max-height: 820px){
       :root{
         --topbar-hoogte: 44px;
-        --kaart-pad: 14px 16px 18px;
         --pad-key: 56px;
         --pad-gap: 10px;
-        --illustratie-max: 440px;
       }
-      .werkveld{ grid-template-columns: 1fr 320px; gap: 20px; }
+      .werkveld{
+        grid-template-columns: 1fr min(320px, 32vw);
+        gap: 20px;
+      }
     }
 
+    /* nog iets compacter bij lage vensterhoogte */
     @media (max-height: 700px){
-      :root{
-        --pad-key: 50px;
-        --illustratie-max: 380px;
-      }
+      :root{ --pad-key: 50px; }
       .kaart{ margin-top: 10px; }
       .onderbalk{ margin: 6px auto 10px; }
     }
 
+    /* mobiel, alles onder elkaar */
     @media (max-width: 900px){
       .werkveld{ grid-template-columns: 1fr; }
       .illustratie-wrap{ justify-self: center; }
+      .pad-wrap{ position: static; margin-top: 14px; }
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -259,7 +272,6 @@
 
       <div class="werkveld">
         <figure class="illustratie-wrap">
-          <!-- Container die we in hoogte begrenzen; img past erin zonder croppen -->
           <div id="illustratieBox" class="illustratie-box">
             <img class="illustratie" id="vraagAfbeelding" src="" alt="illustratie bij de vraag" />
           </div>
@@ -391,26 +403,24 @@
       if (actief) actief.classList.add("page--actief");
     }
 
-    // --------- Universele hoogteberekening ----------
+    // --------- Hoogteberekening illustratie ----------
     function beschikbareHoogteVoorIllustratieBox(){
       const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
       const boxTop = illustratieBox.getBoundingClientRect().top;
 
-      // Veiligheidsbuffer + rekening houden met de padding van figure
       const fig = document.querySelector(".illustratie-wrap");
       const cs = getComputedStyle(fig);
-      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10; // 10px buffer
+      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10;
 
       return Math.floor(onderbalkTop - boxTop - extra);
     }
 
     function pasIllustratieBoxAan(){
-      const MIN_H = 160; // niet kleiner dan dit voor leesbaarheid
+      const MIN_H = 160;
       const h = Math.max(MIN_H, beschikbareHoogteVoorIllustratieBox());
       illustratieBox.style.height = (h > 0 ? h : MIN_H) + "px";
     }
 
-    // Debounced resize / orientationchange
     let resizeTimer;
     function onResize(){
       clearTimeout(resizeTimer);
@@ -425,9 +435,7 @@
       const vraag = opdrachten[nr - 1];
       vraagtekst.textContent = vraag.tekst;
 
-      // Afbeelding wisselen; na laden en direct (cache) de boxhoogte aanpassen
       if (vraagAfbeelding.complete) {
-        // even src leeg forceren om onload te laten vuren als dezelfde afbeelding terugkomt
         const oldSrc = vraagAfbeelding.src;
         vraagAfbeelding.src = "";
         requestAnimationFrame(() => {
@@ -439,18 +447,17 @@
       vraagAfbeelding.onload = pasIllustratieBoxAan;
       requestAnimationFrame(pasIllustratieBoxAan);
 
-      // spraak reset + antwoord herstellen
       stopSpraak(true);
       input.value = antwoorden[nr - 1] || "";
       updatePaginabolletjes();
     }
 
-    paginering.addEventListener("click", e => {
+    document.getElementById("paginering").addEventListener("click", e => {
       const knop = e.target.closest(".page");
       if (!knop) return;
       toonOpdracht(parseInt(knop.dataset.page, 10));
     });
-    paginering.addEventListener("keydown", e => {
+    document.getElementById("paginering").addEventListener("keydown", e => {
       const focusEl = document.activeElement.closest(".page");
       if (!focusEl) return;
       if (e.key === "Enter" || e.key === " "){
@@ -493,9 +500,7 @@
 
     // --------- Start ----------
     toonOpdracht(1);
-    // Nog een tikje later als layout “settled” is
     requestAnimationFrame(pasIllustratieBoxAan);
   </script>
 </body>
 </html>
-
