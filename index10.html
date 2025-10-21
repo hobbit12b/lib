@@ -15,7 +15,8 @@
       --topbar-hoogte: 56px;
       --kaart-max: 1120px;
       --kaart-pad: 18px 24px 28px;
-      --vraag-font: clamp(1rem, 1.4vw, 1.125rem);
+      /* Grotere vraagtekst */
+      --vraag-font: clamp(1.2rem, 2.2vw, 1.6rem);
       --vraag-mt: .5rem;
       --kolom-rechts: 360px;
       --illustratie-max: 540px;
@@ -51,8 +52,45 @@
       padding: var(--kaart-pad);
     }
 
-    .vraagrij{ display: grid; grid-template-columns: 1fr auto; gap: 12px; }
-    .vraag{ margin: var(--vraag-mt) 0 8px 0; font-size: var(--vraag-font); font-weight: 800; line-height: 1.4; }
+    .vraagrij{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    /* Vraagtekst groter en prettig afbreken */
+    .vraag{
+      margin: var(--vraag-mt) 0 8px 0;
+      font-size: var(--vraag-font);
+      font-weight: 800;
+      line-height: 1.45;
+      max-width: 75ch;
+      /* moderne en veilige afbreekhints zonder streepjes in het beeld */
+      text-wrap: balance;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    /* Play pauze knop */
+    .spraakknoop{
+      display: inline-grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid #d9dce3;
+      background: #f5f6f8;
+      cursor: pointer;
+      padding: 4px;
+      transition: transform .06s ease, background .15s;
+    }
+    .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
+    .spraakknoop img{
+      display: block;
+      width: 28px;
+      height: 28px;
+    }
 
     .werkveld{
       display: grid;
@@ -154,7 +192,7 @@
     .page{
       width: 40px; height: 40px;
       border-radius: 20px;
-      background: #e0e2e6; /* grijs: geen antwoord */
+      background: #e0e2e6;
       display: grid; place-items: center;
       font-weight: 700; color: #222;
       cursor: pointer;
@@ -164,9 +202,8 @@
     }
     .page:hover{ background: #d9e6ff; }
     .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
-    .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; } /* wit: antwoord aanwezig */
+    .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; }
 
-    /* Responsive aanpassingen voor veel Chromebooks 1366x768 of kleiner */
     @media (max-width: 1366px), (max-height: 820px){
       :root{
         --topbar-hoogte: 44px;
@@ -181,7 +218,6 @@
       }
     }
 
-    /* Extra compact bij nog kleinere hoogte */
     @media (max-height: 700px){
       :root{
         --pad-key: 50px;
@@ -208,6 +244,11 @@
     <div class="kaart">
       <div class="vraagrij">
         <div class="vraag" id="vraagtekst"></div>
+
+        <!-- Afspelen pauzeren knop -->
+        <button id="spraakknoop" class="spraakknoop" type="button" aria-label="Lees de vraag voor">
+          <img id="spraakknoopIcon" src="speel.jpg" alt="Afspelen" />
+        </button>
       </div>
 
       <div class="werkveld">
@@ -260,12 +301,33 @@
     ];
 
     let huidigePagina = 1;
-    const antwoorden = new Array(opdrachten.length).fill(""); // bewaart ingevulde antwoorden per vraag
+    const antwoorden = new Array(opdrachten.length).fill("");
 
     const vraagtekst = document.getElementById("vraagtekst");
     const vraagAfbeelding = document.getElementById("vraagAfbeelding");
     const paginering = document.getElementById("paginering");
     const input = document.getElementById("antwoord");
+
+    // Spraak variabelen
+    const spraakknoop = document.getElementById("spraakknoop");
+    const spraakknoopIcon = document.getElementById("spraakknoopIcon");
+    let isSprekend = false;
+    let utterance = null;
+    let gekozenStem = null;
+
+    function kiesNederlandseStem(){
+      const stemmen = window.speechSynthesis.getVoices();
+      // kies een Nederlandse stem als die bestaat
+      gekozenStem = stemmen.find(v =>
+        /nl/i.test(v.lang) || /Dutch/i.test(v.name)
+      ) || stemmen[0] || null;
+    }
+
+    // sommige browsers laden stemmen asynchroon
+    if ("speechSynthesis" in window){
+      kiesNederlandseStem();
+      window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
+    }
 
     function updatePaginabolletjes(){
       document.querySelectorAll(".page").forEach((p, idx) => {
@@ -278,11 +340,69 @@
       }
     }
 
+    function stopSpraak(resetIcon = true){
+      if ("speechSynthesis" in window){
+        window.speechSynthesis.cancel();
+      }
+      isSprekend = false;
+      utterance = null;
+      if (resetIcon){
+        spraakknoopIcon.src = "speel.jpg";
+        spraakknoopIcon.alt = "Afspelen";
+        spraakknoop.setAttribute("aria-label", "Lees de vraag voor");
+      }
+    }
+
+    function spreekVraag(){
+      if (!("speechSynthesis" in window)){ return; }
+      stopSpraak(false);
+      utterance = new SpeechSynthesisUtterance(vraagtekst.textContent.trim());
+      if (gekozenStem){ utterance.voice = gekozenStem; }
+      utterance.rate = 0.95;       // iets rustiger
+      utterance.pitch = 1.0;
+      utterance.onend = () => { isSprekend = false; stopSpraak(true); };
+      utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
+      window.speechSynthesis.speak(utterance);
+      isSprekend = true;
+      spraakknoopIcon.src = "pauze.jpg";
+      spraakknoopIcon.alt = "Pauzeer";
+      spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
+    }
+
+    function pauzeerOfHervat(){
+      if (!("speechSynthesis" in window)){ return; }
+      const synth = window.speechSynthesis;
+      if (isSprekend && !synth.paused){
+        synth.pause();
+        spraakknoopIcon.src = "speel.jpg";
+        spraakknoopIcon.alt = "Hervat";
+        spraakknoop.setAttribute("aria-label", "Hervat voorlezen");
+      } else if (isSprekend && synth.paused){
+        synth.resume();
+        spraakknoopIcon.src = "pauze.jpg";
+        spraakknoopIcon.alt = "Pauzeer";
+        spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
+      } else {
+        spreekVraag();
+      }
+    }
+
+    spraakknoop.addEventListener("click", pauzeerOfHervat);
+    spraakknoop.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " "){
+        pauzeerOfHervat();
+        e.preventDefault();
+      }
+    });
+
     function toonOpdracht(nr) {
       huidigePagina = nr;
       const vraag = opdrachten[nr - 1];
       vraagtekst.textContent = vraag.tekst;
       vraagAfbeelding.src = vraag.img;
+
+      // Bij nieuwe vraag spraak stoppen en knop resetten
+      stopSpraak(true);
 
       // zet antwoordveld naar bewaarde waarde
       input.value = antwoorden[nr - 1] || "";
