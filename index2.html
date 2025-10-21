@@ -504,27 +504,27 @@
       updatePaginabolletjes();
     }
 
-    document.getElementById("paginering").addEventListener("click", e => {
-      const knop = e.target.closest(".page");
-      if (!knop) return;
-      toonOpdracht(parseInt(knop.dataset.page, 10));
-    });
-    document.getElementById("paginering").addEventListener("keydown", e => {
-      const focusEl = document.activeElement.closest(".page");
-      if (!focusEl) return;
-      if (e.key === "Enter" || e.key === " "){
-        toonOpdracht(parseInt(focusEl.dataset.page, 10));
-        e.preventDefault();
-      }
-      if (e.key === "ArrowRight"){
-        const next = focusEl.nextElementSibling && focusEl.nextElementSibling.classList.contains("page") ? focusEl.nextElementSibling : null;
-        if (next) next.focus();
-      }
-      if (e.key === "ArrowLeft"){
-        const prev = focusEl.previousElementSibling && focusEl.previousElementSibling.classList.contains("page") ? focusEl.previousElementSibling : null;
-        if (prev) prev.focus();
-      }
-    });
+   document.addEventListener("keydown", e => {
+  if (e.key >= "0" && e.key <= "9") {
+    input.value += e.key;
+    bewaarEnUpdate();
+    e.preventDefault();
+  } else if (e.key === "Backspace") {
+    input.value = input.value.slice(0, -1);
+    bewaarEnUpdate();
+    e.preventDefault();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    bewaarEnUpdate();
+    if (huidigePagina < opdrachten.length) {
+      toonOpdracht(huidigePagina + 1);
+    } else {
+      // laatste vraag: focus/selecteer het antwoordvak
+      input.focus();
+      input.select();
+    }
+  }
+});
 
     document.getElementById("btnVolgende").addEventListener("click", () => {
       if (huidigePagina < opdrachten.length) toonOpdracht(huidigePagina + 1);
@@ -556,3 +556,4 @@
   </script>
 </body>
 </html>
+
