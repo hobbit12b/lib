@@ -106,6 +106,7 @@
       width: fit-content;
       max-width: 100%;
     }
+    /* Belangrijk: breedte schaalt, hoogte wordt door JS begrensd zodat onderbalk zichtbaar blijft */
     .illustratie{ display: block; max-width: var(--illustratie-max); width: 100%; height: auto; border-radius: 10px; }
 
     .pad-wrap{
@@ -298,20 +299,20 @@
         img: "01%20geld.jpg"
       },
       {
-        tekst: "Tom heeft 3 rode blokken, 6 groene en 4 blauwe blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
+        tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
         img: "02%20tom%20blokkentoren.jpg"
       },
       {
         tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?",
-        img: "03%20muziekles.jpg"
+        img: "03%20snoepjes%20tellen.png"
       },
       {
         tekst: "Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen. Hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?",
         img: "04%20dobbelen.jpg"
       },
       {
-        tekst: "Ton en Lisa tellen hun snoepjes. Ton heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
-        img: "05%20snoepjes.jpg"
+        tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
+        img: "illustratie%2005%20snoepjes.jpg"
       }
     ];
 
@@ -410,11 +411,72 @@
       }
     });
 
+    // ---- AUTOMATISCHE BEELDHOOGTE: past de afbeelding in tot aan de onderbalk ----
+    function berekenBeschikbareHoogte(){
+      const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
+      const imgTop = vraagAfbeelding.getBoundingClientRect().top;
+
+      // extra marge: padding van figure + kleine veiligheidsmarge
+      const fig = vraagAfbeelding.closest(".illustratie-wrap");
+      const cs = getComputedStyle(fig);
+      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10; // 10px buffer
+
+      // beschikbare hoogte tussen bovenkant afbeelding en bovenkant onderbalk
+      return Math.floor(onderbalkTop - imgTop - extra);
+    }
+
+    let fitRaf = null;
+    function pasAutoMaxHoogteToe(){
+      if (!vraagAfbeelding) return;
+
+      // Eerste pass: bereken ruimte en zet maxHeight
+      const ruimte = berekenBeschikbareHoogte();
+      const MIN_H = 180;            // niet kleiner dan dit (leesbaarheid)
+      const veiligeRuimte = Math.max(MIN_H, ruimte);
+
+      // Stel max-height in; breedte blijft 100%, verhouding blijft intact
+      vraagAfbeelding.style.maxHeight = veiligeRuimte > 0 ? `${veiligeRuimte}px` : "";
+
+      // Tweede pass binnen rAF om na relayout nogmaals te fine-tunen
+      if (fitRaf) cancelAnimationFrame(fitRaf);
+      fitRaf = requestAnimationFrame(() => {
+        const r2 = berekenBeschikbareHoogte();
+        const veilige2 = Math.max(MIN_H, r2);
+        vraagAfbeelding.style.maxHeight = veilige2 > 0 ? `${veilige2}px` : "";
+      });
+    }
+
+    // debounce voor resize
+    let resizeTimer;
+    function onResize(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(pasAutoMaxHoogteToe, 80);
+    }
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", pasAutoMaxHoogteToe);
+
     function toonOpdracht(nr) {
       huidigePagina = nr;
       const vraag = opdrachten[nr - 1];
       vraagtekst.textContent = vraag.tekst;
-      vraagAfbeelding.src = vraag.img;
+
+      // Voorkom stapelen van listeners bij wisselen
+      vraagAfbeelding.replaceWith(vraagAfbeelding.cloneNode(true));
+      // pak de nieuwe referentie
+      const nieuweImg = document.getElementById("vraagAfbeelding");
+      vraagAfbeelding.src = ""; // oude referentie wordt niet meer gebruikt
+
+      // update globale referentie naar de nieuwe <img>
+      // (zodat de rest van de code dezelfde variabele blijft gebruiken)
+      Object.assign(vraagAfbeelding, nieuweImg);
+
+      // set source en pas hoogte toe bij load / meteen als al in cache
+      nieuweImg.src = vraag.img;
+      if (nieuweImg.complete) {
+        pasAutoMaxHoogteToe();
+      } else {
+        nieuweImg.addEventListener("load", pasAutoMaxHoogteToe, { once: true });
+      }
 
       // Bij nieuwe vraag spraak stoppen en knop resetten
       stopSpraak(true);
@@ -505,8 +567,9 @@
     input.addEventListener("input", bewaarEnUpdate);
 
     // start
+    // eerst tonen, daarna een rAF om de hoogte te passen wanneer layout stabiel is
     toonOpdracht(1);
+    requestAnimationFrame(pasAutoMaxHoogteToe);
   </script>
 </body>
 </html>
-
