@@ -66,7 +66,6 @@
       font-weight: 800;
       line-height: 1.45;
       max-width: 75ch;
-      /* moderne en veilige afbreekhints zonder streepjes in het beeld */
       text-wrap: balance;
       overflow-wrap: anywhere;
       word-break: normal;
@@ -292,12 +291,28 @@
   </div>
 
   <script>
+    // Vervangen met jouw vijf nieuwe vragen en illustraties
     const opdrachten = [
-      { tekst: "Sophie heeft een briefje van tien euro, twee muntjes van twee euro en een muntje van één euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
-      { tekst: "Er liggen 8 appels op tafel. Jan eet er 3 op. Hoeveel blijven er over?", img: "02%20appels.jpg" },
-      { tekst: "Een trein vertrekt om 9:15 en komt aan om 10:45. Hoe lang duurt de rit?", img: "03%20trein.jpg" },
-      { tekst: "Lisa koopt 3 zakjes snoep van 2 euro per stuk. Hoeveel betaalt ze?", img: "04%20snoep.jpg" },
-      { tekst: "Tom spaart 5 euro per week. Hoeveel heeft hij na 6 weken?", img: "05%20spaarpot.jpg" }
+      {
+        tekst: "Sophie heeft 1 briefje van 10 euro, 2 muntjes van 2 euro en 1 muntje van 1 euro. Hoeveel euro heeft Sophie in totaal?",
+        img: "01%20geld.jpg"
+      },
+      {
+        tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
+        img: "02%20tom%20blokkentoren.jpg"
+      },
+      {
+        tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?",
+        img: "03%20snoepjes%20tellen.png"
+      },
+      {
+        tekst: "Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen. Hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?",
+        img: "04%20dobbelen.jpg"
+      },
+      {
+        tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
+        img: "illustratie%2005%20snoepjes.jpg"
+      }
     ];
 
     let huidigePagina = 1;
@@ -358,7 +373,7 @@
       stopSpraak(false);
       utterance = new SpeechSynthesisUtterance(vraagtekst.textContent.trim());
       if (gekozenStem){ utterance.voice = gekozenStem; }
-      utterance.rate = 0.95;       // iets rustiger
+      utterance.rate = 0.95;
       utterance.pitch = 1.0;
       utterance.onend = () => { isSprekend = false; stopSpraak(true); };
       utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
