@@ -25,6 +25,9 @@
       --pad-font: clamp(1.1rem, 2vw, 1.6rem);
       --ant-font: clamp(1rem, 1.6vw, 1.25rem);
       --ant-hoogte: 44px;
+
+      /* FIT-VIEWPORT: dynamische hoogte van de onderbalk (wordt via JS gezet) */
+      --onderbalk-h: 0px;
     }
 
     html, body{
@@ -37,10 +40,11 @@
 
     .topbar{ background: var(--kleur-topbar); height: var(--topbar-hoogte); width: 100%; }
 
+    /* FIT-VIEWPORT: maak een viewport-hoog gebied minus topbar; onderbalk zit onder .kaart */
     .pagina{
-      min-height: calc(100% - var(--topbar-hoogte));
+      min-height: calc(100dvh - var(--topbar-hoogte));
       display: grid;
-      grid-template-rows: 1fr auto;
+      grid-template-rows: 1fr auto; /* [kaart] boven + [onderbalk] onder */
     }
 
     .kaart{
@@ -50,6 +54,14 @@
       border-radius: var(--radius);
       box-shadow: var(--schaduw);
       padding: var(--kaart-pad);
+
+      /* FIT-VIEWPORT: begrens de hoogte van de kaart zodat onderbalk past */
+      max-height: calc(100dvh - var(--topbar-hoogte) - var(--onderbalk-h) - 18px - 18px);
+      /* 18px bovenmarge + 18px ondermarge van .onderbalk (komt ongeveer overeen met jouw marges) */
+
+      display: grid;
+      grid-template-rows: auto 1fr; /* vraagrij (auto) + werkveld (neemt rest) */
+      overflow: hidden; /* voorkom dat er over de kaart heenloopt */
     }
 
     .vraagrij{
@@ -57,6 +69,7 @@
       grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: start;
+      min-height: 0; /* FIT-VIEWPORT: laat krimpen als nodig */
     }
 
     /* Vraagtekst groter en prettig afbreken */
@@ -91,11 +104,14 @@
       height: 28px;
     }
 
+    /* FIT-VIEWPORT: werkveld krijgt de resterende hoogte en mag scrollen indien nodig */
     .werkveld{
       display: grid;
       grid-template-columns: 1fr var(--kolom-rechts);
       gap: 28px;
       align-items: start;
+      min-height: 0;       /* cruciaal voor “child mag krimpen” */
+      overflow: auto;      /* als content te groot is, hier scrollen (niet over de onderbalk heen) */
     }
 
     .illustratie-wrap{
@@ -105,9 +121,21 @@
       padding: 12px;
       width: fit-content;
       max-width: 100%;
+      max-height: 100%;    /* FIT-VIEWPORT: pas in het werkveld */
+      display: grid;
+      place-items: center; /* netjes centreren */
     }
-    /* Belangrijk: breedte schaalt, hoogte wordt door JS begrensd zodat onderbalk zichtbaar blijft */
-    .illustratie{ display: block; max-width: var(--illustratie-max); width: 100%; height: auto; border-radius: 10px; }
+    .illustratie{
+      display: block;
+      max-width: var(--illustratie-max);
+      width: 100%;
+      height: auto;
+
+      /* FIT-VIEWPORT: houd altijd volledig zichtbaar binnen de beschikbare hoogte */
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+    }
 
     .pad-wrap{
       background: #fbfbfc;
@@ -177,6 +205,7 @@
       z-index: 5;
       background: linear-gradient(to bottom, rgba(242,243,245,0), rgba(242,243,245,1) 24px);
       padding-top: 6px;
+      /* hoogte wordt door JS gemeten en in --onderbalk-h gezet */
     }
     .navbtn{
       padding: 10px 14px;
@@ -299,20 +328,20 @@
         img: "01%20geld.jpg"
       },
       {
-        tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
+        tekst: "Tom heeft 3 rode blokken, 6 groene en 4 blauwe blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
         img: "02%20tom%20blokkentoren.jpg"
       },
       {
         tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?",
-        img: "03%20snoepjes%20tellen.png"
+        img: "03%20muziekles.jpg"
       },
       {
         tekst: "Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen. Hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?",
         img: "04%20dobbelen.jpg"
       },
       {
-        tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
-        img: "illustratie%2005%20snoepjes.jpg"
+        tekst: "Ton en Lisa tellen hun snoepjes. Ton heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
+        img: "05%20snoepjes.jpg"
       }
     ];
 
@@ -330,6 +359,35 @@
     let isSprekend = false;
     let utterance = null;
     let gekozenStem = null;
+
+    /* ========= FIT-VIEWPORT LOGICA ========= */
+    const onderbalk = document.querySelector('.onderbalk');
+
+    function updateLayoutVars(){
+      // meet actuele hoogte onderbalk (kan variëren door wrap van paginering)
+      const footerH = onderbalk ? onderbalk.getBoundingClientRect().height : 0;
+      document.documentElement.style.setProperty('--onderbalk-h', `${Math.ceil(footerH)}px`);
+    }
+
+    // herbereken bij resize/orientation/DOM-wijzigingen die de onderbalk kunnen beïnvloeden
+    window.addEventListener('resize', () => {
+      updateLayoutVars();
+    });
+    window.addEventListener('orientationchange', () => {
+      // orientation change kan innerHeight flink wijzigen (Chromebooks/tablets)
+      setTimeout(updateLayoutVars, 50);
+    });
+
+    // als fonts of afbeeldingen laden, kan layout verschuiven
+    window.addEventListener('load', () => {
+      updateLayoutVars();
+    });
+
+    // hou ook wijzigingen binnen de paginering in de gaten (wrap bij andere breedtes)
+    const obs = new ResizeObserver(() => updateLayoutVars());
+    if (onderbalk) obs.observe(onderbalk);
+
+    /* ========= EINDE FIT-VIEWPORT ========= */
 
     function kiesNederlandseStem(){
       const stemmen = window.speechSynthesis.getVoices();
@@ -411,72 +469,17 @@
       }
     });
 
-    // ---- AUTOMATISCHE BEELDHOOGTE: past de afbeelding in tot aan de onderbalk ----
-    function berekenBeschikbareHoogte(){
-      const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
-      const imgTop = vraagAfbeelding.getBoundingClientRect().top;
-
-      // extra marge: padding van figure + kleine veiligheidsmarge
-      const fig = vraagAfbeelding.closest(".illustratie-wrap");
-      const cs = getComputedStyle(fig);
-      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10; // 10px buffer
-
-      // beschikbare hoogte tussen bovenkant afbeelding en bovenkant onderbalk
-      return Math.floor(onderbalkTop - imgTop - extra);
-    }
-
-    let fitRaf = null;
-    function pasAutoMaxHoogteToe(){
-      if (!vraagAfbeelding) return;
-
-      // Eerste pass: bereken ruimte en zet maxHeight
-      const ruimte = berekenBeschikbareHoogte();
-      const MIN_H = 180;            // niet kleiner dan dit (leesbaarheid)
-      const veiligeRuimte = Math.max(MIN_H, ruimte);
-
-      // Stel max-height in; breedte blijft 100%, verhouding blijft intact
-      vraagAfbeelding.style.maxHeight = veiligeRuimte > 0 ? `${veiligeRuimte}px` : "";
-
-      // Tweede pass binnen rAF om na relayout nogmaals te fine-tunen
-      if (fitRaf) cancelAnimationFrame(fitRaf);
-      fitRaf = requestAnimationFrame(() => {
-        const r2 = berekenBeschikbareHoogte();
-        const veilige2 = Math.max(MIN_H, r2);
-        vraagAfbeelding.style.maxHeight = veilige2 > 0 ? `${veilige2}px` : "";
-      });
-    }
-
-    // debounce voor resize
-    let resizeTimer;
-    function onResize(){
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(pasAutoMaxHoogteToe, 80);
-    }
-    window.addEventListener("resize", onResize);
-    window.addEventListener("orientationchange", pasAutoMaxHoogteToe);
-
     function toonOpdracht(nr) {
       huidigePagina = nr;
       const vraag = opdrachten[nr - 1];
       vraagtekst.textContent = vraag.tekst;
 
-      // Voorkom stapelen van listeners bij wisselen
-      vraagAfbeelding.replaceWith(vraagAfbeelding.cloneNode(true));
-      // pak de nieuwe referentie
-      const nieuweImg = document.getElementById("vraagAfbeelding");
-      vraagAfbeelding.src = ""; // oude referentie wordt niet meer gebruikt
-
-      // update globale referentie naar de nieuwe <img>
-      // (zodat de rest van de code dezelfde variabele blijft gebruiken)
-      Object.assign(vraagAfbeelding, nieuweImg);
-
-      // set source en pas hoogte toe bij load / meteen als al in cache
-      nieuweImg.src = vraag.img;
-      if (nieuweImg.complete) {
-        pasAutoMaxHoogteToe();
-      } else {
-        nieuweImg.addEventListener("load", pasAutoMaxHoogteToe, { once: true });
-      }
+      // Wacht met updaten van layout tot de afbeelding geladen is (kan hoogte beïnvloeden)
+      vraagAfbeelding.onload = () => {
+        // kleine raf om zeker te zijn dat layout klaar is
+        requestAnimationFrame(updateLayoutVars);
+      };
+      vraagAfbeelding.src = vraag.img;
 
       // Bij nieuwe vraag spraak stoppen en knop resetten
       stopSpraak(true);
@@ -567,9 +570,7 @@
     input.addEventListener("input", bewaarEnUpdate);
 
     // start
-    // eerst tonen, daarna een rAF om de hoogte te passen wanneer layout stabiel is
     toonOpdracht(1);
-    requestAnimationFrame(pasAutoMaxHoogteToe);
   </script>
 </body>
 </html>
