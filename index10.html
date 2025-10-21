@@ -67,8 +67,9 @@
       box-shadow: var(--schaduw);
       padding: 12px;
       width: fit-content;
+      max-width: 100%;
     }
-    .illustratie{ display: block; max-width: var(--illustratie-max); border-radius: 10px; }
+    .illustratie{ display: block; max-width: var(--illustratie-max); width: 100%; height: auto; border-radius: 10px; }
 
     .pad-wrap{
       background: #fbfbfc;
@@ -101,12 +102,9 @@
     }
     .toets:active{ transform: scale(.98); background: #eceff4; }
     .toets--nul{ grid-column: 2; }
-    .toets--enter{
-      grid-column: 3; grid-row: 4;
-      background: #c0392b; color: #fff; border: 0;
-    }
-    .toets--enter:hover::after{
-      content: "Pas antwoord aan";
+    .toets--back{ grid-column: 3; grid-row: 4; background: #c0392b; color: #fff; border: 0; }
+    .toets--back:hover::after{
+      content: "Verwijder laatste cijfer";
       position: absolute;
       bottom: -28px;
       background: #333;
@@ -136,6 +134,11 @@
       grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      background: linear-gradient(to bottom, rgba(242,243,245,0), rgba(242,243,245,1) 24px);
+      padding-top: 6px;
     }
     .navbtn{
       padding: 10px 14px;
@@ -147,18 +150,55 @@
       cursor: pointer;
     }
     .btn-volgende{ background:#1677ff; color:#fff; }
-    .paginering{ display: flex; gap: 10px; align-items: center; }
+    .paginering{ display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .page{
       width: 40px; height: 40px;
       border-radius: 20px;
-      background: #eee;
+      background: #e0e2e6; /* grijs: geen antwoord */
       display: grid; place-items: center;
       font-weight: 700; color: #222;
       cursor: pointer;
-      transition: background 0.2s;
+      border: 1px solid #cfd3dc;
+      transition: background 0.2s, color .2s, border-color .2s;
+      user-select: none;
     }
     .page:hover{ background: #d9e6ff; }
-    .page--actief{ background: #1677ff; color: #fff; }
+    .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
+    .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; } /* wit: antwoord aanwezig */
+
+    /* Responsive aanpassingen voor veel Chromebooks 1366x768 of kleiner */
+    @media (max-width: 1366px), (max-height: 820px){
+      :root{
+        --topbar-hoogte: 44px;
+        --kaart-pad: 14px 16px 18px;
+        --pad-key: 56px;
+        --pad-gap: 10px;
+        --illustratie-max: 440px;
+      }
+      .werkveld{
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+      }
+    }
+
+    /* Extra compact bij nog kleinere hoogte */
+    @media (max-height: 700px){
+      :root{
+        --pad-key: 50px;
+        --illustratie-max: 380px;
+      }
+      .kaart{ margin-top: 10px; }
+      .onderbalk{ margin: 6px auto 10px; }
+    }
+
+    @media (max-width: 900px){
+      .werkveld{ grid-template-columns: 1fr; }
+      .illustratie-wrap{ justify-self: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .toets{ transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -187,7 +227,7 @@
             <button class="toets" data-key="8">8</button>
             <button class="toets" data-key="9">9</button>
             <button class="toets toets--nul" data-key="0">0</button>
-            <button class="toets toets--enter" data-key="enter" title="Pas antwoord aan">⏎</button>
+            <button class="toets toets--back" data-key="backspace" title="Verwijder laatste cijfer">⌫</button>
           </div>
 
           <div class="antwoordblok">
@@ -198,14 +238,14 @@
     </div>
 
     <div class="onderbalk">
-      <div><button class="navbtn" id="btnVorige">Vorige</button></div>
-      <div class="paginering" id="paginering">
-        <div class="page" data-page="1">1</div>
-        <div class="page" data-page="2">2</div>
-        <div class="page" data-page="3">3</div>
-        <div class="page" data-page="4">4</div>
-        <div class="page" data-page="5">5</div>
-        <button class="navbtn btn-volgende" id="btnVolgende">Volgende</button>
+      <div><button class="navbtn" id="btnVorige" type="button">Vorige</button></div>
+      <div class="paginering" id="paginering" aria-label="Vragen">
+        <div class="page" data-page="1" role="button" tabindex="0" aria-label="Vraag 1">1</div>
+        <div class="page" data-page="2" role="button" tabindex="0" aria-label="Vraag 2">2</div>
+        <div class="page" data-page="3" role="button" tabindex="0" aria-label="Vraag 3">3</div>
+        <div class="page" data-page="4" role="button" tabindex="0" aria-label="Vraag 4">4</div>
+        <div class="page" data-page="5" role="button" tabindex="0" aria-label="Vraag 5">5</div>
+        <button class="navbtn btn-volgende" id="btnVolgende" type="button">Volgende</button>
       </div>
     </div>
   </div>
@@ -220,21 +260,58 @@
     ];
 
     let huidigePagina = 1;
+    const antwoorden = new Array(opdrachten.length).fill(""); // bewaart ingevulde antwoorden per vraag
+
+    const vraagtekst = document.getElementById("vraagtekst");
+    const vraagAfbeelding = document.getElementById("vraagAfbeelding");
+    const paginering = document.getElementById("paginering");
+    const input = document.getElementById("antwoord");
+
+    function updatePaginabolletjes(){
+      document.querySelectorAll(".page").forEach((p, idx) => {
+        p.classList.remove("page--actief");
+        p.classList.toggle("page--beantwoord", String(antwoorden[idx]).length > 0);
+      });
+      const actief = document.querySelector(`.page[data-page="${huidigePagina}"]`);
+      if (actief){
+        actief.classList.add("page--actief");
+      }
+    }
 
     function toonOpdracht(nr) {
       huidigePagina = nr;
       const vraag = opdrachten[nr - 1];
-      document.getElementById("vraagtekst").textContent = vraag.tekst;
-      document.getElementById("vraagAfbeelding").src = vraag.img;
-      document.querySelectorAll(".page").forEach(p => p.classList.remove("page--actief"));
-      document.querySelector(`.page[data-page="${nr}"]`).classList.add("page--actief");
-      document.getElementById("antwoord").value = "";
+      vraagtekst.textContent = vraag.tekst;
+      vraagAfbeelding.src = vraag.img;
+
+      // zet antwoordveld naar bewaarde waarde
+      input.value = antwoorden[nr - 1] || "";
+      updatePaginabolletjes();
     }
 
-    document.getElementById("paginering").addEventListener("click", e => {
+    // klik op paginabolletjes
+    paginering.addEventListener("click", e => {
       const knop = e.target.closest(".page");
       if (!knop) return;
-      toonOpdracht(parseInt(knop.dataset.page));
+      toonOpdracht(parseInt(knop.dataset.page, 10));
+    });
+
+    // toetsenbordnavigatie voor bolletjes
+    paginering.addEventListener("keydown", e => {
+      const focusEl = document.activeElement.closest(".page");
+      if (!focusEl) return;
+      if (e.key === "Enter" || e.key === " "){
+        toonOpdracht(parseInt(focusEl.dataset.page, 10));
+        e.preventDefault();
+      }
+      if (e.key === "ArrowRight"){
+        const next = focusEl.nextElementSibling && focusEl.nextElementSibling.classList.contains("page") ? focusEl.nextElementSibling : null;
+        if (next) next.focus();
+      }
+      if (e.key === "ArrowLeft"){
+        const prev = focusEl.previousElementSibling && focusEl.previousElementSibling.classList.contains("page") ? focusEl.previousElementSibling : null;
+        if (prev) prev.focus();
+      }
     });
 
     document.getElementById("btnVolgende").addEventListener("click", () => {
@@ -245,28 +322,42 @@
       if (huidigePagina > 1) toonOpdracht(huidigePagina - 1);
     });
 
-    // Keypad
+    // Numeriek pad
     const pad = document.getElementById("pad");
-    const input = document.getElementById("antwoord");
+
+    function bewaarEnUpdate(){
+      antwoorden[huidigePagina - 1] = input.value;
+      updatePaginabolletjes();
+    }
 
     pad.addEventListener("click", e => {
       const btn = e.target.closest(".toets");
       if (!btn) return;
       const key = btn.dataset.key;
-      if (key === "enter") {
+
+      if (key === "backspace"){
+        input.value = input.value.slice(0, -1);
+        bewaarEnUpdate();
         input.focus();
-        input.select();
         return;
       }
+
       if (/^\d$/.test(key)) {
         input.value += key;
+        bewaarEnUpdate();
         input.focus();
       }
     });
 
+    // fysiek toetsenbord
     document.addEventListener("keydown", e => {
       if (e.key >= "0" && e.key <= "9") {
         input.value += e.key;
+        bewaarEnUpdate();
+        e.preventDefault();
+      } else if (e.key === "Backspace") {
+        input.value = input.value.slice(0, -1);
+        bewaarEnUpdate();
         e.preventDefault();
       } else if (e.key === "Enter") {
         input.focus();
@@ -275,6 +366,10 @@
       }
     });
 
+    // direct updaten bij handmatige invoer of plakken
+    input.addEventListener("input", bewaarEnUpdate);
+
+    // start
     toonOpdracht(1);
   </script>
 </body>
