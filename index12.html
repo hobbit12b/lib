@@ -15,19 +15,18 @@
       --topbar-hoogte: 56px;
       --kaart-max: 1120px;
       --kaart-pad: 18px 24px 28px;
-      /* Grotere vraagtekst */
+
       --vraag-font: clamp(1.2rem, 2.2vw, 1.6rem);
       --vraag-mt: .5rem;
+
       --kolom-rechts: 360px;
       --illustratie-max: 540px;
+
       --pad-key: 64px;
       --pad-gap: 12px;
       --pad-font: clamp(1.1rem, 2vw, 1.6rem);
       --ant-font: clamp(1rem, 1.6vw, 1.25rem);
       --ant-hoogte: 44px;
-
-      /* FIT-VIEWPORT: dynamische hoogte van de onderbalk (wordt via JS gezet) */
-      --onderbalk-h: 0px;
     }
 
     html, body{
@@ -40,11 +39,10 @@
 
     .topbar{ background: var(--kleur-topbar); height: var(--topbar-hoogte); width: 100%; }
 
-    /* FIT-VIEWPORT: maak een viewport-hoog gebied minus topbar; onderbalk zit onder .kaart */
     .pagina{
-      min-height: calc(100dvh - var(--topbar-hoogte));
+      min-height: calc(100% - var(--topbar-hoogte));
       display: grid;
-      grid-template-rows: 1fr auto; /* [kaart] boven + [onderbalk] onder */
+      grid-template-rows: 1fr auto;
     }
 
     .kaart{
@@ -54,14 +52,6 @@
       border-radius: var(--radius);
       box-shadow: var(--schaduw);
       padding: var(--kaart-pad);
-
-      /* FIT-VIEWPORT: begrens de hoogte van de kaart zodat onderbalk past */
-      max-height: calc(100dvh - var(--topbar-hoogte) - var(--onderbalk-h) - 18px - 18px);
-      /* 18px bovenmarge + 18px ondermarge van .onderbalk (komt ongeveer overeen met jouw marges) */
-
-      display: grid;
-      grid-template-rows: auto 1fr; /* vraagrij (auto) + werkveld (neemt rest) */
-      overflow: hidden; /* voorkom dat er over de kaart heenloopt */
     }
 
     .vraagrij{
@@ -69,10 +59,8 @@
       grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: start;
-      min-height: 0; /* FIT-VIEWPORT: laat krimpen als nodig */
     }
 
-    /* Vraagtekst groter en prettig afbreken */
     .vraag{
       margin: var(--vraag-mt) 0 8px 0;
       font-size: var(--vraag-font);
@@ -84,7 +72,6 @@
       word-break: normal;
     }
 
-    /* Play pauze knop */
     .spraakknoop{
       display: inline-grid;
       place-items: center;
@@ -98,20 +85,14 @@
       transition: transform .06s ease, background .15s;
     }
     .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
-    .spraakknoop img{
-      display: block;
-      width: 28px;
-      height: 28px;
-    }
+    .spraakknoop img{ display: block; width: 28px; height: 28px; }
 
-    /* FIT-VIEWPORT: werkveld krijgt de resterende hoogte en mag scrollen indien nodig */
     .werkveld{
       display: grid;
       grid-template-columns: 1fr var(--kolom-rechts);
       gap: 28px;
-      align-items: start;
-      min-height: 0;       /* cruciaal voor “child mag krimpen” */
-      overflow: auto;      /* als content te groot is, hier scrollen (niet over de onderbalk heen) */
+      /* was: align-items: start; */
+      align-items: center; /* verticaal centreren van beide kolommen */
     }
 
     .illustratie-wrap{
@@ -121,20 +102,22 @@
       padding: 12px;
       width: fit-content;
       max-width: 100%;
-      max-height: 100%;    /* FIT-VIEWPORT: pas in het werkveld */
-      display: grid;
-      place-items: center; /* netjes centreren */
+    }
+
+    /* Container met vaste (dynamische) hoogte; afbeelding past erin zonder croppen */
+    .illustratie-box{
+      width: min(var(--illustratie-max), 100%);
+      height: 300px;           /* wordt door JS overschreven */
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
     }
     .illustratie{
-      display: block;
-      max-width: var(--illustratie-max);
       width: 100%;
-      height: auto;
-
-      /* FIT-VIEWPORT: houd altijd volledig zichtbaar binnen de beschikbare hoogte */
-      max-height: 100%;
-      object-fit: contain;
-      border-radius: 10px;
+      height: 100%;
+      object-fit: contain;     /* volledige afbeelding tonen */
+      object-position: center;
+      display: block;
     }
 
     .pad-wrap{
@@ -142,6 +125,7 @@
       border: 2px solid #e7e7ea;
       border-radius: 18px;
       padding: 18px;
+      align-self: center; /* dit blok zelf centreren binnen de gridcel */
     }
 
     .pad{
@@ -205,7 +189,6 @@
       z-index: 5;
       background: linear-gradient(to bottom, rgba(242,243,245,0), rgba(242,243,245,1) 24px);
       padding-top: 6px;
-      /* hoogte wordt door JS gemeten en in --onderbalk-h gezet */
     }
     .navbtn{
       padding: 10px 14px;
@@ -241,10 +224,7 @@
         --pad-gap: 10px;
         --illustratie-max: 440px;
       }
-      .werkveld{
-        grid-template-columns: 1fr 320px;
-        gap: 20px;
-      }
+      .werkveld{ grid-template-columns: 1fr 320px; gap: 20px; }
     }
 
     @media (max-height: 700px){
@@ -259,6 +239,7 @@
     @media (max-width: 900px){
       .werkveld{ grid-template-columns: 1fr; }
       .illustratie-wrap{ justify-self: center; }
+      .pad-wrap{ justify-self: center; } /* netjes centreren in de enkelkolom-layout */
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -274,7 +255,6 @@
       <div class="vraagrij">
         <div class="vraag" id="vraagtekst"></div>
 
-        <!-- Afspelen pauzeren knop -->
         <button id="spraakknoop" class="spraakknoop" type="button" aria-label="Lees de vraag voor">
           <img id="spraakknoopIcon" src="speel.jpg" alt="Afspelen" />
         </button>
@@ -282,7 +262,10 @@
 
       <div class="werkveld">
         <figure class="illustratie-wrap">
-          <img class="illustratie" id="vraagAfbeelding" src="" alt="illustratie bij de vraag" />
+          <!-- Container die we in hoogte begrenzen; img past erin zonder croppen -->
+          <div id="illustratieBox" class="illustratie-box">
+            <img class="illustratie" id="vraagAfbeelding" src="" alt="illustratie bij de vraag" />
+          </div>
         </figure>
 
         <aside class="pad-wrap" aria-label="Numeriek toetsenbord">
@@ -321,119 +304,56 @@
   </div>
 
   <script>
-    // Vervangen met jouw vijf nieuwe vragen en illustraties
+    // --------- Vragen + illustraties ----------
     const opdrachten = [
-      {
-        tekst: "Sophie heeft 1 briefje van 10 euro, 2 muntjes van 2 euro en 1 muntje van 1 euro. Hoeveel euro heeft Sophie in totaal?",
-        img: "01%20geld.jpg"
-      },
-      {
-        tekst: "Tom heeft 3 rode blokken, 6 groene en 4 blauwe blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?",
-        img: "02%20tom%20blokkentoren.jpg"
-      },
-      {
-        tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?",
-        img: "03%20muziekles.jpg"
-      },
-      {
-        tekst: "Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen. Hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?",
-        img: "04%20dobbelen.jpg"
-      },
-      {
-        tekst: "Ton en Lisa tellen hun snoepjes. Ton heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
-        img: "05%20snoepjes.jpg"
-      }
+      { tekst: "Sophie heeft 1 briefje van 10 euro, 2 muntjes van 2 euro en 1 muntje van 1 euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
+      { tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?", img: "02%20tom%20blokkentoren.jpg" },
+      { tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?", img: "03%20muziekles.jpg" },
+      { tekst: "Jasper gooit in totaal 10. 4 ogen dobbelt hij met de ene dobbelsteen. Hoeveel ogen moet hij met de 2e dobbelsteen gooien om 10 te krijgen?", img: "04%20dobbelen.jpg" },
+      { tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?", img: "05%20snoepjes.jpg" }
     ];
 
+    // --------- Elementen ----------
     let huidigePagina = 1;
     const antwoorden = new Array(opdrachten.length).fill("");
 
     const vraagtekst = document.getElementById("vraagtekst");
     const vraagAfbeelding = document.getElementById("vraagAfbeelding");
+    const illustratieBox = document.getElementById("illustratieBox");
     const paginering = document.getElementById("paginering");
     const input = document.getElementById("antwoord");
 
-    // Spraak variabelen
+    // --------- Spraak ----------
     const spraakknoop = document.getElementById("spraakknoop");
     const spraakknoopIcon = document.getElementById("spraakknoopIcon");
     let isSprekend = false;
     let utterance = null;
     let gekozenStem = null;
 
-    /* ========= FIT-VIEWPORT LOGICA ========= */
-    const onderbalk = document.querySelector('.onderbalk');
-
-    function updateLayoutVars(){
-      // meet actuele hoogte onderbalk (kan variëren door wrap van paginering)
-      const footerH = onderbalk ? onderbalk.getBoundingClientRect().height : 0;
-      document.documentElement.style.setProperty('--onderbalk-h', `${Math.ceil(footerH)}px`);
-    }
-
-    // herbereken bij resize/orientation/DOM-wijzigingen die de onderbalk kunnen beïnvloeden
-    window.addEventListener('resize', () => {
-      updateLayoutVars();
-    });
-    window.addEventListener('orientationchange', () => {
-      // orientation change kan innerHeight flink wijzigen (Chromebooks/tablets)
-      setTimeout(updateLayoutVars, 50);
-    });
-
-    // als fonts of afbeeldingen laden, kan layout verschuiven
-    window.addEventListener('load', () => {
-      updateLayoutVars();
-    });
-
-    // hou ook wijzigingen binnen de paginering in de gaten (wrap bij andere breedtes)
-    const obs = new ResizeObserver(() => updateLayoutVars());
-    if (onderbalk) obs.observe(onderbalk);
-
-    /* ========= EINDE FIT-VIEWPORT ========= */
-
     function kiesNederlandseStem(){
       const stemmen = window.speechSynthesis.getVoices();
-      // kies een Nederlandse stem als die bestaat
-      gekozenStem = stemmen.find(v =>
-        /nl/i.test(v.lang) || /Dutch/i.test(v.name)
-      ) || stemmen[0] || null;
+      gekozenStem = stemmen.find(v => /nl/i.test(v.lang) || /Dutch/i.test(v.name)) || stemmen[0] || null;
     }
-
-    // sommige browsers laden stemmen asynchroon
     if ("speechSynthesis" in window){
       kiesNederlandseStem();
       window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
     }
 
-    function updatePaginabolletjes(){
-      document.querySelectorAll(".page").forEach((p, idx) => {
-        p.classList.remove("page--actief");
-        p.classList.toggle("page--beantwoord", String(antwoorden[idx]).length > 0);
-      });
-      const actief = document.querySelector(`.page[data-page="${huidigePagina}"]`);
-      if (actief){
-        actief.classList.add("page--actief");
-      }
-    }
-
     function stopSpraak(resetIcon = true){
-      if ("speechSynthesis" in window){
-        window.speechSynthesis.cancel();
-      }
-      isSprekend = false;
-      utterance = null;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      isSprekend = false; utterance = null;
       if (resetIcon){
         spraakknoopIcon.src = "speel.jpg";
         spraakknoopIcon.alt = "Afspelen";
         spraakknoop.setAttribute("aria-label", "Lees de vraag voor");
       }
     }
-
     function spreekVraag(){
-      if (!("speechSynthesis" in window)){ return; }
+      if (!("speechSynthesis" in window)) return;
       stopSpraak(false);
       utterance = new SpeechSynthesisUtterance(vraagtekst.textContent.trim());
-      if (gekozenStem){ utterance.voice = gekozenStem; }
-      utterance.rate = 0.95;
-      utterance.pitch = 1.0;
+      if (gekozenStem) utterance.voice = gekozenStem;
+      utterance.rate = 0.95; utterance.pitch = 1.0;
       utterance.onend = () => { isSprekend = false; stopSpraak(true); };
       utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
       window.speechSynthesis.speak(utterance);
@@ -442,9 +362,8 @@
       spraakknoopIcon.alt = "Pauzeer";
       spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
     }
-
     function pauzeerOfHervat(){
-      if (!("speechSynthesis" in window)){ return; }
+      if (!("speechSynthesis" in window)) return;
       const synth = window.speechSynthesis;
       if (isSprekend && !synth.paused){
         synth.pause();
@@ -460,44 +379,81 @@
         spreekVraag();
       }
     }
-
     spraakknoop.addEventListener("click", pauzeerOfHervat);
     spraakknoop.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " "){
-        pauzeerOfHervat();
-        e.preventDefault();
-      }
+      if (e.key === "Enter" || e.key === " "){ pauzeerOfHervat(); e.preventDefault(); }
     });
 
+    // --------- Paginering indicators ----------
+    function updatePaginabolletjes(){
+      document.querySelectorAll(".page").forEach((p, idx) => {
+        p.classList.remove("page--actief");
+        p.classList.toggle("page--beantwoord", String(antwoorden[idx]).length > 0);
+      });
+      const actief = document.querySelector(`.page[data-page="${huidigePagina}"]`);
+      if (actief) actief.classList.add("page--actief");
+    }
+
+    // --------- Universele hoogteberekening ----------
+    function beschikbareHoogteVoorIllustratieBox(){
+      const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
+      const boxTop = illustratieBox.getBoundingClientRect().top;
+
+      // Veiligheidsbuffer + rekening houden met de padding van figure
+      const fig = document.querySelector(".illustratie-wrap");
+      const cs = getComputedStyle(fig);
+      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10; // 10px buffer
+
+      return Math.floor(onderbalkTop - boxTop - extra);
+    }
+
+    function pasIllustratieBoxAan(){
+      const MIN_H = 160; // niet kleiner dan dit voor leesbaarheid
+      const h = Math.max(MIN_H, beschikbareHoogteVoorIllustratieBox());
+      illustratieBox.style.height = (h > 0 ? h : MIN_H) + "px";
+    }
+
+    // Debounced resize / orientationchange
+    let resizeTimer;
+    function onResize(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(pasIllustratieBoxAan, 80);
+    }
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", pasIllustratieBoxAan);
+
+    // --------- Navigatie ----------
     function toonOpdracht(nr) {
       huidigePagina = nr;
       const vraag = opdrachten[nr - 1];
       vraagtekst.textContent = vraag.tekst;
 
-      // Wacht met updaten van layout tot de afbeelding geladen is (kan hoogte beïnvloeden)
-      vraagAfbeelding.onload = () => {
-        // kleine raf om zeker te zijn dat layout klaar is
-        requestAnimationFrame(updateLayoutVars);
-      };
-      vraagAfbeelding.src = vraag.img;
+      // Afbeelding wisselen; na laden en direct (cache) de boxhoogte aanpassen
+      if (vraagAfbeelding.complete) {
+        // even src leeg forceren om onload te laten vuren als dezelfde afbeelding terugkomt
+        const oldSrc = vraagAfbeelding.src;
+        vraagAfbeelding.src = "";
+        requestAnimationFrame(() => {
+          vraagAfbeelding.src = vraag.img;
+        });
+      } else {
+        vraagAfbeelding.src = vraag.img;
+      }
+      vraagAfbeelding.onload = pasIllustratieBoxAan;
+      requestAnimationFrame(pasIllustratieBoxAan);
 
-      // Bij nieuwe vraag spraak stoppen en knop resetten
+      // spraak reset + antwoord herstellen
       stopSpraak(true);
-
-      // zet antwoordveld naar bewaarde waarde
       input.value = antwoorden[nr - 1] || "";
       updatePaginabolletjes();
     }
 
-    // klik op paginabolletjes
-    paginering.addEventListener("click", e => {
+    document.getElementById("paginering").addEventListener("click", e => {
       const knop = e.target.closest(".page");
       if (!knop) return;
       toonOpdracht(parseInt(knop.dataset.page, 10));
     });
-
-    // toetsenbordnavigatie voor bolletjes
-    paginering.addEventListener("keydown", e => {
+    document.getElementById("paginering").addEventListener("keydown", e => {
       const focusEl = document.activeElement.closest(".page");
       if (!focusEl) return;
       if (e.key === "Enter" || e.key === " "){
@@ -517,60 +473,31 @@
     document.getElementById("btnVolgende").addEventListener("click", () => {
       if (huidigePagina < opdrachten.length) toonOpdracht(huidigePagina + 1);
     });
-
     document.getElementById("btnVorige").addEventListener("click", () => {
       if (huidigePagina > 1) toonOpdracht(huidigePagina - 1);
     });
 
-    // Numeriek pad
+    // --------- Numeriek pad ----------
     const pad = document.getElementById("pad");
-
-    function bewaarEnUpdate(){
-      antwoorden[huidigePagina - 1] = input.value;
-      updatePaginabolletjes();
-    }
-
+    function bewaarEnUpdate(){ antwoorden[huidigePagina - 1] = input.value; updatePaginabolletjes(); }
     pad.addEventListener("click", e => {
       const btn = e.target.closest(".toets");
       if (!btn) return;
       const key = btn.dataset.key;
-
-      if (key === "backspace"){
-        input.value = input.value.slice(0, -1);
-        bewaarEnUpdate();
-        input.focus();
-        return;
-      }
-
-      if (/^\d$/.test(key)) {
-        input.value += key;
-        bewaarEnUpdate();
-        input.focus();
-      }
+      if (key === "backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); input.focus(); return; }
+      if (/^\d$/.test(key)) { input.value += key; bewaarEnUpdate(); input.focus(); }
     });
-
-    // fysiek toetsenbord
     document.addEventListener("keydown", e => {
-      if (e.key >= "0" && e.key <= "9") {
-        input.value += e.key;
-        bewaarEnUpdate();
-        e.preventDefault();
-      } else if (e.key === "Backspace") {
-        input.value = input.value.slice(0, -1);
-        bewaarEnUpdate();
-        e.preventDefault();
-      } else if (e.key === "Enter") {
-        input.focus();
-        input.select();
-        e.preventDefault();
-      }
+      if (e.key >= "0" && e.key <= "9") { input.value += e.key; bewaarEnUpdate(); e.preventDefault(); }
+      else if (e.key === "Backspace") { input.value = input.value.slice(0, -1); bewaarEnUpdate(); e.preventDefault(); }
+      else if (e.key === "Enter") { input.focus(); input.select(); e.preventDefault(); }
     });
-
-    // direct updaten bij handmatige invoer of plakken
     input.addEventListener("input", bewaarEnUpdate);
 
-    // start
+    // --------- Start ----------
     toonOpdracht(1);
+    // Nog een tikje later als layout “settled” is
+    requestAnimationFrame(pasIllustratieBoxAan);
   </script>
 </body>
 </html>
