@@ -365,195 +365,268 @@
   </div>
 
   <script>
-    // --------- Vragen + illustraties ----------
-    const opdrachten = [
-      { tekst: "Sophie heeft 1 briefje van tien euro, 2 muntjes van twee euro en 1 muntje van één euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
-      { tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?", img: "02%20tom%20blokkentoren.jpg" },
-      { tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?", img: "03%20muziekles.jpg" },
-      { tekst: "Jasper gooit met twee dobbelstenen samen 10. Met de eerste dobbelsteen werpt hij 4 ogen. Hoeveel ogen moet hij met de tweede dobbelsteen gooien om samen 10 te krijgen?", img: "04%20dobbelen.jpg" },
-      { tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?", img: "05%20snoepjes.jpg" }
-    ];
+  // --------- Vragen + illustraties ----------
+  const opdrachten = [
+    { tekst: "Sophie heeft 1 briefje van tien euro, 2 muntjes van twee euro en 1 muntje van één euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
+    { tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?", img: "02%20tom%20blokkentoren.jpg" },
+    { tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?", img: "03%20muziekles.jpg" },
+    { tekst: "Jasper gooit met twee dobbelstenen samen 10. Met de eerste dobbelsteen werpt hij 4 ogen. Hoeveel ogen moet hij met de tweede dobbelsteen gooien om samen 10 te krijgen?", img: "04%20dobbelen.jpg" },
+    { tekst: "Ton en Lisa tellen hun snoepjes. Tom heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?", img: "05%20snoepjes.jpg" }
+  ];
 
-    // --------- Elementen ----------
-    let huidigePagina = 1;
-    const antwoorden = new Array(opdrachten.length).fill("");
+  // --------- Elementen ----------
+  let huidigePagina = 1;
+  const antwoorden = new Array(opdrachten.length).fill("");
 
-    const vraagtekst = document.getElementById("vraagtekst");
-    const vraagAfbeelding = document.getElementById("vraagAfbeelding");
-    const illustratieBox = document.getElementById("illustratieBox");
-    const paginering = document.getElementById("paginering");
-    const input = document.getElementById("antwoord");
+  const vraagtekst = document.getElementById("vraagtekst");
+  const vraagAfbeelding = document.getElementById("vraagAfbeelding");
+  const illustratieBox = document.getElementById("illustratieBox");
+  const paginering = document.getElementById("paginering");
+  const input = document.getElementById("antwoord");
+  const werkveld = document.querySelector(".werkveld");
+  const btnVolgende = document.getElementById("btnVolgende");
+  const btnVorige = document.getElementById("btnVorige");
 
-    // --------- Spraak ----------
-    const spraakknoop = document.getElementById("spraakknoop");
-    const spraakknoopIcon = document.getElementById("spraakknoopIcon");
-    let isSprekend = false;
-    let utterance = null;
-    let gekozenStem = null;
+  // --------- Afrondingstekst ----------
+  const AFRONDING_TEKST = [
+    "Je hebt nu alle vragen gezien.",
+    "Heb je alles gemaakt?",
+    "Kijk je antwoorden nog even na."
+  ].join("\n");
 
-    function kiesNederlandseStem(){
-      const stemmen = window.speechSynthesis.getVoices();
-      gekozenStem = stemmen.find(v => /nl/i.test(v.lang) || /Dutch/i.test(v.name)) || stemmen[0] || null;
+  // --------- Spraak ----------
+  const spraakknoop = document.getElementById("spraakknoop");
+  const spraakknoopIcon = document.getElementById("spraakknoopIcon");
+  let isSprekend = false;
+  let utterance = null;
+  let gekozenStem = null;
+
+  function kiesNederlandseStem(){
+    const stemmen = window.speechSynthesis.getVoices();
+    gekozenStem = stemmen.find(v => /nl/i.test(v.lang) || /Dutch/i.test(v.name)) || stemmen[0] || null;
+  }
+  if ("speechSynthesis" in window){
+    kiesNederlandseStem();
+    window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
+  }
+
+  function stopSpraak(resetIcon = true){
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    isSprekend = false; utterance = null;
+    if (resetIcon){
+      spraakknoopIcon.src = "speel.jpg";
+      spraakknoopIcon.alt = "Afspelen";
+      spraakknoop.setAttribute("aria-label", "Lees de vraag voor");
     }
-    if ("speechSynthesis" in window){
-      kiesNederlandseStem();
-      window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
-    }
-
-    function stopSpraak(resetIcon = true){
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      isSprekend = false; utterance = null;
-      if (resetIcon){
-        spraakknoopIcon.src = "speel.jpg";
-        spraakknoopIcon.alt = "Afspelen";
-        spraakknoop.setAttribute("aria-label", "Lees de vraag voor");
-      }
-    }
-    function spreekVraag(){
-      if (!("speechSynthesis" in window)) return;
-      stopSpraak(false);
-      utterance = new SpeechSynthesisUtterance(vraagtekst.textContent.trim());
-      if (gekozenStem) utterance.voice = gekozenStem;
-      utterance.rate = 0.95; utterance.pitch = 1.0;
-      utterance.onend = () => { isSprekend = false; stopSpraak(true); };
-      utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
-      window.speechSynthesis.speak(utterance);
-      isSprekend = true;
+  }
+  function spreekVraag(){
+    if (!("speechSynthesis" in window)) return;
+    stopSpraak(false);
+    // Lees altijd de huidige vraagtekst of afrondingstekst
+    const tekst = vraagtekst.textContent.trim();
+    if (!tekst) return;
+    utterance = new SpeechSynthesisUtterance(tekst);
+    if (gekozenStem) utterance.voice = gekozenStem;
+    utterance.rate = 0.95; utterance.pitch = 1.0;
+    utterance.onend = () => { isSprekend = false; stopSpraak(true); };
+    utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
+    window.speechSynthesis.speak(utterance);
+    isSprekend = true;
+    spraakknoopIcon.src = "pauze.jpg";
+    spraakknoopIcon.alt = "Pauzeer";
+    spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
+  }
+  function pauzeerOfHervat(){
+    if (!("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+    if (isSprekend && !synth.paused){
+      synth.pause();
+      spraakknoopIcon.src = "speel.jpg";
+      spraakknoopIcon.alt = "Hervat";
+      spraakknoop.setAttribute("aria-label", "Hervat voorlezen");
+    } else if (isSprekend && synth.paused){
+      synth.resume();
       spraakknoopIcon.src = "pauze.jpg";
       spraakknoopIcon.alt = "Pauzeer";
       spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
+    } else {
+      spreekVraag();
     }
-    function pauzeerOfHervat(){
-      if (!("speechSynthesis" in window)) return;
-      const synth = window.speechSynthesis;
-      if (isSprekend && !synth.paused){
-        synth.pause();
-        spraakknoopIcon.src = "speel.jpg";
-        spraakknoopIcon.alt = "Hervat";
-        spraakknoop.setAttribute("aria-label", "Hervat voorlezen");
-      } else if (isSprekend && synth.paused){
-        synth.resume();
-        spraakknoopIcon.src = "pauze.jpg";
-        spraakknoopIcon.alt = "Pauzeer";
-        spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
-      } else {
-        spreekVraag();
-      }
-    }
-    spraakknoop.addEventListener("click", pauzeerOfHervat);
-    spraakknoop.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " "){ pauzeerOfHervat(); e.preventDefault(); }
-    });
+  }
+  spraakknoop.addEventListener("click", pauzeerOfHervat);
+  spraakknoop.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " "){ pauzeerOfHervat(); e.preventDefault(); }
+  });
 
-    // --------- Paginering ----------
-    function updatePaginabolletjes(){
-      document.querySelectorAll(".page").forEach((p, idx) => {
-        p.classList.remove("page--actief");
-        p.classList.toggle("page--beantwoord", String(antwoorden[idx]).length > 0);
-      });
+  // --------- Paginering ----------
+  function updatePaginabolletjes(){
+    document.querySelectorAll(".page").forEach((p, idx) => {
+      p.classList.remove("page--actief");
+      p.classList.toggle("page--beantwoord", String(antwoorden[idx]).length > 0);
+    });
+    // Alleen actief markeren als we in een echte vraag zitten
+    if (huidigePagina >= 1 && huidigePagina <= opdrachten.length){
       const actief = document.querySelector(`.page[data-page="${huidigePagina}"]`);
       if (actief) actief.classList.add("page--actief");
     }
+  }
 
-    // --------- Hoogteberekening illustratie ----------
-    function beschikbareHoogteVoorIllustratieBox(){
-      const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
-      const boxTop = illustratieBox.getBoundingClientRect().top;
+  // --------- Hoogteberekening illustratie ----------
+  function beschikbareHoogteVoorIllustratieBox(){
+    const onderbalkTop = document.querySelector(".onderbalk").getBoundingClientRect().top;
+    const boxTop = illustratieBox.getBoundingClientRect().top;
 
-      const fig = document.querySelector(".illustratie-wrap");
-      const cs = getComputedStyle(fig);
-      const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10;
+    const fig = document.querySelector(".illustratie-wrap");
+    const cs = getComputedStyle(fig);
+    const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 10;
 
-      return Math.floor(onderbalkTop - boxTop - extra);
+    return Math.floor(onderbalkTop - boxTop - extra);
+  }
+
+  function pasIllustratieBoxAan(){
+    const MIN_H = 160;
+    const h = Math.max(MIN_H, beschikbareHoogteVoorIllustratieBox());
+    illustratieBox.style.height = (h > 0 ? h : MIN_H) + "px";
+  }
+
+  let resizeTimer;
+  function onResize(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(pasIllustratieBoxAan, 80);
+  }
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", pasIllustratieBoxAan);
+
+  // --------- Afrondingsscherm ----------
+  function toonAfronding(){
+    huidigePagina = opdrachten.length + 1;        // "pagina" na de laatste vraag
+    // Toon alleen de tekst; verberg werkveld + 'Volgende'
+    vraagtekst.innerHTML = AFRONDING_TEKST.replace(/\n/g, "<br>");
+    werkveld.style.display = "none";
+    btnVolgende.style.display = "none";
+    stopSpraak(true);
+    updatePaginabolletjes();
+  }
+
+  // --------- Navigatie ----------
+  function toonOpdracht(nr) {
+    // Onjuiste nr => afronding
+    if (nr < 1 || nr > opdrachten.length) {
+      toonAfronding();
+      return;
     }
+    huidigePagina = nr;
+    const vraag = opdrachten[nr - 1];
 
-    function pasIllustratieBoxAan(){
-      const MIN_H = 160;
-      const h = Math.max(MIN_H, beschikbareHoogteVoorIllustratieBox());
-      illustratieBox.style.height = (h > 0 ? h : MIN_H) + "px";
-    }
+    // Herstel UI voor normale vraag
+    werkveld.style.display = "grid";
+    btnVolgende.style.display = ""; // reset naar standaard (zichtbaar)
 
-    let resizeTimer;
-    function onResize(){
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(pasIllustratieBoxAan, 80);
-    }
-    window.addEventListener("resize", onResize);
-    window.addEventListener("orientationchange", pasIllustratieBoxAan);
+    vraagtekst.textContent = vraag.tekst;
 
-    // --------- Navigatie ----------
-    function toonOpdracht(nr) {
-      huidigePagina = nr;
-      const vraag = opdrachten[nr - 1];
-      vraagtekst.textContent = vraag.tekst;
-
-      if (vraagAfbeelding.complete) {
-        const oldSrc = vraagAfbeelding.src;
-        vraagAfbeelding.src = "";
-        requestAnimationFrame(() => {
-          vraagAfbeelding.src = vraag.img;
-        });
-      } else {
+    if (vraagAfbeelding.complete) {
+      const oldSrc = vraagAfbeelding.src;
+      vraagAfbeelding.src = "";
+      requestAnimationFrame(() => {
         vraagAfbeelding.src = vraag.img;
-      }
-      vraagAfbeelding.onload = pasIllustratieBoxAan;
-      requestAnimationFrame(pasIllustratieBoxAan);
-
-      stopSpraak(true);
-      input.value = antwoorden[nr - 1] || "";
-      updatePaginabolletjes();
+      });
+    } else {
+      vraagAfbeelding.src = vraag.img;
     }
+    vraagAfbeelding.onload = pasIllustratieBoxAan;
+    requestAnimationFrame(pasIllustratieBoxAan);
 
-   document.addEventListener("keydown", e => {
-  if (e.key >= "0" && e.key <= "9") {
-    input.value += e.key;
-    bewaarEnUpdate();
-    e.preventDefault();
-  } else if (e.key === "Backspace") {
-    input.value = input.value.slice(0, -1);
-    bewaarEnUpdate();
-    e.preventDefault();
-  } else if (e.key === "Enter") {
-    e.preventDefault();
-    bewaarEnUpdate();
+    stopSpraak(true);
+    input.value = antwoorden[nr - 1] || "";
+    updatePaginabolletjes();
+  }
+
+  paginering.addEventListener("click", e => {
+    const knop = e.target.closest(".page");
+    if (!knop) return;
+    toonOpdracht(parseInt(knop.dataset.page, 10));
+  });
+  paginering.addEventListener("keydown", e => {
+    const focusEl = document.activeElement.closest(".page");
+    if (!focusEl) return;
+    if (e.key === "Enter" || e.key === " "){
+      toonOpdracht(parseInt(focusEl.dataset.page, 10));
+      e.preventDefault();
+    }
+    if (e.key === "ArrowRight"){
+      const next = focusEl.nextElementSibling && focusEl.nextElementSibling.classList.contains("page") ? focusEl.nextElementSibling : null;
+      if (next) next.focus();
+    }
+    if (e.key === "ArrowLeft"){
+      const prev = focusEl.previousElementSibling && focusEl.previousElementSibling.classList.contains("page") ? focusEl.previousElementSibling : null;
+      if (prev) prev.focus();
+    }
+  });
+
+  btnVolgende.addEventListener("click", () => {
     if (huidigePagina < opdrachten.length) {
       toonOpdracht(huidigePagina + 1);
-    } else {
-      // laatste vraag: focus/selecteer het antwoordvak
-      input.focus();
-      input.select();
+    } else if (huidigePagina === opdrachten.length) {
+      // Laatste vraag -> afrondingsscherm
+      toonAfronding();
     }
-  }
-});
+  });
 
-    document.getElementById("btnVolgende").addEventListener("click", () => {
-      if (huidigePagina < opdrachten.length) toonOpdracht(huidigePagina + 1);
-    });
-    document.getElementById("btnVorige").addEventListener("click", () => {
-      if (huidigePagina > 1) toonOpdracht(huidigePagina - 1);
-    });
+  btnVorige.addEventListener("click", () => {
+    if (huidigePagina > 1 && huidigePagina <= opdrachten.length) {
+      toonOpdracht(huidigePagina - 1);
+    } else if (huidigePagina > opdrachten.length) {
+      // Vanuit afronding terug naar de laatste vraag
+      toonOpdracht(opdrachten.length);
+    }
+  });
 
-    // --------- Numeriek pad ----------
-    const pad = document.getElementById("pad");
-    function bewaarEnUpdate(){ antwoorden[huidigePagina - 1] = input.value; updatePaginabolletjes(); }
-    pad.addEventListener("click", e => {
-      const btn = e.target.closest(".toets");
-      if (!btn) return;
-      const key = btn.dataset.key;
-      if (key === "backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); input.focus(); return; }
-      if (/^\d$/.test(key)) { input.value += key; bewaarEnUpdate(); input.focus(); }
-    });
-    document.addEventListener("keydown", e => {
-      if (e.key >= "0" && e.key <= "9") { input.value += e.key; bewaarEnUpdate(); e.preventDefault(); }
-      else if (e.key === "Backspace") { input.value = input.value.slice(0, -1); bewaarEnUpdate(); e.preventDefault(); }
-      else if (e.key === "Enter") { input.focus(); input.select(); e.preventDefault(); }
-    });
-    input.addEventListener("input", bewaarEnUpdate);
+  // --------- Numeriek pad ----------
+  const pad = document.getElementById("pad");
+  function bewaarEnUpdate(){ antwoorden[huidigePagina - 1] = input.value; updatePaginabolletjes(); }
+  pad.addEventListener("click", e => {
+    const btn = e.target.closest(".toets");
+    if (!btn) return;
+    const key = btn.dataset.key;
+    if (key === "backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); input.focus(); return; }
+    if (/^\d$/.test(key)) { input.value += key; bewaarEnUpdate(); input.focus(); }
+  });
 
-    // --------- Start ----------
-    toonOpdracht(1);
-    requestAnimationFrame(pasIllustratieBoxAan);
-  </script>
+  // ENTER: ga naar volgende vraag; op laatste -> afronding
+  document.addEventListener("keydown", e => {
+    // In afrondingsscherm geen numerieke invoer toevoegen
+    const inAfronding = huidigePagina > opdrachten.length;
+
+    if (!inAfronding && e.key >= "0" && e.key <= "9") {
+      input.value += e.key;
+      bewaarEnUpdate();
+      e.preventDefault();
+    } else if (!inAfronding && e.key === "Backspace") {
+      input.value = input.value.slice(0, -1);
+      bewaarEnUpdate();
+      e.preventDefault();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (huidigePagina < opdrachten.length) {
+        bewaarEnUpdate();
+        toonOpdracht(huidigePagina + 1);
+      } else if (huidigePagina === opdrachten.length) {
+        bewaarEnUpdate();
+        toonAfronding();
+      } else {
+        // In afronding: lees de tekst voor
+        spreekVraag();
+      }
+    }
+  });
+
+  input.addEventListener("input", bewaarEnUpdate);
+
+  // --------- Start ----------
+  toonOpdracht(1);
+  requestAnimationFrame(pasIllustratieBoxAan);
+</script>
 </body>
 </html>
+
 
