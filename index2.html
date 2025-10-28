@@ -31,6 +31,7 @@
 html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color: var(--kleur-tekst); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 .topbar{ background: var(--kleur-topbar); height: var(--topbar-hoogte); width: 100%; }
 
+/* pagina */
 .pagina{
   min-height: calc(100% - var(--topbar-hoogte));
   display: grid;
@@ -62,6 +63,7 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
 .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
 .spraakknoop img{ display: block; width: 28px; height: 28px; }
 
+/* werkveld */
 .werkveld{ display: grid; grid-template-columns: 1fr var(--kolom-rechts); gap: var(--kolom-ruimte); align-items: center; }
 .illustratie-wrap{ background: #fff; border-radius: 14px; box-shadow: var(--schaduw); padding: var(--illustratie-pad); width: 100%; max-width: 100%; }
 .illustratie-box{ width: 100%; height: 300px; border-radius: 10px; overflow: hidden; background: #fff; position: relative; isolation: isolate; }
@@ -84,12 +86,13 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
 .antwoordblok{ margin-top: 12px; display: grid; justify-content: center; }
 .antwoord{ width: clamp(140px, 18vw, 220px); height: var(--ant-hoogte); font-size: var(--ant-font); padding: 8px 10px; border-radius: 12px; border: 1px solid #d9dce3; background: #fff; box-sizing: border-box; }
 
-/* Onderbalk met alleen de paginering gecentreerd */
+/* ONDERBALK binnen de kaartbreedte met knoppen tegen de randen */
 .onderbalk{
   max-width: var(--kaart-max);
   margin: 12px auto 18px;
   display: grid;
-  grid-template-columns: 1fr;     /* alleen middenkolom */
+  grid-template-columns: auto 1fr auto; /* links, midden, rechts */
+  gap: 12px;
   align-items: center;
   position: sticky;
   bottom: var(--onderbalk-gap);
@@ -98,17 +101,10 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
   padding-top: 6px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-
-/* Navigatieknoppen vast aan de zijkanten van het venster */
 .navbtn{ padding: 10px 14px; border-radius: 12px; border: 0; background: #e9ecf4; color: #0f1a2a; font-size: .95rem; cursor: pointer; }
 .btn-volgende{ background:#1677ff; color:#fff; }
-#btnVorige, #btnVolgende{
-  position: fixed;
-  bottom: calc(var(--onderbalk-gap) + 8px + env(safe-area-inset-bottom, 0px));
-  z-index: 10;
-}
-#btnVorige{ left: clamp(8px, 2vw, 24px); }
-#btnVolgende{ right: clamp(8px, 2vw, 24px); }
+.onderbalk .links{ justify-self: start; }
+.onderbalk .rechts{ justify-self: end; }
 
 .paginering{ display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
 .page{ width: 40px; height: 40px; border-radius: 20px; background: #e0e2e6; display: grid; place-items: center; font-weight: 700; color: #222; cursor: pointer; border: 1px solid #cfd3dc; transition: background .2s, color .2s, border-color .2s; user-select: none; }
@@ -116,12 +112,12 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
 .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
 .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; }
 
-/* Afronding */
+/* afronding */
 .afronding-mode .vraagrij{ display: grid; grid-template-columns: 1fr; place-items: center; text-align: center; gap: 16px; }
 .afronding-mode .vraag{ padding-left: 0; max-width: 40ch; }
 .afronding-mode #spraakknoop{ margin-top: 4px; }
 
-/* Compacte varianten */
+/* compact */
 @media (max-width: 1366px), (max-height: 820px){
   :root{ --topbar-hoogte: 44px; --pad-key: 56px; --pad-gap: 10px; --onderbalk-gap: 6px; }
   .werkveld{ grid-template-columns: 1fr min(320px, 32vw); gap: calc(var(--kolom-ruimte) + 6px); }
@@ -182,23 +178,27 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
       </div>
     </div>
 
-    <!-- onderbalk met alleen de paginadots -->
+    <!-- onderbalk binnen kaartbreedte: links knop, midden dots, rechts knop -->
     <div class="onderbalk">
+      <div class="links">
+        <button class="navbtn" id="btnVorige" type="button">Vorige</button>
+      </div>
+
       <div class="paginering" id="paginering" aria-label="Vragen">
         <div class="page" data-page="1" role="button" tabindex="0" aria-label="Vraag 1">1</div>
         <div class="page" data-page="2" role="button" tabindex="0" aria-label="Vraag 2">2</div>
         <div class="page" data-page="3" role="button" tabindex="0" aria-label="Vraag 3">3</div>
         <div class="page" data-page="4" role="button" tabindex="0" aria-label="Vraag 4">4</div>
       </div>
+
+      <div class="rechts">
+        <button class="navbtn btn-volgende" id="btnVolgende" type="button">Volgende</button>
+      </div>
     </div>
   </div>
 
-  <!-- vaste zij knoppen -->
-  <button class="navbtn" id="btnVorige" type="button" aria-label="Vorige vraag">Vorige</button>
-  <button class="navbtn btn-volgende" id="btnVolgende" type="button" aria-label="Volgende vraag">Volgende</button>
-
 <script>
-/* --------- Vragen, nu 4 --------- */
+/* --------- Vragen, 4 stuks --------- */
 const opdrachten = [
   { tekst: "Sophie heeft 1 briefje van tien euro, 2 muntjes van twee euro en 1 muntje van één euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
   { tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?", img: "02%20tom%20blokkentoren.jpg" },
@@ -228,9 +228,7 @@ const AFRONDING_TEKST = [
 /* --------- Spraak --------- */
 const spraakknoop = document.getElementById("spraakknoop");
 const spraakknoopIcon = document.getElementById("spraakknoopIcon");
-let isSprekend = false;
-let utterance = null;
-let gekozenStem = null;
+let isSprekend = false; let utterance = null; let gekozenStem = null;
 
 function kiesNederlandseStem(){
   const stemmen = window.speechSynthesis.getVoices();
@@ -242,8 +240,7 @@ if ("speechSynthesis" in window){
 }
 function stopSpraak(resetIcon = true){
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-  isSprekend = false;
-  utterance = null;
+  isSprekend = false; utterance = null;
   if (resetIcon){
     spraakknoopIcon.src = "speel.jpg";
     spraakknoopIcon.alt = "Afspelen";
@@ -253,41 +250,28 @@ function stopSpraak(resetIcon = true){
 function spreekVraag(){
   if (!("speechSynthesis" in window)) return;
   stopSpraak(false);
-  const tekst = vraagtekst.textContent.trim();
-  if (!tekst) return;
+  const tekst = vraagtekst.textContent.trim(); if (!tekst) return;
   utterance = new SpeechSynthesisUtterance(tekst);
   if (gekozenStem) utterance.voice = gekozenStem;
-  utterance.rate = 0.95;
-  utterance.pitch = 1.0;
+  utterance.rate = 0.95; utterance.pitch = 1.0;
   utterance.onend = () => { isSprekend = false; stopSpraak(true); };
   utterance.onerror = () => { isSprekend = false; stopSpraak(true); };
   window.speechSynthesis.speak(utterance);
   isSprekend = true;
-  spraakknoopIcon.src = "pauze.jpg";
-  spraakknoopIcon.alt = "Pauzeer";
+  spraakknoopIcon.src = "pauze.jpg"; spraakknoopIcon.alt = "Pauzeer";
   spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
 }
 function pauzeerOfHervat(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
   if (isSprekend && !synth.paused){
-    synth.pause();
-    spraakknoopIcon.src = "speel.jpg";
-    spraakknoopIcon.alt = "Hervat";
-    spraakknoop.setAttribute("aria-label", "Hervat voorlezen");
+    synth.pause(); spraakknoopIcon.src = "speel.jpg"; spraakknoopIcon.alt = "Hervat"; spraakknoop.setAttribute("aria-label", "Hervat voorlezen");
   } else if (isSprekend && synth.paused){
-    synth.resume();
-    spraakknoopIcon.src = "pauze.jpg";
-    spraakknoopIcon.alt = "Pauzeer";
-    spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
-  } else {
-    spreekVraag();
-  }
+    synth.resume(); spraakknoopIcon.src = "pauze.jpg"; spraakknoopIcon.alt = "Pauzeer"; spraakknoop.setAttribute("aria-label", "Pauzeer voorlezen");
+  } else { spreekVraag(); }
 }
 spraakknoop.addEventListener("click", pauzeerOfHervat);
-spraakknoop.addEventListener("keydown", e => {
-  if (e.key === "Enter" || e.key === " "){ pauzeerOfHervat(); e.preventDefault(); }
-});
+spraakknoop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ pauzeerOfHervat(); e.preventDefault(); } });
 
 /* --------- Paginering --------- */
 function updatePaginabolletjes(){
@@ -385,7 +369,10 @@ paginering.addEventListener("click", e => {
 paginering.addEventListener("keydown", e => {
   const focusEl = document.activeElement.closest(".page");
   if (!focusEl) return;
-  if (e.key === "Enter" || e.key === " "){ toonOpdracht(parseInt(focusEl.dataset.page, 10)); e.preventDefault(); }
+  if (e.key === "Enter" || e.key === " "){
+    toonOpdracht(parseInt(focusEl.dataset.page, 10));
+    e.preventDefault();
+  }
   if (e.key === "ArrowRight"){
     const next = focusEl.nextElementSibling && focusEl.nextElementSibling.classList.contains("page") ? focusEl.nextElementSibling : null;
     if (next) next.focus();
@@ -415,10 +402,20 @@ btnVorige.addEventListener("click", () => {
 const pad = document.getElementById("pad");
 function bewaarEnUpdate(){ antwoorden[huidigePagina - 1] = input.value; updatePaginabolletjes(); }
 pad.addEventListener("click", e => {
-  const btn = e.target.closest(".toets"); if (!btn) return;
+  const btn = e.target.closest(".toets");
+  if (!btn) return;
   const key = btn.dataset.key;
-  if (key === "backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); input.focus(); return; }
-  if (/^\d$/.test(key)) { input.value += key; bewaarEnUpdate(); input.focus(); }
+  if (key === "backspace"){
+    input.value = input.value.slice(0, -1);
+    bewaarEnUpdate();
+    input.focus();
+    return;
+  }
+  if (/^\d$/.test(key)) {
+    input.value += key;
+    bewaarEnUpdate();
+    input.focus();
+  }
 });
 
 /* Enter gedrag */
