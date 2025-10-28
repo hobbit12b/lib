@@ -212,6 +212,14 @@ html, body{
   .illustratie{ -webkit-mask-image: none; mask-image: none; }
 }
 @media (prefers-reduced-motion: reduce){ .toets{ transition: none; } }
+  /* Laptop: maak Vorige en Volgende 1,5x zo groot */
+@media (min-width: 1200px){
+  .onderbalk .navbtn{
+    font-size: 1.5rem;     /* was 1.0–1.08rem */
+    padding: 12px 24px;    /* was 8px 16–18px */
+    border-radius: 16px;   /* iets ronder zodat het mooi oogt bij groter formaat */
+  }
+}
 </style>
 </head>
 <body>
@@ -398,3 +406,4 @@ toonOpdracht(1);
 </script>
 </body>
 </html>
+
