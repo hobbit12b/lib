@@ -89,9 +89,10 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
 /* ONDERBALK binnen de kaartbreedte met knoppen tegen de randen */
 .onderbalk{
   max-width: var(--kaart-max);
+  width: 100%;           /* voeg deze regel toe */
   margin: 12px auto 18px;
   display: grid;
-  grid-template-columns: auto 1fr auto; /* links, midden, rechts */
+  grid-template-columns: auto 1fr auto;
   gap: 12px;
   align-items: center;
   position: sticky;
@@ -101,6 +102,7 @@ html, body{ height: 100%; margin: 0; background: var(--kleur-achtergrond); color
   padding-top: 6px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
 .navbtn{ padding: 10px 14px; border-radius: 12px; border: 0; background: #e9ecf4; color: #0f1a2a; font-size: .95rem; cursor: pointer; }
 .btn-volgende{ background:#1677ff; color:#fff; }
 .onderbalk .links{ justify-self: start; }
@@ -440,3 +442,4 @@ requestAnimationFrame(pasIllustratieBoxAan);
 </script>
 </body>
 </html>
+
