@@ -31,7 +31,7 @@
   --fade-rand: clamp(16px, 3.5vw, 36px);
   --illustratie-pad: 12px;
 
-  /* onderbalk super compact */
+  /* onderbalk super-compact */
   --onderbalk-offset: 10px;
   --onderbalk-pad-y: 2px;
 
@@ -68,7 +68,7 @@ html, body{
   box-shadow: var(--schaduw);
   height: calc(100dvh - var(--topbar-hoogte) - 18px);
   display: grid;
-  grid-template-rows: 1fr auto;  /* kaart rekt, onderbalk vast */
+  grid-template-rows: 1fr auto;
   overflow: clip;
 }
 
@@ -77,7 +77,7 @@ html, body{
   padding: var(--kaart-pad);
   display: flex;
   flex-direction: column;
-  min-height: 0; /* essentieel tegen overflow in grid */
+  min-height: 0;
 }
 
 /* vraagkop */
@@ -190,7 +190,7 @@ html, body{
   outline-offset: 2px;
 }
 
-/* geselecteerd zonder vinkje, duidelijke rand en glow */
+/* geselecteerd zonder vinkje, met duidelijke rand en glow */
 .keuzegrid .keuzeknop.is-selected{
   background: var(--kaart-geel-select);
   border-color: var(--kaart-focus);
@@ -228,7 +228,7 @@ html, body{
 .afronding-mode .vraagrij{ display: grid; grid-template-columns: 1fr; place-items: center; gap: 12px; }
 .afronding-mode .vraag{ padding-left: 0; max-width: 40ch; }
 
-/* laptop, middenmaat kaarten */
+/* laptop en groter: vergroot getalkaarten duidelijk */
 @media (min-width: 1200px){
   .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
   :root{
@@ -245,13 +245,14 @@ html, body{
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
 
+  /* hier maken we de getalkaarten groter */
   .keuzegrid{
-    grid-template-columns: repeat(4, minmax(100px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 18px;
   }
-  .keuzeknop{
-    border-radius: 14px;
-    font-size: clamp(1.45rem, 1.7vw, 2rem);
+  .keuzegrid .keuzeknop{
+    border-radius: 16px;
+    font-size: clamp(1.6rem, 1.8vw, 2.2rem);
   }
 
   .onderbalk .navbtn{
@@ -261,13 +262,18 @@ html, body{
   }
 }
 
-/* zeer ruime schermen */
+/* zeer ruime schermen, nog iets groter comfortabel */
 @media (min-width: 1440px) and (min-height: 850px){
-  .keuzegrid{ grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 18px; }
-  .keuzeknop{ font-size: clamp(1.6rem, 1.9vw, 2.2rem); }
+  .keuzegrid{
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    gap: 20px;
+  }
+  .keuzegrid .keuzeknop{
+    font-size: clamp(1.8rem, 2vw, 2.6rem);
+  }
 }
 
-/* kleiner scherm */
+/* compacter op kleinere schermen */
 @media (max-width: 900px){
   .werkveld{ grid-template-columns: 1fr; align-items: start; }
   .pad-wrap{ width: 100%; max-width: 420px; justify-self: center; margin-left: 0; }
@@ -276,43 +282,12 @@ html, body{
   .keuzegrid{ grid-template-columns: repeat(2, minmax(100px, 1fr)); }
 }
 
-/* Chromebook, lage hoogte: nul paginascroll, alles past */
+/* chromebook lage hoogte */
 @media (min-width: 1200px) and (max-height: 820px){
+  .panel{ max-width: var(--kaart-max); width: 100%; margin: 8px auto 0; border-radius: var(--radius) var(--radius) 0 0; }
   :root{ --topbar-hoogte: 32px; }
-
-  .panel{
-    max-width: var(--kaart-max);
-    width: 100%;
-    margin: 8px auto 0;
-    border-radius: var(--radius) var(--radius) 0 0;
-    height: calc(100dvh - var(--topbar-hoogte) - 8px);
-  }
-
-  .werkveld{ align-items: start; }          /* voorkom extra rekken in de hoogte */
-  .pad-wrap{ padding: 8px; align-self: start; }
-  .illustratie-box{ min-height: 110px; }
-  .kaart{ padding-top: calc(var(--kaart-pad) - 6px); }
-
-  /* kaarten: vier op een rij, zonder minimale breedte, hoogte volgt breedte */
-  .keuzegrid{
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-top: 2px;
-  }
-  .keuzegrid .keuzeknop{
-    border-radius: 12px;
-    font-size: clamp(1.2rem, 1.35vw, 1.6rem);
-  }
-
-  /* onderbalk statisch, geen offset die hoogte toevoegt */
-  .onderbalk{
-    position: static;
-    padding-top: 2px; padding-bottom: 2px;
-  }
   .onderbalk .navbtn{ font-size: 1rem; padding: 8px 14px; border-radius: 12px; }
-
-  /* paginadots compacter */
-  .page{ width: 44px; height: 44px; border-radius: 22px; font-size: .95rem; }
+  .page{ width: 46px; height: 46px; border-radius: 23px; font-size: 1rem; }
 }
 </style>
 </head>
@@ -351,7 +326,7 @@ html, body{
               <button class="toets toets--back" data-key="backspace" title="Verwijder laatste cijfer">⌫</button>
             </div>
 
-            <!-- meerkeuze kaarten -->
+            <!-- meerkeuze-kaarten -->
             <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" role="radiogroup" hidden></div>
 
             <div class="antwoordblok">
@@ -436,7 +411,8 @@ if ("speechSynthesis" in window){
 /* TTS sanitize */
 function ttsSanitize(text){
   return text
-    .replace(/\bSophie\b/gi, "Soofie");
+    .replace(/\bSophie\b/g, "Soofie")
+    .replace(/\bsophie\b/g, "soofie");
 }
 
 function resetIcon(){
@@ -454,6 +430,8 @@ function hardStopSpeech(resetBtnIcon = true){
   utterance = null;
   if (resetBtnIcon) resetIcon();
 }
+
+function stopSpraak(resetBtnIcon = true){ hardStopSpeech(resetBtnIcon); }
 
 function speakNow(text, onendCustom){
   const synth = window.speechSynthesis;
@@ -495,7 +473,7 @@ function spreekVraag(){
       return;
     }
   }
-  speakNow(ttsSanitize(full));
+  utterance = speakNow(ttsSanitize(full));
 }
 
 function pauzeerOfHervat(){
