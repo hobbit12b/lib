@@ -155,6 +155,30 @@ html, body{
 .antwoordblok{ margin-top: 12px; display: grid; justify-content: center; }
 .antwoord{ width: clamp(140px, 18vw, 220px); height: var(--ant-hoogte); font-size: var(--ant-font); padding: 8px 10px; border-radius: 12px; border: 1px solid #d9dce3; background: #fff; box-sizing: border-box; }
 
+/* klikbare antwoordopties voor meerkeuze */
+.keuzegrid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(64px, 1fr));
+  gap: var(--pad-gap);
+  justify-content: center;
+  margin-top: 4px;
+}
+.keuzegrid .keuzeknop{
+  width: 100%;
+  height: var(--pad-key);
+  display: grid;
+  place-items: center;
+  background: #f5f6f8;
+  border: 1px solid #d9dce3;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: var(--pad-font);
+  cursor: pointer;
+  user-select: none;
+  transition: transform .05s ease, background .1s;
+}
+.keuzegrid .keuzeknop:active{ transform: scale(.98); background: #eceff4; }
+
 /* ultracompacte onderbalk */
 .onderbalk{
   display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
@@ -210,6 +234,9 @@ html, body{
   .pad-wrap{ width: 100%; max-width: 420px; justify-self: center; margin-left: 0; }
   .illustratie-box::after{ display: none; }
   .illustratie{ -webkit-mask-image: none; mask-image: none; }
+
+  /* responsief voor de keuzegrid */
+  .keuzegrid{ grid-template-columns: repeat(2, minmax(100px, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce){ .toets{ transition: none; } }
   /* Laptop: maak Vorige en Volgende 1,5x zo groot */
@@ -296,7 +323,6 @@ html, body{
     height: calc(100dvh - var(--topbar-hoogte) - 8px);
   }
 }
-
 </style>
 </head>
 <body>
@@ -333,6 +359,10 @@ html, body{
               <button class="toets toets--nul" data-key="0">0</button>
               <button class="toets toets--back" data-key="backspace" title="Verwijder laatste cijfer">⌫</button>
             </div>
+
+            <!-- klikbare opties voor meerkeuze-vraag -->
+            <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" hidden></div>
+
             <div class="antwoordblok">
               <input id="antwoord" class="antwoord" inputmode="numeric" placeholder="Antwoordvak" aria-label="Antwoord" />
             </div>
@@ -363,10 +393,27 @@ html, body{
 <script>
 /* ---------- Vragen (4) ---------- */
 const opdrachten = [
-  { tekst: "Sophie heeft 1 briefje van tien euro, 2 muntjes van twee euro en 1 muntje van één euro. Hoeveel euro heeft Sophie in totaal?", img: "01%20geld.jpg" },
-  { tekst: "Tom heeft 3 rode blokken, 6 blauwe en 4 groene blokken. Hij stapelt alle blokken. Hoe hoog wordt zijn toren?", img: "02%20tom%20blokkentoren.jpg" },
-  { tekst: "Het is nu 3 uur. Over twee uur moet Lisa naar muziekles. Hoe laat is het dan?", img: "03%20muziekles.jpg" },
-  { tekst: "Jasper gooit met twee dobbelstenen samen 10. Met de eerste dobbelsteen werpt hij 4 ogen. Hoeveel ogen moet hij met de tweede dobbelsteen gooien om samen 10 te krijgen?", img: "04%20dobbelen.jpg" }
+  {
+    tekst: "Ton en Lisa tellen hun snoepjes. Ton heeft 6 snoepjes, Lisa 9 snoepjes. Hoeveel snoepjes heeft Lisa meer?",
+    img: "05%20snoepjes.jpg",
+    type: "open"
+  },
+  {
+    tekst: "Op de getallenlijn hangen de kaartjes 1, 14 en 20. Op de tafel liggen de kaartjes 10, 12, 5 en 18 die ook opgehangen moeten worden. Welk kaartje moet het dichtst bij 14 hangen?",
+    img: "06%20getallenlijn.jpg",
+    type: "keuze",
+    opties: [10, 12, 5, 18]
+  },
+  {
+    tekst: "Jan scoort met 3 ballen punten. Hoeveel is het samen?",
+    img: "07%20poortbal.jpg",
+    type: "open"
+  },
+  {
+    tekst: "In een pot zitten 16 snoepjes. Jan eet 3 snoepjes en Eefke eet er 1. Hoeveel snoepjes blijven over?",
+    img: "08%20snoepjes.jpg",
+    type: "open"
+  }
 ];
 
 /* ---------- Elementen ---------- */
@@ -539,12 +586,52 @@ function toonAfronding(){
   updatePaginabolletjes();
 }
 
+/* ---------- Interactie per vraagtype ---------- */
+const padEl = document.getElementById("pad");
+const keuzegrid = document.getElementById("keuzegrid");
+const antwoordblok = document.querySelector(".antwoordblok");
+
+function renderInteracties(vraag){
+  const isKeuze = vraag.type === "keuze";
+
+  /* toon of verberg numeriek pad en invoerveld */
+  padEl.style.display = isKeuze ? "none" : "grid";
+  antwoordblok.style.display = isKeuze ? "none" : "grid";
+
+  /* bouw de keuzeopties op bij meerkeuze */
+  keuzegrid.hidden = !isKeuze;
+  keuzegrid.innerHTML = "";
+  if (isKeuze && Array.isArray(vraag.opties)){
+    vraag.opties.forEach(getal => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "keuzeknop";
+      b.textContent = String(getal);
+      b.dataset.value = String(getal);
+      b.setAttribute("aria-label", `Kies ${getal}`);
+      keuzegrid.appendChild(b);
+    });
+  }
+}
+
+/* klik op een keuze vult het antwoord en markeert de pagina als beantwoord */
+keuzegrid.addEventListener("click", e => {
+  const btn = e.target.closest(".keuzeknop");
+  if (!btn) return;
+  input.value = btn.dataset.value || "";
+  bewaarEnUpdate();
+});
+
 /* ---------- Navigatie ---------- */
 function toonOpdracht(nr){
   /* bij elke vraagwissel spraak en wachtrijen echt leegmaken */
   hardStopSpeech(true);
 
-  if (nr < 1 || nr > opdrachten.length){ toonAfronding(); return; }
+  if (nr < 1 || nr > opdrachten.length){
+    toonAfronding();
+    return;
+  }
+
   huidigePagina = nr;
   document.body.classList.remove("afronding-mode");
   document.querySelector(".werkveld").style.display = "grid";
@@ -552,8 +639,13 @@ function toonOpdracht(nr){
 
   const vraag = opdrachten[nr - 1];
   vraagtekst.textContent = vraag.tekst;
-  vraagAfbeelding.src = ""; requestAnimationFrame(() => { vraagAfbeelding.src = vraag.img; });
+  vraagAfbeelding.src = "";
+  requestAnimationFrame(() => { vraagAfbeelding.src = vraag.img; });
 
+  /* per vraagtype de juiste UI laten zien */
+  renderInteracties(vraag);
+
+  /* bestaand antwoord terugzetten als dat er is */
   input.value = antwoorden[nr - 1] || "";
   updatePaginabolletjes();
 }
@@ -582,9 +674,21 @@ pad.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => {
   const inAfronding = huidigePagina > opdrachten.length;
-  if (!inAfronding && e.key >= "0" && e.key <= "9"){ input.value += e.key; bewaarEnUpdate(); e.preventDefault(); }
-  else if (!inAfronding && e.key === "Backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); e.preventDefault(); }
-  else if (e.key === "Enter"){
+  const huidige = opdrachten[huidigePagina - 1];
+  const isKeuze = huidige && huidige.type === "keuze";
+
+  if (inAfronding){
+    if (e.key === "Enter"){
+      e.preventDefault();
+    }
+    return;
+  }
+
+  if (!isKeuze && e.key >= "0" && e.key <= "9"){
+    input.value += e.key; bewaarEnUpdate(); e.preventDefault();
+  } else if (!isKeuze && e.key === "Backspace"){
+    input.value = input.value.slice(0, -1); bewaarEnUpdate(); e.preventDefault();
+  } else if (e.key === "Enter"){
     e.preventDefault();
     if (huidigePagina < opdrachten.length) { bewaarEnUpdate(); toonOpdracht(huidigePagina + 1); }
     else if (huidigePagina === opdrachten.length) { bewaarEnUpdate(); toonAfronding(); }
@@ -597,5 +701,3 @@ toonOpdracht(1);
 </script>
 </body>
 </html>
-
-
