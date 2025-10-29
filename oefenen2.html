@@ -245,7 +245,7 @@ html, body{
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
 
-  /* middenmaat tussen vorige twee versies */
+  /* middenmaat tussen eerdere versies */
   .keuzegrid{
     grid-template-columns: repeat(4, minmax(100px, 1fr));
     gap: 16px;
@@ -262,7 +262,7 @@ html, body{
   }
 }
 
-/* zeer ruime schermen, iets ruimer maar nog steeds gematigd */
+/* zeer ruime schermen, iets ruimer */
 @media (min-width: 1440px) and (min-height: 850px){
   .keuzegrid{
     grid-template-columns: repeat(4, minmax(120px, 1fr));
@@ -282,11 +282,32 @@ html, body{
   .keuzegrid{ grid-template-columns: repeat(2, minmax(100px, 1fr)); }
 }
 
-/* chromebook lage hoogte */
+/* chromebook lage hoogte, compacter zodat scrollen verdwijnt */
 @media (min-width: 1200px) and (max-height: 820px){
-  .panel{ max-width: var(--kaart-max); width: 100%; margin: 8px auto 0; border-radius: var(--radius) var(--radius) 0 0; }
+  /* paneel dichter onder de balk, lagere topbar */
   :root{ --topbar-hoogte: 32px; }
+  .panel{ max-width: var(--kaart-max); width: 100%; margin: 8px auto 0; border-radius: var(--radius) var(--radius) 0 0; height: calc(100dvh - var(--topbar-hoogte) - 8px); }
+
+  /* compacter maken van de vraagzone */
+  .illustratie-box{ min-height: 120px; }
+  .pad-wrap{ padding: 8px; }
+  .kaart{ padding-top: calc(var(--kaart-pad) - 4px); }
+
+  /* kaarten kleiner dan laptop, maar netjes vier op een rij */
+  .keuzegrid{
+    grid-template-columns: repeat(4, minmax(80px, 1fr));
+    gap: 12px;
+    margin-top: 2px;
+  }
+  .keuzegrid .keuzeknop{
+    border-radius: 12px;
+    font-size: clamp(1.2rem, 1.35vw, 1.6rem);
+  }
+
+  /* navigatieknoppen weer normaal formaat */
   .onderbalk .navbtn{ font-size: 1rem; padding: 8px 14px; border-radius: 12px; }
+
+  /* paginadots iets kleiner */
   .page{ width: 46px; height: 46px; border-radius: 23px; font-size: 1rem; }
 }
 </style>
