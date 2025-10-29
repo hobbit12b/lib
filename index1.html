@@ -384,8 +384,9 @@ const spraakknoop = document.getElementById("spraakknoop");
 const spraakknoopIcon = document.getElementById("spraakknoopIcon");
 let isSprekend = false, utterance = null, gekozenStem = null;
 
-/* korte pauze na “gezien.” op het eindscherm */
-const afrondingPauzeMs = 450;
+/* pauze na “gezien.” op het eindscherm, stel bij naar smaak */
+let afrondingTimer = null;
+const afrondingPauzeMs = 650;
 
 function kiesNederlandseStem(){
   const v = window.speechSynthesis.getVoices();
@@ -396,17 +397,34 @@ if ("speechSynthesis" in window){
   window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
 }
 
-function stopSpraak(resetIcon = true){
-  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-  isSprekend = false; utterance = null;
-  if (resetIcon){
-    spraakknoopIcon.src = "speel.jpg";
-    spraakknoopIcon.alt = "Afspelen";
-    spraakknoop.setAttribute("aria-label","Lees de vraag voor");
-  }
+/* TTS alleen, zichtbare tekst blijft gelijk */
+function ttsSanitize(text){
+  return text
+    .replace(/\bSophie\b/g, "Soofie")
+    .replace(/\bsophie\b/g, "soofie");
 }
 
-/* spreekt de meegegeven tekst, zet iconen en handelt einde af */
+function resetIcon(){
+  spraakknoopIcon.src = "speel.jpg";
+  spraakknoopIcon.alt = "Afspelen";
+  spraakknoop.setAttribute("aria-label","Lees de vraag voor");
+}
+
+function hardStopSpeech(resetBtnIcon = true){
+  if ("speechSynthesis" in window){
+    try { window.speechSynthesis.cancel(); } catch(e){}
+  }
+  if (afrondingTimer){ clearTimeout(afrondingTimer); afrondingTimer = null; }
+  isSprekend = false;
+  utterance = null;
+  if (resetBtnIcon) resetIcon();
+}
+
+function stopSpraak(resetBtnIcon = true){
+  hardStopSpeech(resetBtnIcon);
+}
+
+/* spreekt direct en verzorgt iconen */
 function speakNow(text, onendCustom){
   const synth = window.speechSynthesis;
   const u = new SpeechSynthesisUtterance(text);
@@ -418,10 +436,10 @@ function speakNow(text, onendCustom){
       onendCustom();
     } else {
       isSprekend = false;
-      stopSpraak(true);
+      resetIcon();
     }
   };
-  u.onerror = () => { isSprekend = false; stopSpraak(true); };
+  u.onerror = () => { isSprekend = false; resetIcon(); };
 
   synth.speak(u);
   isSprekend = true;
@@ -433,39 +451,49 @@ function speakNow(text, onendCustom){
 
 function spreekVraag(){
   if (!("speechSynthesis" in window)) return;
-
   const synth = window.speechSynthesis;
 
-  /* hef eventuele pauzestand meteen op en maak de wachtrij leeg, zo start audio direct */
+  /* maak motor wakker en wis wachtrij, start meteen */
   try { synth.cancel(); synth.resume(); } catch(e){}
 
-  const tekst = vraagtekst.textContent.trim();
-  if (!tekst) return;
+  const full = vraagtekst.textContent.trim();
+  if (!full) return;
 
   const isAfronding = document.body.classList.contains("afronding-mode");
 
   if (isAfronding){
-    /* eindscherm bestaat uit drie regels, we willen pauze na de eerste zin */
-    const delen = tekst.split(/\n+/);
-    const eerste = delen.shift() || "";
-    /* spreek eerste zin */
-    utterance = speakNow(eerste, () => {
-      /* plan de rest na een korte pauze */
-      setTimeout(() => {
-        if (!("speechSynthesis" in window)) return;
-        utterance = speakNow(delen.join(" "));
-      }, afrondingPauzeMs);
-    });
-    return;
+    /* vind expliciet de eerste zin die eindigt op “gezien.” en forceer pauze */
+    const marker = "gezien.";
+    const idx = full.indexOf(marker);
+    if (idx !== -1){
+      const eerste = full.slice(0, idx + marker.length);
+      const rest = full.slice(idx + marker.length).trim();
+
+      speakNow(ttsSanitize(eerste), () => {
+        afrondingTimer = setTimeout(() => {
+          afrondingTimer = null;
+          if (!("speechSynthesis" in window)) return;
+          if (rest) speakNow(ttsSanitize(rest));
+        }, afrondingPauzeMs);
+      });
+      return;
+    }
+    /* als marker niet gevonden is, lees normaal */
   }
 
-  /* normale vraag, direct starten */
-  utterance = speakNow(tekst);
+  utterance = speakNow(ttsSanitize(full));
 }
 
 function pauzeerOfHervat(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
+
+  /* als er een geplande vervolgzin is, dan stoppen we die ook */
+  if (afrondingTimer){
+    clearTimeout(afrondingTimer);
+    afrondingTimer = null;
+  }
+
   if (isSprekend && !synth.paused){
     synth.pause();
     spraakknoopIcon.src = "speel.jpg";
@@ -500,17 +528,22 @@ function updatePaginabolletjes(){
 
 /* ---------- Afronding ---------- */
 function toonAfronding(){
+  /* oude of gepauzeerde spraak wordt vergeten bij overgang naar eindscherm */
+  hardStopSpeech(true);
+
   huidigePagina = opdrachten.length + 1;
   vraagtekst.innerHTML = ["Je hebt nu alle vragen gezien.","Heb je alles gemaakt?","Kijk je antwoorden nog na."].join("<br>");
   document.body.classList.add("afronding-mode");
   document.querySelector(".werkveld").style.display = "none";
   btnVolgende.style.display = "none";
-  stopSpraak(true);
   updatePaginabolletjes();
 }
 
 /* ---------- Navigatie ---------- */
 function toonOpdracht(nr){
+  /* bij elke vraagwissel spraak en wachtrijen echt leegmaken */
+  hardStopSpeech(true);
+
   if (nr < 1 || nr > opdrachten.length){ toonAfronding(); return; }
   huidigePagina = nr;
   document.body.classList.remove("afronding-mode");
@@ -564,4 +597,5 @@ toonOpdracht(1);
 </script>
 </body>
 </html>
+
 
