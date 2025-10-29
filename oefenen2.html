@@ -34,6 +34,13 @@
   /* onderbalk super-compact */
   --onderbalk-offset: 10px;
   --onderbalk-pad-y: 2px;
+
+  /* kleuren getalkaarten */
+  --kaart-geel: #fff6c4;
+  --kaart-geel-hover: #ffef99;
+  --kaart-geel-select: #ffe16a;
+  --kaart-geel-border: #e3c653;
+  --kaart-focus: #1677ff;
 }
 
 html, body{
@@ -63,7 +70,7 @@ html, body{
   /* truc: bovenste rij rekt mee, onderbalk blijft compact onderin */
   height: calc(100dvh - var(--topbar-hoogte) - 18px);
   display: grid;
-  grid-template-rows: 1fr auto;  /* kaart rekt, onderbalk vast */
+  grid-template-rows: 1fr auto;
   overflow: clip;
 }
 
@@ -72,7 +79,7 @@ html, body{
   padding: var(--kaart-pad);
   display: flex;
   flex-direction: column;
-  min-height: 0; /* belangrijk voor rekken binnen grid */
+  min-height: 0;
 }
 
 /* vraagkop */
@@ -93,25 +100,25 @@ html, body{
 .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
 .spraakknoop img{ width: 28px; height: 28px; }
 
-/* werkveld vult alle resterende hoogte, zónder JS */
+/* werkveld vult alle resterende hoogte */
 .werkveld{
-  flex: 1 1 auto;            /* pakt alle overgebleven hoogte */
-  min-height: 0;             /* laat echt krimpen of rekken */
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr var(--kolom-rechts);
   gap: var(--kolom-ruimte);
-  align-items: stretch;      /* linkerkolom rekt in de hoogte */
+  align-items: stretch;
 }
 
 /* illustratiekolom rekt mee */
 .illustratie-wrap{
   background: #fff; border-radius: 14px; box-shadow: var(--schaduw);
   padding: var(--illustratie-pad);
-  display: flex;             /* zodat box erbinnen kan rekken */
+  display: flex;
   min-height: 0;
 }
 .illustratie-box{
-  flex: 1 1 auto;            /* neemt alle hoogte in de kolom */
+  flex: 1 1 auto;
   min-height: 160px;
   border-radius: 10px; overflow: hidden; background: #fff;
   position: relative; isolation: isolate;
@@ -134,7 +141,7 @@ html, body{
           mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-rand), #000 calc(100% - var(--fade-rand)), transparent 100%);
 }
 
-/* toetsenbord */
+/* toetsenbord en invoer */
 .pad-wrap{
   align-self: center; justify-self: end;
   margin-left: calc(var(--kolom-ruimte) / 2);
@@ -155,7 +162,7 @@ html, body{
 .antwoordblok{ margin-top: 12px; display: grid; justify-content: center; }
 .antwoord{ width: clamp(140px, 18vw, 220px); height: var(--ant-hoogte); font-size: var(--ant-font); padding: 8px 10px; border-radius: 12px; border: 1px solid #d9dce3; background: #fff; box-sizing: border-box; }
 
-/* klikbare antwoordopties voor meerkeuze */
+/* klikbare antwoordopties voor meerkeuze, in stijl van getalkaarten */
 .keuzegrid{
   display: grid;
   grid-template-columns: repeat(4, minmax(64px, 1fr));
@@ -164,20 +171,40 @@ html, body{
   margin-top: 4px;
 }
 .keuzegrid .keuzeknop{
+  position: relative;
   width: 100%;
-  height: var(--pad-key);
+  aspect-ratio: 1 / 1;           /* vierkant */
   display: grid;
   place-items: center;
-  background: #f5f6f8;
-  border: 1px solid #d9dce3;
-  border-radius: 20px;
-  font-weight: 800;
-  font-size: var(--pad-font);
+  background: var(--kaart-geel);
+  border: 2px solid var(--kaart-geel-border);
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
   cursor: pointer;
   user-select: none;
-  transition: transform .05s ease, background .1s;
+  transition: transform .06s ease, background .15s, box-shadow .15s, border-color .15s;
 }
-.keuzegrid .keuzeknop:active{ transform: scale(.98); background: #eceff4; }
+.keuzegrid .keuzeknop:hover{ background: var(--kaart-geel-hover); }
+.keuzegrid .keuzeknop:active{ transform: scale(.98); }
+.keuzegrid .keuzeknop:focus-visible{
+  outline: 3px solid var(--kaart-focus);
+  outline-offset: 2px;
+}
+
+/* blijvende geselecteerd-staat */
+.keuzegrid .keuzeknop.is-selected{
+  background: var(--kaart-geel-select);
+  border-color: var(--kaart-geel-border);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, .35) inset, 0 2px 10px rgba(0,0,0,.08);
+}
+.keuzegrid .keuzeknop.is-selected::after{
+  content: "✓";
+  position: absolute;
+  top: 6px; right: 8px;
+  font-weight: 800;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+}
 
 /* ultracompacte onderbalk */
 .onderbalk{
@@ -192,7 +219,7 @@ html, body{
 .onderbalk .links{ justify-self: start; }
 .onderbalk .rechts{ justify-self: end; }
 
-/* grotere dots, maar balk blijft laag omdat padding minimaal is */
+/* grotere dots */
 .paginering{ display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
 .page{
   width: 54px; height: 54px; border-radius: 27px;
@@ -205,12 +232,12 @@ html, body{
 .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
 .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; }
 
-/* afronding simpel gecentreerd, zonder JS */
+/* afronding gecentreerd */
 .afronding-mode .kaart{ justify-content: center; align-items: center; text-align: center; }
 .afronding-mode .vraagrij{ display: grid; grid-template-columns: 1fr; place-items: center; gap: 12px; }
 .afronding-mode .vraag{ padding-left: 0; max-width: 40ch; }
 
-/* laptop full-bleed en grotere inhoud, onderbalk nog steeds laag */
+/* laptop full-bleed */
 @media (min-width: 1200px){
   .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
   :root{
@@ -222,7 +249,7 @@ html, body{
     --ant-font: clamp(1.2rem, 1.4vw, 1.6rem);
     --ant-hoogte: 60px;
     --onderbalk-offset: 10px;
-    --onderbalk-pad-y: 2px;   /* echt net groter dan de knoppen */
+    --onderbalk-pad-y: 2px;
   }
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
@@ -235,26 +262,21 @@ html, body{
   .illustratie-box::after{ display: none; }
   .illustratie{ -webkit-mask-image: none; mask-image: none; }
 
-  /* responsief voor de keuzegrid */
   .keuzegrid{ grid-template-columns: repeat(2, minmax(100px, 1fr)); }
 }
-@media (prefers-reduced-motion: reduce){ .toets{ transition: none; } }
-  /* Laptop: maak Vorige en Volgende 1,5x zo groot */
+
+/* grotere knoppen op grote schermen */
 @media (min-width: 1200px){
   .onderbalk .navbtn{
-    font-size: 1.5rem;     /* was 1.0–1.08rem */
-    padding: 12px 24px;    /* was 8px 16–18px */
-    border-radius: 16px;   /* iets ronder zodat het mooi oogt bij groter formaat */
+    font-size: 1.5rem;
+    padding: 12px 24px;
+    border-radius: 16px;
   }
-}/* 1) Grote laptops en desktops: ruim scherm nodig voor de boost */
+}
+
+/* 1) Grote schermen en hoog */
 @media (min-width: 1440px) and (min-height: 850px){
-  /* full-bleed paneel en grote UI zoals je nu fijn vindt op je laptop */
-  .panel{
-    max-width: none;
-    width: 100vw;
-    margin: 18px 0 0 0;
-    border-radius: 0;
-  }
+  .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
   :root{
     --kolom-rechts: min(560px, 34vw);
     --pad-key: clamp(88px, 6.2vw, 108px);
@@ -267,28 +289,14 @@ html, body{
   }
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
-
-  /* Vorige en Volgende 1,5x groot op ruime schermen */
-  .onderbalk .navbtn{
-    font-size: 1.5rem;
-    padding: 12px 24px;
-    border-radius: 16px;
-  }
-  /* grotere paginadots hier ook prima */
   .page{ width: 54px; height: 54px; border-radius: 27px; font-size: 1.05rem; }
 }
 
-/* 2) Chromebook-profiel: breed genoeg, maar lage hoogte
-   Houd het paneel weer gecentreerd en de UI compacter */
+/* 2) Chromebook, lage hoogte */
 @media (min-width: 1200px) and (max-height: 820px){
-  /* géén full-bleed, terug naar nette kaartbreedte en afgeronde bovenhoeken */
-  .panel{
-    max-width: var(--kaart-max);
-    width: 100%;
-    margin: 18px auto 0;
-    border-radius: var(--radius) var(--radius) 0 0;
-  }
+  .panel{ max-width: var(--kaart-max); width: 100%; margin: 8px auto 0; border-radius: var(--radius) var(--radius) 0 0; }
   :root{
+    --topbar-hoogte: 32px;
     --kolom-rechts: min(430px, 30vw);
     --pad-key: 68px;
     --pad-gap: 12px;
@@ -298,30 +306,8 @@ html, body{
     --onderbalk-offset: 8px;
     --onderbalk-pad-y: 2px;
   }
-  /* navigatieknoppen weer normaal formaat */
-  .onderbalk .navbtn{
-    font-size: 1rem;
-    padding: 8px 14px;
-    border-radius: 12px;
-  }
-  /* iets kleinere paginadots voor meer lucht */
+  .onderbalk .navbtn{ font-size: 1rem; padding: 8px 14px; border-radius: 12px; }
   .page{ width: 46px; height: 46px; border-radius: 23px; font-size: 1rem; }
-}/* Chromebook-profiel: lagere blauwe balk, paneel dichter onder de balk */
-@media (min-width: 1200px) and (max-height: 820px){
-  :root{
-    /* hoogte van de blauwe balk verlagen */
-    --topbar-hoogte: 32px;   /* kies 28–36 naar smaak */
-  }
-
-  .topbar{
-    height: var(--topbar-hoogte);
-  }
-
-  /* minder ruimte boven het witte vlak en hoogte opnieuw berekenen */
-  .panel{
-    margin-top: 8px;         /* was 18px */
-    height: calc(100dvh - var(--topbar-hoogte) - 8px);
-  }
 }
 </style>
 </head>
@@ -361,7 +347,7 @@ html, body{
             </div>
 
             <!-- klikbare opties voor meerkeuze-vraag -->
-            <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" hidden></div>
+            <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" role="radiogroup" hidden></div>
 
             <div class="antwoordblok">
               <input id="antwoord" class="antwoord" inputmode="numeric" placeholder="Antwoordvak" aria-label="Antwoord" />
@@ -431,7 +417,6 @@ const spraakknoop = document.getElementById("spraakknoop");
 const spraakknoopIcon = document.getElementById("spraakknoopIcon");
 let isSprekend = false, utterance = null, gekozenStem = null;
 
-/* pauze na “gezien.” op het eindscherm, stel bij naar smaak */
 let afrondingTimer = null;
 const afrondingPauzeMs = 650;
 
@@ -444,7 +429,7 @@ if ("speechSynthesis" in window){
   window.speechSynthesis.onvoiceschanged = kiesNederlandseStem;
 }
 
-/* TTS alleen, zichtbare tekst blijft gelijk */
+/* TTS sanitize */
 function ttsSanitize(text){
   return text
     .replace(/\bSophie\b/g, "Soofie")
@@ -471,7 +456,6 @@ function stopSpraak(resetBtnIcon = true){
   hardStopSpeech(resetBtnIcon);
 }
 
-/* spreekt direct en verzorgt iconen */
 function speakNow(text, onendCustom){
   const synth = window.speechSynthesis;
   const u = new SpeechSynthesisUtterance(text);
@@ -479,12 +463,8 @@ function speakNow(text, onendCustom){
   u.rate = 0.95; u.pitch = 1.0;
 
   u.onend = () => {
-    if (typeof onendCustom === "function"){
-      onendCustom();
-    } else {
-      isSprekend = false;
-      resetIcon();
-    }
+    if (typeof onendCustom === "function"){ onendCustom(); }
+    else { isSprekend = false; resetIcon(); }
   };
   u.onerror = () => { isSprekend = false; resetIcon(); };
 
@@ -500,16 +480,13 @@ function spreekVraag(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
 
-  /* maak motor wakker en wis wachtrij, start meteen */
   try { synth.cancel(); synth.resume(); } catch(e){}
 
   const full = vraagtekst.textContent.trim();
   if (!full) return;
 
   const isAfronding = document.body.classList.contains("afronding-mode");
-
   if (isAfronding){
-    /* vind expliciet de eerste zin die eindigt op “gezien.” en forceer pauze */
     const marker = "gezien.";
     const idx = full.indexOf(marker);
     if (idx !== -1){
@@ -519,15 +496,12 @@ function spreekVraag(){
       speakNow(ttsSanitize(eerste), () => {
         afrondingTimer = setTimeout(() => {
           afrondingTimer = null;
-          if (!("speechSynthesis" in window)) return;
           if (rest) speakNow(ttsSanitize(rest));
         }, afrondingPauzeMs);
       });
       return;
     }
-    /* als marker niet gevonden is, lees normaal */
   }
-
   utterance = speakNow(ttsSanitize(full));
 }
 
@@ -535,11 +509,7 @@ function pauzeerOfHervat(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
 
-  /* als er een geplande vervolgzin is, dan stoppen we die ook */
-  if (afrondingTimer){
-    clearTimeout(afrondingTimer);
-    afrondingTimer = null;
-  }
+  if (afrondingTimer){ clearTimeout(afrondingTimer); afrondingTimer = null; }
 
   if (isSprekend && !synth.paused){
     synth.pause();
@@ -575,9 +545,7 @@ function updatePaginabolletjes(){
 
 /* ---------- Afronding ---------- */
 function toonAfronding(){
-  /* oude of gepauzeerde spraak wordt vergeten bij overgang naar eindscherm */
   hardStopSpeech(true);
-
   huidigePagina = opdrachten.length + 1;
   vraagtekst.innerHTML = ["Je hebt nu alle vragen gezien.","Heb je alles gemaakt?","Kijk je antwoorden nog na."].join("<br>");
   document.body.classList.add("afronding-mode");
@@ -591,14 +559,22 @@ const padEl = document.getElementById("pad");
 const keuzegrid = document.getElementById("keuzegrid");
 const antwoordblok = document.querySelector(".antwoordblok");
 
+/* hulpfunctie voor geselecteerde kaart */
+function setKeuzeSelected(value){
+  const knoppen = keuzegrid.querySelectorAll(".keuzeknop");
+  knoppen.forEach(btn => {
+    const match = btn.dataset.value === String(value);
+    btn.classList.toggle("is-selected", match);
+    btn.setAttribute("aria-checked", match ? "true" : "false");
+  });
+}
+
 function renderInteracties(vraag){
   const isKeuze = vraag.type === "keuze";
 
-  /* toon of verberg numeriek pad en invoerveld */
   padEl.style.display = isKeuze ? "none" : "grid";
   antwoordblok.style.display = isKeuze ? "none" : "grid";
 
-  /* bouw de keuzeopties op bij meerkeuze */
   keuzegrid.hidden = !isKeuze;
   keuzegrid.innerHTML = "";
   if (isKeuze && Array.isArray(vraag.opties)){
@@ -609,22 +585,52 @@ function renderInteracties(vraag){
       b.textContent = String(getal);
       b.dataset.value = String(getal);
       b.setAttribute("aria-label", `Kies ${getal}`);
+      b.setAttribute("role", "radio");
+      b.setAttribute("aria-checked", "false");
+      b.tabIndex = 0;
       keuzegrid.appendChild(b);
     });
+
+    // bestaande keuze tonen als geselecteerd
+    setKeuzeSelected(input.value || "");
   }
 }
 
-/* klik op een keuze vult het antwoord en markeert de pagina als beantwoord */
+/* klik op een keuze vult antwoord en laat selectie zien */
 keuzegrid.addEventListener("click", e => {
   const btn = e.target.closest(".keuzeknop");
   if (!btn) return;
   input.value = btn.dataset.value || "";
+  setKeuzeSelected(input.value);
   bewaarEnUpdate();
+});
+
+/* pijltoetsen navigeren door de kaarten, spatie of enter selecteert */
+keuzegrid.addEventListener("keydown", e => {
+  const knoppen = Array.from(keuzegrid.querySelectorAll(".keuzeknop"));
+  if (!knoppen.length) return;
+
+  const idx = knoppen.indexOf(document.activeElement);
+  let next = idx;
+
+  if (e.key === "ArrowRight" || e.key === "ArrowDown"){ next = Math.min(knoppen.length - 1, idx + 1); e.preventDefault(); }
+  if (e.key === "ArrowLeft" || e.key === "ArrowUp"){ next = Math.max(0, idx - 1); e.preventDefault(); }
+
+  if (next !== idx && next >= 0){ knoppen[next].focus(); }
+
+  if (e.key === " " || e.key === "Enter"){
+    e.preventDefault();
+    const btn = document.activeElement.classList.contains("keuzeknop") ? document.activeElement : knoppen[0];
+    if (btn){
+      input.value = btn.dataset.value || "";
+      setKeuzeSelected(input.value);
+      bewaarEnUpdate();
+    }
+  }
 });
 
 /* ---------- Navigatie ---------- */
 function toonOpdracht(nr){
-  /* bij elke vraagwissel spraak en wachtrijen echt leegmaken */
   hardStopSpeech(true);
 
   if (nr < 1 || nr > opdrachten.length){
@@ -642,11 +648,10 @@ function toonOpdracht(nr){
   vraagAfbeelding.src = "";
   requestAnimationFrame(() => { vraagAfbeelding.src = vraag.img; });
 
-  /* per vraagtype de juiste UI laten zien */
+  /* bestaand antwoord eerst terugzetten, dan juiste UI tonen */
+  input.value = antwoorden[nr - 1] || "";
   renderInteracties(vraag);
 
-  /* bestaand antwoord terugzetten als dat er is */
-  input.value = antwoorden[nr - 1] || "";
   updatePaginabolletjes();
 }
 
@@ -672,15 +677,14 @@ pad.addEventListener("click", e => {
   if (key === "backspace"){ input.value = input.value.slice(0, -1); bewaarEnUpdate(); input.focus(); return; }
   if (/^\d$/.test(key)){ input.value += key; bewaarEnUpdate(); input.focus(); }
 });
+
 document.addEventListener("keydown", e => {
   const inAfronding = huidigePagina > opdrachten.length;
   const huidige = opdrachten[huidigePagina - 1];
   const isKeuze = huidige && huidige.type === "keuze";
 
   if (inAfronding){
-    if (e.key === "Enter"){
-      e.preventDefault();
-    }
+    if (e.key === "Enter"){ e.preventDefault(); }
     return;
   }
 
@@ -690,11 +694,17 @@ document.addEventListener("keydown", e => {
     input.value = input.value.slice(0, -1); bewaarEnUpdate(); e.preventDefault();
   } else if (e.key === "Enter"){
     e.preventDefault();
-    if (huidigePagina < opdrachten.length) { bewaarEnUpdate(); toonOpdracht(huidigePagina + 1); }
-    else if (huidigePagina === opdrachten.length) { bewaarEnUpdate(); toonAfronding(); }
+    if (huidigePagina < opdrachten.length){ bewaarEnUpdate(); toonOpdracht(huidigePagina + 1); }
+    else if (huidigePagina === opdrachten.length){ bewaarEnUpdate(); toonAfronding(); }
   }
 });
-input.addEventListener("input", bewaarEnUpdate);
+
+input.addEventListener("input", () => {
+  bewaarEnUpdate();
+  /* als het om de keuzevraag gaat, hou de visuele selectie in sync met de waarde */
+  const huidige = opdrachten[huidigePagina - 1];
+  if (huidige && huidige.type === "keuze"){ setKeuzeSelected(input.value); }
+});
 
 /* start */
 toonOpdracht(1);
