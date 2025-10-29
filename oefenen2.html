@@ -31,7 +31,7 @@
   --fade-rand: clamp(16px, 3.5vw, 36px);
   --illustratie-pad: 12px;
 
-  /* onderbalk super-compact */
+  /* onderbalk super compact */
   --onderbalk-offset: 10px;
   --onderbalk-pad-y: 2px;
 
@@ -190,7 +190,7 @@ html, body{
   outline-offset: 2px;
 }
 
-/* geselecteerd zonder vinkje, met duidelijke rand en glow */
+/* geselecteerd zonder vinkje, duidelijke rand en glow */
 .keuzegrid .keuzeknop.is-selected{
   background: var(--kaart-geel-select);
   border-color: var(--kaart-focus);
@@ -228,7 +228,7 @@ html, body{
 .afronding-mode .vraagrij{ display: grid; grid-template-columns: 1fr; place-items: center; gap: 12px; }
 .afronding-mode .vraag{ padding-left: 0; max-width: 40ch; }
 
-/* laptop en groter: vergroot getalkaarten duidelijk */
+/* laptop en groter, middenmaat kaarten */
 @media (min-width: 1200px){
   .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
   :root{
@@ -245,14 +245,14 @@ html, body{
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
 
-  /* hier maken we de getalkaarten groter */
+  /* middenmaat tussen vorige twee versies */
   .keuzegrid{
-    grid-template-columns: repeat(4, minmax(120px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(4, minmax(100px, 1fr));
+    gap: 16px;
   }
   .keuzegrid .keuzeknop{
-    border-radius: 16px;
-    font-size: clamp(1.6rem, 1.8vw, 2.2rem);
+    border-radius: 14px;
+    font-size: clamp(1.45rem, 1.7vw, 2rem);
   }
 
   .onderbalk .navbtn{
@@ -262,14 +262,14 @@ html, body{
   }
 }
 
-/* zeer ruime schermen, nog iets groter comfortabel */
+/* zeer ruime schermen, iets ruimer maar nog steeds gematigd */
 @media (min-width: 1440px) and (min-height: 850px){
   .keuzegrid{
-    grid-template-columns: repeat(4, minmax(140px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 18px;
   }
   .keuzegrid .keuzeknop{
-    font-size: clamp(1.8rem, 2vw, 2.6rem);
+    font-size: clamp(1.6rem, 1.9vw, 2.2rem);
   }
 }
 
@@ -326,7 +326,7 @@ html, body{
               <button class="toets toets--back" data-key="backspace" title="Verwijder laatste cijfer">⌫</button>
             </div>
 
-            <!-- meerkeuze-kaarten -->
+            <!-- meerkeuze kaarten -->
             <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" role="radiogroup" hidden></div>
 
             <div class="antwoordblok">
