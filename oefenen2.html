@@ -66,6 +66,8 @@ html, body{
   background: #fff;
   border-radius: var(--radius) var(--radius) 0 0;
   box-shadow: var(--schaduw);
+
+  /* truc: bovenste rij rekt mee, onderbalk blijft compact onderin */
   height: calc(100dvh - var(--topbar-hoogte) - 18px);
   display: grid;
   grid-template-rows: 1fr auto;
@@ -98,7 +100,7 @@ html, body{
 .spraakknoop:active{ transform: scale(.98); background: #eceff4; }
 .spraakknoop img{ width: 28px; height: 28px; }
 
-/* werkveld */
+/* werkveld vult alle resterende hoogte */
 .werkveld{
   flex: 1 1 auto;
   min-height: 0;
@@ -108,7 +110,7 @@ html, body{
   align-items: stretch;
 }
 
-/* illustratiekolom */
+/* illustratiekolom rekt mee */
 .illustratie-wrap{
   background: #fff; border-radius: 14px; box-shadow: var(--schaduw);
   padding: var(--illustratie-pad);
@@ -160,7 +162,7 @@ html, body{
 .antwoordblok{ margin-top: 12px; display: grid; justify-content: center; }
 .antwoord{ width: clamp(140px, 18vw, 220px); height: var(--ant-hoogte); font-size: var(--ant-font); padding: 8px 10px; border-radius: 12px; border: 1px solid #d9dce3; background: #fff; box-sizing: border-box; }
 
-/* getalkaarten */
+/* klikbare antwoordopties voor meerkeuze, in stijl van getalkaarten */
 .keuzegrid{
   display: grid;
   grid-template-columns: repeat(4, minmax(64px, 1fr));
@@ -171,7 +173,7 @@ html, body{
 .keuzegrid .keuzeknop{
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1;           /* vierkant */
   display: grid;
   place-items: center;
   background: var(--kaart-geel);
@@ -190,14 +192,21 @@ html, body{
   outline-offset: 2px;
 }
 
-/* geselecteerd zonder vinkje, met duidelijke rand en glow */
+/* blijvende geselecteerd-staat */
 .keuzegrid .keuzeknop.is-selected{
   background: var(--kaart-geel-select);
-  border-color: var(--kaart-focus);
-  box-shadow: 0 0 0 3px rgba(22, 119, 255, .25);
+  border-color: var(--kaart-geel-border);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, .35) inset, 0 2px 10px rgba(0,0,0,.08);
+}
+.keuzegrid .keuzeknop.is-selected::after{
+  content: "✓";
+  position: absolute;
+  top: 6px; right: 8px;
+  font-weight: 800;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
 }
 
-/* onderbalk */
+/* ultracompacte onderbalk */
 .onderbalk{
   display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
   position: sticky; bottom: var(--onderbalk-offset);
@@ -210,7 +219,7 @@ html, body{
 .onderbalk .links{ justify-self: start; }
 .onderbalk .rechts{ justify-self: end; }
 
-/* paginadots */
+/* grotere dots */
 .paginering{ display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
 .page{
   width: 54px; height: 54px; border-radius: 27px;
@@ -223,12 +232,12 @@ html, body{
 .page--actief{ background: #1677ff; color: #fff; border-color: #1677ff; }
 .page--beantwoord{ background: #fff; color:#111; border-color: #cfd3dc; }
 
-/* afronding */
+/* afronding gecentreerd */
 .afronding-mode .kaart{ justify-content: center; align-items: center; text-align: center; }
 .afronding-mode .vraagrij{ display: grid; grid-template-columns: 1fr; place-items: center; gap: 12px; }
 .afronding-mode .vraag{ padding-left: 0; max-width: 40ch; }
 
-/* laptop en groter: vergroot getalkaarten duidelijk */
+/* laptop full-bleed */
 @media (min-width: 1200px){
   .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
   :root{
@@ -244,33 +253,6 @@ html, body{
   }
   .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
   .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
-
-  /* hier maken we de getalkaarten groter */
-  .keuzegrid{
-    grid-template-columns: repeat(4, minmax(120px, 1fr));
-    gap: 18px;
-  }
-  .keuzegrid .keuzeknop{
-    border-radius: 16px;
-    font-size: clamp(1.6rem, 1.8vw, 2.2rem);
-  }
-
-  .onderbalk .navbtn{
-    font-size: 1.5rem;
-    padding: 12px 24px;
-    border-radius: 16px;
-  }
-}
-
-/* zeer ruime schermen, nog iets groter comfortabel */
-@media (min-width: 1440px) and (min-height: 850px){
-  .keuzegrid{
-    grid-template-columns: repeat(4, minmax(140px, 1fr));
-    gap: 20px;
-  }
-  .keuzegrid .keuzeknop{
-    font-size: clamp(1.8rem, 2vw, 2.6rem);
-  }
 }
 
 /* compacter op kleinere schermen */
@@ -279,13 +261,51 @@ html, body{
   .pad-wrap{ width: 100%; max-width: 420px; justify-self: center; margin-left: 0; }
   .illustratie-box::after{ display: none; }
   .illustratie{ -webkit-mask-image: none; mask-image: none; }
+
   .keuzegrid{ grid-template-columns: repeat(2, minmax(100px, 1fr)); }
 }
 
-/* chromebook lage hoogte */
+/* grotere knoppen op grote schermen */
+@media (min-width: 1200px){
+  .onderbalk .navbtn{
+    font-size: 1.5rem;
+    padding: 12px 24px;
+    border-radius: 16px;
+  }
+}
+
+/* 1) Grote schermen en hoog */
+@media (min-width: 1440px) and (min-height: 850px){
+  .panel{ max-width: none; width: 100vw; margin: 18px 0 0 0; border-radius: 0; }
+  :root{
+    --kolom-rechts: min(560px, 34vw);
+    --pad-key: clamp(88px, 6.2vw, 108px);
+    --pad-gap: 16px;
+    --pad-font: clamp(1.35rem, 1.8vw, 2.1rem);
+    --vraag-font: clamp(1.8rem, 2.2vw, 2.2rem);
+    --ant-hoogte: 60px;
+    --onderbalk-offset: 10px;
+    --onderbalk-pad-y: 2px;
+  }
+  .kaart{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
+  .onderbalk{ padding-left: max(28px, 3vw); padding-right: max(28px, 3vw); }
+  .page{ width: 54px; height: 54px; border-radius: 27px; font-size: 1.05rem; }
+}
+
+/* 2) Chromebook, lage hoogte */
 @media (min-width: 1200px) and (max-height: 820px){
   .panel{ max-width: var(--kaart-max); width: 100%; margin: 8px auto 0; border-radius: var(--radius) var(--radius) 0 0; }
-  :root{ --topbar-hoogte: 32px; }
+  :root{
+    --topbar-hoogte: 32px;
+    --kolom-rechts: min(430px, 30vw);
+    --pad-key: 68px;
+    --pad-gap: 12px;
+    --pad-font: 1.2rem;
+    --vraag-font: 1.6rem;
+    --ant-hoogte: 52px;
+    --onderbalk-offset: 8px;
+    --onderbalk-pad-y: 2px;
+  }
   .onderbalk .navbtn{ font-size: 1rem; padding: 8px 14px; border-radius: 12px; }
   .page{ width: 46px; height: 46px; border-radius: 23px; font-size: 1rem; }
 }
@@ -326,7 +346,7 @@ html, body{
               <button class="toets toets--back" data-key="backspace" title="Verwijder laatste cijfer">⌫</button>
             </div>
 
-            <!-- meerkeuze-kaarten -->
+            <!-- klikbare opties voor meerkeuze-vraag -->
             <div class="keuzegrid" id="keuzegrid" aria-label="Antwoordopties" role="radiogroup" hidden></div>
 
             <div class="antwoordblok">
@@ -336,6 +356,7 @@ html, body{
         </div>
       </div>
 
+      <!-- ultralage onderbalk -->
       <div class="onderbalk">
         <div class="links">
           <button class="navbtn" id="btnVorige" type="button">Vorige</button>
@@ -431,7 +452,9 @@ function hardStopSpeech(resetBtnIcon = true){
   if (resetBtnIcon) resetIcon();
 }
 
-function stopSpraak(resetBtnIcon = true){ hardStopSpeech(resetBtnIcon); }
+function stopSpraak(resetBtnIcon = true){
+  hardStopSpeech(resetBtnIcon);
+}
 
 function speakNow(text, onendCustom){
   const synth = window.speechSynthesis;
@@ -439,7 +462,10 @@ function speakNow(text, onendCustom){
   if (gekozenStem) u.voice = gekozenStem;
   u.rate = 0.95; u.pitch = 1.0;
 
-  u.onend = () => { if (typeof onendCustom === "function"){ onendCustom(); } else { isSprekend = false; resetIcon(); } };
+  u.onend = () => {
+    if (typeof onendCustom === "function"){ onendCustom(); }
+    else { isSprekend = false; resetIcon(); }
+  };
   u.onerror = () => { isSprekend = false; resetIcon(); };
 
   synth.speak(u);
@@ -453,7 +479,9 @@ function speakNow(text, onendCustom){
 function spreekVraag(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
+
   try { synth.cancel(); synth.resume(); } catch(e){}
+
   const full = vraagtekst.textContent.trim();
   if (!full) return;
 
@@ -464,6 +492,7 @@ function spreekVraag(){
     if (idx !== -1){
       const eerste = full.slice(0, idx + marker.length);
       const rest = full.slice(idx + marker.length).trim();
+
       speakNow(ttsSanitize(eerste), () => {
         afrondingTimer = setTimeout(() => {
           afrondingTimer = null;
@@ -479,6 +508,7 @@ function spreekVraag(){
 function pauzeerOfHervat(){
   if (!("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
+
   if (afrondingTimer){ clearTimeout(afrondingTimer); afrondingTimer = null; }
 
   if (isSprekend && !synth.paused){
@@ -498,7 +528,8 @@ function pauzeerOfHervat(){
 spraakknoop.addEventListener("click", pauzeerOfHervat);
 spraakknoop.addEventListener("keydown", e => {
   if (e.key === "Enter" || e.key === " "){
-    pauzeerOfHervat(); e.preventDefault();
+    pauzeerOfHervat();
+    e.preventDefault();
   }
 });
 
@@ -528,6 +559,7 @@ const padEl = document.getElementById("pad");
 const keuzegrid = document.getElementById("keuzegrid");
 const antwoordblok = document.querySelector(".antwoordblok");
 
+/* hulpfunctie voor geselecteerde kaart */
 function setKeuzeSelected(value){
   const knoppen = keuzegrid.querySelectorAll(".keuzeknop");
   knoppen.forEach(btn => {
@@ -558,11 +590,13 @@ function renderInteracties(vraag){
       b.tabIndex = 0;
       keuzegrid.appendChild(b);
     });
+
+    // bestaande keuze tonen als geselecteerd
     setKeuzeSelected(input.value || "");
   }
 }
 
-/* klik en toetsen op de kaarten */
+/* klik op een keuze vult antwoord en laat selectie zien */
 keuzegrid.addEventListener("click", e => {
   const btn = e.target.closest(".keuzeknop");
   if (!btn) return;
@@ -570,6 +604,8 @@ keuzegrid.addEventListener("click", e => {
   setKeuzeSelected(input.value);
   bewaarEnUpdate();
 });
+
+/* pijltoetsen navigeren door de kaarten, spatie of enter selecteert */
 keuzegrid.addEventListener("keydown", e => {
   const knoppen = Array.from(keuzegrid.querySelectorAll(".keuzeknop"));
   if (!knoppen.length) return;
@@ -612,6 +648,7 @@ function toonOpdracht(nr){
   vraagAfbeelding.src = "";
   requestAnimationFrame(() => { vraagAfbeelding.src = vraag.img; });
 
+  /* bestaand antwoord eerst terugzetten, dan juiste UI tonen */
   input.value = antwoorden[nr - 1] || "";
   renderInteracties(vraag);
 
@@ -664,6 +701,7 @@ document.addEventListener("keydown", e => {
 
 input.addEventListener("input", () => {
   bewaarEnUpdate();
+  /* als het om de keuzevraag gaat, hou de visuele selectie in sync met de waarde */
   const huidige = opdrachten[huidigePagina - 1];
   if (huidige && huidige.type === "keuze"){ setKeuzeSelected(input.value); }
 });
